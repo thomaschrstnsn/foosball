@@ -13,14 +13,14 @@
      [:li (link-to "/" "Home")]
      [:li (link-to "/about" "About")]]]])
 
-(defn footer [] [:footer "Copyright &copy; ..."])
+(defn footer [] [:footer "Copyright &copy; " [:a {:href "mailto:thomas+foos@chrstnsn.dk"} "Thomas Christensen"]])
 
 (defhtml
   base
   [& content]
   (html5
     [:head
-     [:title "Welcome to foosball"]
+     [:title "Foosball"]
      (include-css
        "/css/bootstrap.min.css"
        "/css/bootstrap-responsive.min.css"
@@ -32,4 +32,3 @@
 
 (defn common [& content]
   (base (header) [:div.container content] (footer)))
-
