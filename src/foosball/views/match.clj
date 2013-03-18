@@ -24,7 +24,7 @@
 
 (defn form []
   (html5
-   [:form.form-horizontal {:action "/" :method "POST"}
+   [:form.form-horizontal {:action "/match" :method "POST"}
     (team-controls 1)
     (team-controls 2)
 

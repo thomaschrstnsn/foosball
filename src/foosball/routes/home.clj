@@ -1,22 +1,32 @@
 (ns foosball.routes.home
-  (:use compojure.core hiccup.element)
+  (:use compojure.core hiccup.element ring.util.response)
   (:require [foosball.views.layout :as layout]
             [foosball.views.match  :as match]
+            [foosball.views.player :as player]
             [foosball.util :as util]))
 
 (defn home-page []
-  (layout/common
-    (match/form)))
+  (layout/common "Welcome to foosball"))
 
-(defn about-page []
-  (layout/common
-   "this is the story of foosball... work in progress"))
+(defn match-page []
+  (layout/common (match/form)))
 
 (defn report-match [args]
   (println args)
-  (home-page))
+  (redirect-after-post "/"))
+
+(defn player-page []
+  (layout/common (player/form)))
+
+(defn new-player [playername]
+  (println "adding player:" playername)
+  (redirect-after-post "/player"))
 
 (defroutes home-routes
   (GET "/" [] (home-page))
-  (POST "/" request (report-match request))
-  (GET "/about" [] (about-page)))
+
+  (GET "/match" [] (match-page))
+  (POST "/match" request (report-match request))
+
+  (GET "/player" [] (player-page))
+  (POST "/newplayer" [playername] (new-player playername)))
