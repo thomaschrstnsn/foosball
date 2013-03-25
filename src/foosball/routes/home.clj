@@ -19,11 +19,23 @@
   (info {:new-player  playername})
   (redirect-after-post "/player"))
 
+(defn report [{:keys [params]}]
+  (info {:report-match-params params})
+  (let [validated-report (->> params
+                              match/parse-form
+                              match/validate-report)]
+    (if (->> validated-report :validation-errors empty?)
+      (do
+        (info "validated report")
+        (warn "TODO: persist report")
+        (redirect-after-post "/"))
+      (layout/common (match/form validated-report)))))
+
 (defroutes home-routes
   (GET "/" [] (home-page))
 
   (GET "/match" [] (match-page))
-  (POST "/match" request (match/report request))
+  (POST "/match" request (report request))
 
   (GET "/player" [] (player-page))
   (POST "/newplayer" [playername] (new-player playername)))
