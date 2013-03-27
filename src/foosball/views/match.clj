@@ -6,6 +6,11 @@
          [hiccup.page :only [html5 include-js include-css]]
          [foosball.util :only [format-time parse-time parse-int]]))
 
+(defn- validation-error? [validation-errors typekw kw]
+  (->> validation-errors
+       typekw
+       (some #{kw})))
+
 (defn- team-controls [kw team-num values validation-errors]
   (let [prefix  (name kw)
         idp1    (str prefix "player" 1)
@@ -22,7 +27,7 @@
       [:label.control-label {:for idp2} (str "Player" 2)]
       [:div.controls [:input.input-small  {:id idp2 :name idp2 :type "text" :placeholder "Player name"
                                            :value (:player2 values)}]]]
-     [:div.control-group
+     [:div.control-group (when (validation-error? validation-errors :scores kw) {:class "control-group error"})
       [:label.control-label {:for idscore} "Score"]
       [:div.controls [:input.input-small {:id idscore :name idscore :type "number" :placeholder "0"
                                           :min "0" :max "11"

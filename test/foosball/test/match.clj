@@ -3,7 +3,7 @@
   (:use [midje.util :only [testable-privates]])
   (:require [foosball.util :as util]))
 
-(testable-privates foosball.views.match validate-scores)
+(testable-privates foosball.views.match validate-scores validation-error?)
 
 (facts "about validation of scores"
        (fact "team 1 scores which should be invalid"
@@ -84,3 +84,12 @@
                 (util/format-time ...date...) => ...datestring...
                 (#'foosball.views.match/team-controls :team1 1 team1 [...some-error...]) => ...team1controls...
                 (#'foosball.views.match/team-controls :team2 2 team2 [...some-error...]) => ...team2controls...))))
+
+(facts "about validation-error?"
+       (fact "it is truthy when it should be"
+             (validation-error? {:scores [:team1]} :scores :team1) => truthy)
+       (fact "it is falsy when it should be"
+             (validation-error? {} :scores :team1) => falsey
+             (validation-error? {:scores [:team2]} :scores :team1) => falsey
+             (validation-error? {:scores []} :scores :team1) => falsey
+             (validation-error? {:scores nil} :scores :team1) => falsey))
