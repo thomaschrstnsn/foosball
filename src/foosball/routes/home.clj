@@ -4,7 +4,8 @@
   (:require [foosball.views.layout :as layout]
             [foosball.views.match  :as match]
             [foosball.views.player :as player]
-            [foosball.util :as util]))
+            [foosball.util :as util]
+            [foosball.models.db :as db]))
 
 (defn home-page []
   (layout/common "Welcome to foosball"))
@@ -13,10 +14,18 @@
   (layout/common (match/form)))
 
 (defn player-page []
-  (layout/common (player/form)))
+  (let [players (db/get-players)]
+    (info players)
+    (layout/common (player/form players))))
 
-(defn new-player [playername]
-  (info {:new-player  playername})
+(defn add-player [name]
+  (info {:add-player name})
+  (db/create-player {:name name})
+  (redirect-after-post "/player"))
+
+(defn remove-player [id]
+  (info {:remove-player id})
+  (db/delete-player id)
   (redirect-after-post "/player"))
 
 (defn report [{:keys [params]}]
@@ -38,4 +47,5 @@
   (POST "/match" request (report request))
 
   (GET "/player" [] (player-page))
-  (POST "/newplayer" [playername] (new-player playername)))
+  (POST "/player/add" [playername] (add-player playername))
+  (POST "/player/remove" [playerid] (remove-player playerid)))

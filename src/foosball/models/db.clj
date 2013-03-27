@@ -5,13 +5,19 @@
 
 (defdb db schema/db-spec)
 
-(defentity users)
+(defentity players)
 
-(defn create-user [user]
-  (insert users
-          (values user)))
+(defn create-player [player]
+  (insert players
+          (values player)))
+
+(defn delete-player [id]
+  (delete players (where {:id id})))
+
+(defn get-players []
+  (select players))
 
 (defn get-user [id]
-  (first (select users
+  (first (select players
                  (where {:id id})
                  (limit 1))))

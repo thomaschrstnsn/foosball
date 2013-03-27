@@ -34,7 +34,7 @@
                                           :value (:score values)}]]]]))
 
 (defn form [& [{:keys [team1 team2 validation-errors matchdate]
-                :or {matchdate (new java.util.Date)}}]]
+                :or {matchdate (java.util.Date.)}}]]
   (html5
    [:form.form-horizontal {:action "/match" :method "POST"}
     (team-controls :team1 1 team1 validation-errors)
