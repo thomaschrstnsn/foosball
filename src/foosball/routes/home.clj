@@ -11,11 +11,10 @@
   (layout/common "Welcome to foosball"))
 
 (defn match-page []
-  (layout/common (match/form)))
+  (layout/common (match/form (db/get-players))))
 
 (defn player-page []
   (let [players (db/get-players)]
-    (info players)
     (layout/common (player/form players))))
 
 (defn add-player [name]
@@ -32,13 +31,14 @@
   (info {:report-match-params params})
   (let [validated-report (->> params
                               match/parse-form
+                              (spy :info)
                               match/validate-report)]
     (if (->> validated-report :validation-errors empty?)
       (do
         (info "validated report")
         (warn "TODO: persist report")
         (redirect-after-post "/"))
-      (layout/common (match/form validated-report)))))
+      (layout/common (match/form (db/get-players) validated-report)))))
 
 (defroutes home-routes
   (GET "/" [] (home-page))

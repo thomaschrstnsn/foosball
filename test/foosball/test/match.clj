@@ -3,7 +3,7 @@
   (:use [midje.util :only [testable-privates]])
   (:require [foosball.util :as util]))
 
-(testable-privates foosball.views.match validate-scores validation-error?)
+(testable-privates foosball.views.match validate-scores validate-players validation-error?)
 
 (facts "about validation of scores"
        (fact "team 1 scores which should be invalid"
@@ -30,6 +30,20 @@
              (validate-scores [nil   8]) => [:team1]
              (validate-scores [  8 nil]) => [:team2]
              (validate-scores [nil nil]) => [:team1 :team2]))
+
+(facts "about validating players"
+       (fact "unique non-nil players are valid"
+             (validate-players [1 2 3 4]) => empty?)
+       (fact "nil players are invalid"
+             (validate-players [nil   2   3    4]) => [:team1player1]
+             (validate-players [  1 nil   3    4]) => [:team1player2]
+             (validate-players [  1   2 nil    4]) => [:team2player1]
+             (validate-players [  1   2   3  nil]) => [:team2player2])
+       (fact "non-unique players are invalid"
+             (validate-players [1 1 2 3]) => (contains [:team1player1 :team1player2] :in-any-order)
+             (validate-players [1 2 2 3]) => (contains [:team1player2 :team2player1] :in-any-order)
+             (validate-players [1 2 3 3]) => (contains [:team2player1 :team2player2] :in-any-order)
+             (validate-players [1 2 3 1]) => (contains [:team1player1 :team2player2] :in-any-order)))
 
 (facts "about validating reports"
        (fact "a valid report should have no validation errors"
@@ -61,8 +75,8 @@
                 (#'foosball.views.match/validate-scores  (#'foosball.views.match/pick-scores  report)) => [...score-error...]))))
 
 (facts "about the form"
-       (fact "it works without arguments"
-             (form) => truthy)
+       (fact "it works with just a players arguments"
+             (form ...players...) => truthy)
        (let [team1                            {:player1 ...t1p1... :player2 ...t1p2... :score ...t1score...}
              team2                            {:player1 ...t2p1... :player2 ...t2p2... :score ...t2score...}
              report-without-validation-errors {:team1 team1
@@ -73,17 +87,17 @@
                                                :matchdate ...date...
                                                :validation-errors [...some-error...]}]
          (fact "it works with a report structure without validation-errors"
-               (form report-without-validation-errors) => truthy
+               (form ...players... report-without-validation-errors) => truthy
                (provided
                 (util/format-time ...date...) => ...datestring...
-                (#'foosball.views.match/team-controls :team1 1 team1 nil) => ...team1controls...
-                (#'foosball.views.match/team-controls :team2 2 team2 nil) => ...team2controls...))
+                (#'foosball.views.match/team-controls :team1 1 team1 ...players... nil) => ...team1controls...
+                (#'foosball.views.match/team-controls :team2 2 team2 ...players... nil) => ...team2controls...))
          (fact "it works with a report structure with validation-errors"
-               (form report-with-validation-errors) => truthy
+               (form ...players... report-with-validation-errors) => truthy
                (provided
                 (util/format-time ...date...) => ...datestring...
-                (#'foosball.views.match/team-controls :team1 1 team1 [...some-error...]) => ...team1controls...
-                (#'foosball.views.match/team-controls :team2 2 team2 [...some-error...]) => ...team2controls...))))
+                (#'foosball.views.match/team-controls :team1 1 team1 ...players... [...some-error...]) => ...team1controls...
+                (#'foosball.views.match/team-controls :team2 2 team2 ...players... [...some-error...]) => ...team2controls...))))
 
 (facts "about validation-error?"
        (fact "it is truthy when it should be"

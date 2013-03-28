@@ -10,12 +10,15 @@
   (html5
    [:form {:action "/player/add" :method "POST"}
     [:div.input-append
-     [:input.span2 {:type "text" :name "playername" :placeholder "New Player"}]
+     [:h3 "Add player"]
+     [:input.span3 {:type "text" :name "playername" :placeholder "New Player"}]
      [:button.btn.btn-primary {:type "submit" :value "Report"} "Add!"]]]
 
    [:form {:action "/player/remove" :method "POST"}
     [:div.input-append
-     [:select {:name "playerid"}
+     [:h3 "Remove player"]
+     [:select.span3 {:name "playerid"}
+      [:option "Player"]
       (->> players
            (map (fn [{:keys [id name]}] [:option {:value id} name])))]
-     [:button.btn.btn-danger {:type "submit" :value "delete"} "Delete!"]]]))
+     [:button.btn.btn-danger {:type "submit" :value "delete"} "Remove!"]]]))
