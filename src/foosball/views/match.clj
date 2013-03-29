@@ -54,7 +54,8 @@
     (team-controls :team2 2 team2 players validation-errors)
 
     [:div.control-group
-     [:div.controls [:input.input-small {:id "matchdate" :name "matchdate" :type "date" :value (format-time matchdate)}]]]
+     [:div.controls [:input.input-small {:id "matchdate" :name "matchdate"
+                                         :type "date" :value (format-time matchdate)}]]]
 
     [:div.control-group
      [:div.controls [:button.btn.btn-primary {:type "submit" :value "Report"} "Report"]]] ]))
@@ -97,14 +98,16 @@
              (when     (= team1 team2) [:team1 :team2])])])))))
 
 (defn- pick-players [{:keys [team1 team2]}]
-  (->> [team1 team2]
-       (map #{:player1 :player2})
-       (apply vector)))
+  (let [{t1player1 :player1 t1player2 :player2} team1
+        {t2player1 :player1 t2player2 :player2} team2]
+    [t1player1 t1player2 t2player1 t2player2]))
 
 (defn- validate-players [[team1p1 team1p2 team2p1 team2p2 :as players]]
-  (let [mapped (apply assoc {} (interleave [:team1player1 :team1player2 :team2player1 :team2player2]
+  (let [mapped (apply assoc {} (interleave [:team1player1 :team1player2
+                                            :team2player1 :team2player2]
                                            players))
         non-unique (->> players
+                        (filter (comp not nil?))
                         frequencies
                         (filter #(< 1 (second %)))
                         (map first))]

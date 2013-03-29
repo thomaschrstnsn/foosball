@@ -3,7 +3,11 @@
   (:use [midje.util :only [testable-privates]])
   (:require [foosball.util :as util]))
 
-(testable-privates foosball.views.match validate-scores validate-players validation-error?)
+(testable-privates foosball.views.match
+                   validate-scores
+                   validate-players
+                   validation-error?
+                   pick-players)
 
 (facts "about validation of scores"
        (fact "team 1 scores which should be invalid"
@@ -31,6 +35,11 @@
              (validate-scores [  8 nil]) => [:team2]
              (validate-scores [nil nil]) => [:team1 :team2]))
 
+(facts "about picking players from parsed reports"
+       (fact "it should work"
+             (pick-players {:team1 {:player1 1 :player2 2}
+                            :team2 {:player1 3 :player2 4}}) => [1 2 3 4]))
+
 (facts "about validating players"
        (fact "unique non-nil players are valid"
              (validate-players [1 2 3 4]) => empty?)
@@ -43,7 +52,10 @@
              (validate-players [1 1 2 3]) => (contains [:team1player1 :team1player2] :in-any-order)
              (validate-players [1 2 2 3]) => (contains [:team1player2 :team2player1] :in-any-order)
              (validate-players [1 2 3 3]) => (contains [:team2player1 :team2player2] :in-any-order)
-             (validate-players [1 2 3 1]) => (contains [:team1player1 :team2player2] :in-any-order)))
+             (validate-players [1 2 3 1]) => (contains [:team1player1 :team2player2] :in-any-order))
+       (fact "some combinations that are invalid"
+             (validate-players [1 1 nil nil]) => (contains [:team1player1 :team1player2
+                                                            :team2player1 :team2player2] :in-any-order)))
 
 (facts "about validating reports"
        (fact "a valid report should have no validation errors"
