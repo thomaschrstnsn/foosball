@@ -15,7 +15,7 @@
    an app server such as Tomcat
    put any initialization code here"
   []
-  (if-not (schema/initialized?) (schema/create-tables))
+  (schema/initialize)
   (println "foosball started successfully..."))
 
 (defn destroy

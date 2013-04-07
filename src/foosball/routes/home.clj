@@ -11,7 +11,8 @@
   (layout/common "Welcome to foosball"))
 
 (defn match-page []
-  (layout/common (match/form (db/get-players))))
+  (layout/common (match/form  (db/get-players))
+                 (match/table (db/get-matches))))
 
 (defn player-page []
   (let [players (db/get-players)]
@@ -19,10 +20,10 @@
 
 (defn add-player [name]
   (info {:add-player name})
-  (db/create-player {:name name})
+  (db/create-player name)
   (redirect-after-post "/player"))
 
-(defn remove-player [id]
+(defn remove-player [id name]
   (info {:remove-player id})
   (db/delete-player id)
   (redirect-after-post "/player"))
@@ -31,12 +32,11 @@
   (info {:report-match-params params})
   (let [validated-report (->> params
                               match/parse-form
-                              (spy :info)
                               match/validate-report)]
     (if (->> validated-report :validation-errors empty?)
       (do
-        (info "validated report")
-        (warn "TODO: persist report")
+        (info {:validated-report validated-report})
+        (db/create-match validated-report)
         (redirect-after-post "/"))
       (layout/common (match/form (db/get-players) validated-report)))))
 

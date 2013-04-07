@@ -4,7 +4,7 @@
          [hiccup.def :only [defhtml]]
          [hiccup.element :only [link-to]]
          [hiccup.page :only [html5 include-js include-css]]
-         [foosball.util :only [format-time parse-time parse-int]]))
+         [foosball.util :only [format-time parse-time parse-id]]))
 
 (defn- validation-error? [validation-errors typekw kw]
   (->> validation-errors
@@ -60,14 +60,45 @@
     [:div.control-group
      [:div.controls [:button.btn.btn-primary {:type "submit" :value "Report"} "Report"]]] ]))
 
+(defn render-match [{:keys [matchdate team1 team2]}]
+  (let [[t1p1 t1p2 t1score] (map team1 [:player1 :player2 :score])
+        [t2p1 t2p2 t2score] (map team2 [:player1 :player2 :score])]
+    [:tr
+     [:td (format-time matchdate)]
+     [:td t1p1]
+     [:td t1p2]
+     [:td t1score]
+     [:td t2p1]
+     [:td t2p2]
+     [:td t2score]]))
+
+(defn table [matches]
+  (html5
+   [:table.table.table-hover.table-bordered [:caption [:h2 "Reported Matches"]]
+    [:thead
+     [:tr
+      [:th {:colspan 1} ""]
+      [:th {:colspan 3} "Team1"]
+      [:th {:colspan 3} "Team2"]]
+     [:tr
+      [:th "Date played"]
+      [:th "Player 1"]
+      [:th "Player 2"]
+      [:th "Score"]
+      [:th "Player 1"]
+      [:th "Player 2"]
+      [:th "Score"]]]
+    [:tbody
+     (map render-match matches)]]))
+
 (defn parse-form [p]
   {:matchdate       (-> p :matchdate parse-time)
-   :team1 {:player1 (-> p :team1player1 parse-int)
-           :player2 (-> p :team1player2 parse-int)
-           :score   (-> p :team1score parse-int)}
-   :team2 {:player1 (-> p :team2player1 parse-int)
-           :player2 (-> p :team2player2 parse-int)
-           :score   (-> p :team2score parse-int)}})
+   :team1 {:player1 (-> p :team1player1 parse-id)
+           :player2 (-> p :team1player2 parse-id)
+           :score   (-> p :team1score parse-id)}
+   :team2 {:player1 (-> p :team2player1 parse-id)
+           :player2 (-> p :team2player2 parse-id)
+           :score   (-> p :team2score parse-id)}})
 
 (defn- pick-scores [{:keys [team1 team2]}]
   (->> [team1 team2]

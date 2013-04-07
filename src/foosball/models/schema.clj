@@ -1,29 +1,64 @@
 (ns foosball.models.schema
-  (:require [clojure.java.jdbc :as sql]
-            [noir.io :as io]))
+  (:use [datomic.api :only [db] :as d])
+  (:use [foosball.models.db :only [conn uri]]))
 
-(def db-store "site.db")
+(defn- make-db []
+  (d/create-database uri))
 
-(def db-spec {:classname "org.h2.Driver"
-              :subprotocol "h2"
-              :subname (str (io/resource-path) db-store)
-              :user "sa"
-              :password ""
-              :naming {:keys clojure.string/upper-case
-                       :fields clojure.string/upper-case}})
-(defn initialized?
-  "checks to see if the database schema is present"
-  []
-  (.exists (new java.io.File (str (io/resource-path) db-store ".h2.db"))))
+(defn- delete-db []
+  (d/delete-database uri))
 
-(defn create-players-table []
-  (sql/with-connection db-spec
-    (sql/create-table
-      :players
-      [:id "INTEGER PRIMARY KEY AUTO_INCREMENT"]
-      [:name "varchar(30)"])))
+(defn- setup-attributes []
+  (d/transact conn [{:db/id (d/tempid :db.part/db)
+                     :db/ident :player/name
+                     :db/valueType :db.type/string
+                     :db/cardinality :db.cardinality/one
+                     :db/unique :db.unique/identity
+                     :db/doc "A player's name"
+                     :db.install/_attribute :db.part/db}
 
-(defn create-tables
-  "creates the database tables used by the application"
-  []
-  (create-players-table))
+                     {:db/id (d/tempid :db.part/db)
+                      :db/ident :team/player1
+                      :db/valueType :db.type/ref
+                      :db/cardinality :db.cardinality/one
+                      :db/doc "A team's first player"
+                      :db.install/_attribute :db.part/db}
+
+                     {:db/id (d/tempid :db.part/db)
+                      :db/ident :team/player2
+                      :db/valueType :db.type/ref
+                      :db/cardinality :db.cardinality/one
+                      :db/doc "A team's second player"
+                      :db.install/_attribute :db.part/db}
+
+                     {:db/id (d/tempid :db.part/db)
+                      :db/ident :match/team1
+                      :db/valueType :db.type/ref
+                      :db/cardinality :db.cardinality/many
+                      :db/doc "A match's first team"
+                      :db.install/_attribute :db.part/db}
+
+                     {:db/id (d/tempid :db.part/db)
+                      :db/ident :match/team2
+                      :db/valueType :db.type/ref
+                      :db/cardinality :db.cardinality/many
+                      :db/doc "A match's second team"
+                      :db.install/_attribute :db.part/db}
+
+                     {:db/id (d/tempid :db.part/db)
+                      :db/ident :team/score
+                      :db/valueType :db.type/long
+                      :db/cardinality :db.cardinality/many
+                      :db/doc "A team's scores"
+                      :db.install/_attribute :db.part/db}
+
+                     {:db/id (d/tempid :db.part/db)
+                      :db/ident :match/time
+                      :db/valueType :db.type/instant
+                      :db/cardinality :db.cardinality/one
+                      :db/doc "When did the match take place"
+                      :db.install/_attribute :db.part/db}]))
+
+(defn initialize []
+  (make-db)
+  (setup-attributes))

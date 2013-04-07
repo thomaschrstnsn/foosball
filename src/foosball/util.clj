@@ -14,9 +14,9 @@
   ([s fmt]
      (.parse (new java.text.SimpleDateFormat fmt) s)))
 
-(defn parse-int [s]
+(defn parse-id [s]
   (try
-    (. Integer parseInt s)
+    (. Long parseLong s)
     (catch Exception e nil)))
 
 (defn md->html
