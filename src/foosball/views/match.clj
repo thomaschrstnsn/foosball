@@ -27,7 +27,7 @@
         idscore (str prefix "score")
         error-class {:class "control-group error"}]
     [:div.span4
-     [:h3 (str "Team " team-num)]
+     [:h2 (str "Team " team-num ":")]
 
      [:div.control-group
       (when (validation-error? validation-errors :players (keyword idp1)) error-class)
@@ -50,6 +50,9 @@
                         :or {matchdate (java.util.Date.)}}]]
   (html5
    [:h1 "Report Match Result"]
+   [:p.lead
+    "A match winner is the first team to reach ten goals while atleast two goals ahead of the opposing team." [:br]
+    "In case of tie-break, report 11-9 or 9-11."]
    [:form.form-horizontal {:action "/report/match" :method "POST"}
     [:div.row
      (team-controls :team1 1 team1 players validation-errors)
@@ -57,14 +60,14 @@
 
     [:div.row
      [:div.span4
-      [:h3 "Match"]
+      [:h2 "Match:"]
       [:div.control-group
        [:label.control-label {:for "matchdate"} "Date played"]
        [:div.controls [:input.input-small {:id "matchdate" :name "matchdate"
                                            :type "date" :value (format-time matchdate)}]]]
 
       [:div.control-group
-       [:div.controls [:button.btn.btn-primary.btn-large {:type "submit" :value "Report"} "Report"]]]]]]))
+       [:div.controls [:button.btn.btn-primary.btn-large.btn-block.span4 {:type "submit" :value "Report"} "Report"]]]]]]))
 
 (defn- render-match [{:keys [matchdate team1 team2]}]
   (let [[t1p1 t1p2 t1score] (map team1 [:player1 :player2 :score])
