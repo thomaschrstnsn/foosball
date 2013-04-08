@@ -12,7 +12,7 @@
        (some #{kw})))
 
 (defn- players-select [id players & [selected]]
-  [:select.input-small {:id id :name id}
+  [:select.input-medium {:id id :name id}
    [:option {:value "nil" } "Pick a player"]
    (->> players
         (map (fn [{:keys [id name]}]
@@ -26,23 +26,23 @@
         idp2    (str prefix "player" 2)
         idscore (str prefix "score")
         error-class {:class "control-group error"}]
-    [:div
+    [:div.span4
      [:h3 (str "Team " team-num)]
 
      [:div.control-group
       (when (validation-error? validation-errors :players (keyword idp1)) error-class)
-      [:label.control-label {:for idp1} (str "Player" 1)]
+      [:label.control-label {:for idp1} (str "Player " 1)]
       [:div.controls (players-select idp1 players player1)]]
 
      [:div.control-group
       (when (validation-error? validation-errors :players (keyword idp2)) error-class)
-      [:label.control-label {:for idp2} (str "Player" 2)]
+      [:label.control-label {:for idp2} (str "Player " 2)]
       [:div.controls (players-select idp2 players player2)]]
 
      [:div.control-group
       (when (validation-error? validation-errors :scores kw) error-class)
       [:label.control-label {:for idscore} "Score"]
-      [:div.controls [:input.input-small {:id idscore :name idscore :type "number" :placeholder "0"
+      [:div.controls [:input.input-mini {:id idscore :name idscore :type "number" :placeholder "0"
                                           :min "0" :max "11"
                                           :value score}]]]]))
 
@@ -50,15 +50,20 @@
                         :or {matchdate (java.util.Date.)}}]]
   (html5
    [:form.form-horizontal {:action "/match" :method "POST"}
-    (team-controls :team1 1 team1 players validation-errors)
-    (team-controls :team2 2 team2 players validation-errors)
+    [:div.row
+     (team-controls :team1 1 team1 players validation-errors)
+     (team-controls :team2 2 team2 players validation-errors)]
 
-    [:div.control-group
-     [:div.controls [:input.input-small {:id "matchdate" :name "matchdate"
-                                         :type "date" :value (format-time matchdate)}]]]
+    [:div.row
+     [:div.span4
+      [:h3 "Match"]
+      [:div.control-group
+       [:label.control-label {:for "matchdate"} "Date played"]
+       [:div.controls [:input.input-small {:id "matchdate" :name "matchdate"
+                                           :type "date" :value (format-time matchdate)}]]]
 
-    [:div.control-group
-     [:div.controls [:button.btn.btn-primary {:type "submit" :value "Report"} "Report"]]] ]))
+      [:div.control-group
+       [:div.controls [:button.btn.btn-primary.btn-large {:type "submit" :value "Report"} "Report"]]]]]]))
 
 (defn render-match [{:keys [matchdate team1 team2]}]
   (let [[t1p1 t1p2 t1score] (map team1 [:player1 :player2 :score])
