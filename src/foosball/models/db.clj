@@ -35,18 +35,23 @@
                      {:db/id match-id :match/time matchdate}]]
     (d/transact conn transaction)))
 
+(defn get-player
+  ([id] (get-player id (db conn)))
+  ([id dbc]
+     (->> (d/q '[:find ?player :in $ ?id :where [?id :player/name ?player]] dbc id)
+          first first)))
 
 (defn get-team
   ([id] (get-team id (db conn)))
   ([id dbc]
-     (->> (d/q '[:find ?player1 ?player2 ?score
+     (->> (d/q '[:find ?p1 ?p2 ?score
                  :in $ ?id :where
                  [?id :team/player1 ?p1]
                  [?id :team/player2 ?p2]
-                 [?p1 :player/name ?player1]
-                 [?p2 :player/name ?player2]
                  [?id :team/score ?score]] dbc id)
-          (map (fn [[player1 player2 score]] {:player1 player1 :player2 player2 :score score}))
+          (map (fn [[p1 p2 score]] {:player1 (get-player p1 dbc)
+                                   :player2 (get-player p2 dbc)
+                                   :score score}))
           first)))
 
 (defn get-matches []

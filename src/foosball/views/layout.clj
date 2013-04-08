@@ -10,9 +10,10 @@
   [:div.navbar.navbar-fixed-top.navbar-inverse
    [:div.navbar-inner
     [:ul.nav
-     [:li (link-to "/"       "Home")]
-     [:li (link-to "/match"  "Matches")]
-     [:li (link-to "/player" "Players")]]]])
+     [:li (link-to "/report/match" "Report Match Result")]
+     [:li (link-to "/matches"      "Played Matches")]
+     [:li (link-to "/stats/team"   "Team Statistics")]
+     [:li (link-to "/stats/player" "Player Statistics")]]]])
 
 (defn footer [] [:footer "Copyright &copy; " [:a {:href "mailto:thomas+foos@chrstnsn.dk"} "Thomas Christensen"]])
 

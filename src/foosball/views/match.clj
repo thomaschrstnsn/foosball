@@ -49,7 +49,8 @@
 (defn form [players & [{:keys [team1 team2 validation-errors matchdate]
                         :or {matchdate (java.util.Date.)}}]]
   (html5
-   [:form.form-horizontal {:action "/match" :method "POST"}
+   [:h1 "Report Match Result"]
+   [:form.form-horizontal {:action "/report/match" :method "POST"}
     [:div.row
      (team-controls :team1 1 team1 players validation-errors)
      (team-controls :team2 2 team2 players validation-errors)]
@@ -65,7 +66,7 @@
       [:div.control-group
        [:div.controls [:button.btn.btn-primary.btn-large {:type "submit" :value "Report"} "Report"]]]]]]))
 
-(defn render-match [{:keys [matchdate team1 team2]}]
+(defn- render-match [{:keys [matchdate team1 team2]}]
   (let [[t1p1 t1p2 t1score] (map team1 [:player1 :player2 :score])
         [t2p1 t2p2 t2score] (map team2 [:player1 :player2 :score])]
     [:tr
@@ -79,7 +80,7 @@
 
 (defn table [matches]
   (html5
-   [:table.table.table-hover.table-bordered [:caption [:h2 "Reported Matches"]]
+   [:table.table.table-hover.table-bordered [:caption [:h2 "Played Matches"]]
     [:thead
      [:tr
       [:th {:colspan 1} ""]

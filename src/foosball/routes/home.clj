@@ -7,28 +7,10 @@
             [foosball.util :as util]
             [foosball.models.db :as db]))
 
-(defn home-page []
-  (layout/common "Welcome to foosball"))
+(defn report-match-page []
+  (layout/common (match/form (db/get-players))))
 
-(defn match-page []
-  (layout/common (match/form  (db/get-players))
-                 (match/table (db/get-matches))))
-
-(defn player-page []
-  (let [players (db/get-players)]
-    (layout/common (player/form players))))
-
-(defn add-player [name]
-  (info {:add-player name})
-  (db/create-player name)
-  (redirect-after-post "/player"))
-
-(defn remove-player [id name]
-  (info {:remove-player id})
-  (db/delete-player id)
-  (redirect-after-post "/player"))
-
-(defn report [{:keys [params]}]
+(defn report-match [{:keys [params]}]
   (info {:report-match-params params})
   (let [validated-report (->> params
                               match/parse-form
@@ -37,15 +19,33 @@
       (do
         (info {:validated-report validated-report})
         (db/create-match validated-report)
-        (redirect-after-post "/"))
+        (redirect-after-post "/matches"))
       (layout/common (match/form (db/get-players) validated-report)))))
 
+(defn matches-page []
+  (layout/common (match/table (db/get-matches))))
+
+(defn admin-page []
+  (layout/common (player/form (db/get-players))))
+
+(defn add-player [name]
+  (info {:add-player name})
+  (db/create-player name)
+  (redirect-after-post "/administr4t0r"))
+
+(defn remove-player [id]
+  (info {:remove-player id})
+  (db/delete-player (util/parse-id id))
+  (redirect-after-post "/administr4t0r"))
+
 (defroutes home-routes
-  (GET "/" [] (home-page))
+  (GET "/" [] (redirect "/report/match"))
 
-  (GET "/match" [] (match-page))
-  (POST "/match" request (report request))
+  (GET "/report/match" [] (report-match-page))
+  (POST "/report/match" request (report-match request))
 
-  (GET "/player" [] (player-page))
+  (GET "/matches" [] (matches-page))
+
+  (GET "/administr4t0r" [] (admin-page))
   (POST "/player/add" [playername] (add-player playername))
   (POST "/player/remove" [playerid] (remove-player playerid)))
