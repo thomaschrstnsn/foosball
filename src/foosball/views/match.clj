@@ -69,16 +69,21 @@
      [:div.control-group.span4
       [:button.btn.btn-primary.btn-large.btn-block.span4 {:type "submit" :value "Report"} "Report Match Result"]]]]))
 
+(defn- render-player [playername]
+  (if playername
+    [:p playername]
+    [:p.text-error "Deleted"]))
+
 (defn- render-match [{:keys [matchdate team1 team2]}]
   (let [[t1p1 t1p2 t1score] (map team1 [:player1 :player2 :score])
         [t2p1 t2p2 t2score] (map team2 [:player1 :player2 :score])]
     [:tr
      [:td (format-time matchdate)]
-     [:td t1p1]
-     [:td t1p2]
+     [:td (render-player t1p1)]
+     [:td (render-player t1p2)]
      [:td t1score]
-     [:td t2p1]
-     [:td t2p2]
+     [:td (render-player t2p1)]
+     [:td (render-player t2p2)]
      [:td t2score]]))
 
 (defn table [matches]
@@ -98,7 +103,10 @@
       [:th "Player 2"]
       [:th "Score"]]]
     [:tbody
-     (map render-match matches)]]))
+     (->> matches
+          (sort-by :matchdate)
+          reverse
+          (map render-match))]]))
 
 (defn parse-form [p]
   {:matchdate       (-> p :matchdate parse-time)
