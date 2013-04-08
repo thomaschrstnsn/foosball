@@ -26,7 +26,7 @@
         idp2    (str prefix "player" 2)
         idscore (str prefix "score")
         error-class {:class "control-group error"}]
-    [:div.span4
+    [:div.span4.well
      [:h2 (str "Team " team-num ":")]
 
      [:div.control-group
@@ -59,15 +59,15 @@
      (team-controls :team2 2 team2 players validation-errors)]
 
     [:div.row
-     [:div.span4
+     [:div.span4.well
       [:h2 "Match:"]
       [:div.control-group
        [:label.control-label {:for "matchdate"} "Date played"]
        [:div.controls [:input.input-small {:id "matchdate" :name "matchdate"
-                                           :type "date" :value (format-time matchdate)}]]]
-
-      [:div.control-group
-       [:div.controls [:button.btn.btn-primary.btn-large.btn-block.span4 {:type "submit" :value "Report"} "Report"]]]]]]))
+                                           :type "date" :value (format-time matchdate)}]]]]]
+    [:div.row
+     [:div.control-group.span4
+      [:button.btn.btn-primary.btn-large.btn-block.span4 {:type "submit" :value "Report"} "Report Match Result"]]]]))
 
 (defn- render-match [{:keys [matchdate team1 team2]}]
   (let [[t1p1 t1p2 t1score] (map team1 [:player1 :player2 :score])

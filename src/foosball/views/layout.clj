@@ -1,13 +1,11 @@
-(ns
-  foosball.views.layout
-  (:use
-    hiccup.form
-    [hiccup.def :only [defhtml]]
-    [hiccup.element :only [link-to]]
-    [hiccup.page :only [html5 include-js include-css]]))
+(ns foosball.views.layout
+  (:use hiccup.form
+        [hiccup.def :only [defhtml]]
+        [hiccup.element :only [link-to]]
+        [hiccup.page :only [html5 include-js include-css]]))
 
 (defn header []
-  [:div.navbar.navbar-fixed-top.navbar-inverse
+  [:div.navbar.navbar-fixed-top
    [:div.navbar-inner
     [:ul.nav
      [:li (link-to "/report/match" "Report Match Result")]
