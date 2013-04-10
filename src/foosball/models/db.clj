@@ -35,6 +35,11 @@
                      {:db/id match-id :match/time matchdate}]]
     (d/transact conn transaction)))
 
+(defn delete-match [id]
+  (let [matchdate (->> (d/q '[:find ?mt :in $ ?id :where [?id :match/time ?mt]] (db conn) id)
+                       first first)]
+    (d/transact conn [[:db/retract id :match/time matchdate]])))
+
 (defn get-player
   ([id] (get-player id (db conn)))
   ([id dbc]

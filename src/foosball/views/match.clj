@@ -74,7 +74,7 @@
     [:p playername]
     [:p.text-error "Deleted"]))
 
-(defn- render-match [{:keys [matchdate team1 team2]}]
+(defn- render-match [{:keys [matchdate team1 team2 id]} & {:keys [admin] :or {admin false}}]
   (let [[t1p1 t1p2 t1score] (map team1 [:player1 :player2 :score])
         [t2p1 t2p2 t2score] (map team2 [:player1 :player2 :score])]
     [:tr
@@ -84,11 +84,11 @@
      [:td t1score]
      [:td (render-player t2p1)]
      [:td (render-player t2p2)]
-     [:td t2score]]))
+     [:td t2score]
+     (when admin [:td [:button.btn.btn-danger {:type "submit" :name "matchid" :value id} "Remove!"]])]))
 
-(defn table [matches]
-  (html5
-   [:table.table.table-hover.table-bordered [:caption [:h1 "Played Matches"]]
+(defn match-table-data [matches & {:keys [admin] :or {admin false}}]
+  [:table.table.table-hover.table-bordered [:caption [:h1 "Played Matches"]]
     [:thead
      [:tr
       [:th {:colspan 1} ""]
@@ -101,12 +101,17 @@
       [:th "Score"]
       [:th "Player 1"]
       [:th "Player 2"]
-      [:th "Score"]]]
+      [:th "Score"]
+      (when admin
+        [:th ""])]]
     [:tbody
      (->> matches
           (sort-by :matchdate)
           reverse
-          (map render-match))]]))
+          (map (fn [match] (render-match match :admin admin))))]])
+
+(defn table [matches]
+  (html5 (match-table-data matches)))
 
 (defn parse-form [p]
   {:matchdate       (-> p :matchdate parse-time)

@@ -26,7 +26,7 @@
   (layout/common (match/table (db/get-matches))))
 
 (defn admin-page []
-  (layout/common (admin/form (db/get-players))))
+  (layout/common (admin/form (db/get-players) (db/get-matches))))
 
 (defn add-player [name]
   (info {:add-player name})
@@ -36,6 +36,11 @@
 (defn remove-player [id]
   (info {:remove-player id})
   (db/delete-player (util/parse-id id))
+  (redirect-after-post "/administr4t0r"))
+
+(defn remove-match [id]
+  (info {:remove-match id})
+  (db/delete-match (util/parse-id id))
   (redirect-after-post "/administr4t0r"))
 
 (defroutes home-routes
@@ -48,4 +53,5 @@
 
   (GET "/administr4t0r" [] (admin-page))
   (POST "/player/add" [playername] (add-player playername))
-  (POST "/player/remove" [playerid] (remove-player playerid)))
+  (POST "/player/remove" [playerid] (remove-player playerid))
+  (POST "/match/remove" [matchid] (remove-match matchid)))
