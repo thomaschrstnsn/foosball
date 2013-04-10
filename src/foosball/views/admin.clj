@@ -1,4 +1,4 @@
-(ns foosball.views.player
+(ns foosball.views.admin
   (:use hiccup.form
         [hiccup.def :only [defhtml]]
         [hiccup.element :only [link-to]]

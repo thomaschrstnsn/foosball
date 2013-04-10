@@ -3,7 +3,7 @@
   (:use [taoensso.timbre :only [trace debug info warn error fatal spy]])
   (:require [foosball.views.layout :as layout]
             [foosball.views.match  :as match]
-            [foosball.views.player :as player]
+            [foosball.views.admin :as admin]
             [foosball.util :as util]
             [foosball.models.db :as db]))
 
@@ -26,7 +26,7 @@
   (layout/common (match/table (db/get-matches))))
 
 (defn admin-page []
-  (layout/common (player/form (db/get-players))))
+  (layout/common (admin/form (db/get-players))))
 
 (defn add-player [name]
   (info {:add-player name})
