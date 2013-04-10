@@ -63,7 +63,7 @@
       [:h2 "Match:"]
       [:div.control-group
        [:label.control-label {:for "matchdate"} "Date played"]
-       [:div.controls [:input.input-small {:id "matchdate" :name "matchdate"
+       [:div.controls [:input.span2 {:id "matchdate" :name "matchdate"
                                            :type "date" :value (format-time matchdate)}]]]]]
     [:div.row
      [:div.control-group.span4
