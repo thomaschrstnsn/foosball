@@ -13,7 +13,7 @@
 
 (defn- players-select [id players & [selected]]
   [:select.input-medium {:id id :name id}
-   [:option {:value "nil" } "Pick a player"]
+   [:option {:value "nil" :disabled "disabled" :selected "selected"} "Pick a player"]
    (->> players
         (map (fn [{:keys [id name]}]
                [:option (merge {:value id}
