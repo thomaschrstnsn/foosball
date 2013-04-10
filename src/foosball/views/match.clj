@@ -88,7 +88,7 @@
 
 (defn table [matches]
   (html5
-   [:table.table.table-hover.table-bordered [:caption [:h2 "Played Matches"]]
+   [:table.table.table-hover.table-bordered [:caption [:h1 "Played Matches"]]
     [:thead
      [:tr
       [:th {:colspan 1} ""]
