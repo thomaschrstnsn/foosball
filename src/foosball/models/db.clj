@@ -1,9 +1,6 @@
 (ns foosball.models.db
-  (:use [datomic.api :only [q db] :as d]))
-
-(def uri "datomic:free://localhost:4334/foosball")
-
-(def conn (d/connect uri))
+  (:use [datomic.api :only [q db] :as d])
+  (:use [foosball.models.schema :only [conn]]))
 
 (defn create-player [name]
   (d/transact conn [{:db/id (d/tempid :db.part/user)

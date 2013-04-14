@@ -1,12 +1,17 @@
 (ns foosball.models.schema
-  (:use [datomic.api :only [db] :as d])
-  (:use [foosball.models.db :only [conn uri]]))
+  (:use [datomic.api :only [db] :as d]))
+
+(def uri "datomic:free://localhost:4334/foosball")
+
+(def ^:dynamic conn)
 
 (defn- make-db []
-  (d/create-database uri))
+  (d/create-database uri)
+  (def conn (d/connect uri)))
 
 (defn- delete-db []
-  (d/delete-database uri))
+  (d/delete-database uri)
+  (def conn nil))
 
 (defn- setup-attributes []
   (d/transact conn [{:db/id (d/tempid :db.part/db)
