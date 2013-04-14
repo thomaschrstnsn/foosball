@@ -3,7 +3,8 @@
   (:use [taoensso.timbre :only [trace debug info warn error fatal spy]])
   (:require [foosball.views.layout :as layout]
             [foosball.views.match  :as match]
-            [foosball.views.admin :as admin]
+            [foosball.views.stats  :as stats]
+            [foosball.views.admin  :as admin]
             [foosball.util :as util]
             [foosball.models.db :as db]))
 
@@ -24,6 +25,12 @@
 
 (defn matches-page []
   (layout/common (match/table (db/get-matches))))
+
+(defn stats-players [sort order]
+  (layout/common (stats/player-table (db/get-matches) :sort (keyword sort) :order (keyword order))))
+
+(defn stats-teams [sort order]
+  (layout/common (stats/team-table (db/get-matches) :sort (keyword sort) :order (keyword order))))
 
 (defn admin-page []
   (layout/common (admin/form (db/get-players) (db/get-matches))))
@@ -50,6 +57,9 @@
   (POST "/report/match" request (report-match request))
 
   (GET "/matches" [] (matches-page))
+
+  (GET "/stats/players" [sort order] (stats-players sort order))
+  (GET "/stats/teams"   [sort order] (stats-teams sort order))
 
   (GET "/administr4t0r" [] (admin-page))
   (POST "/player/add" [playername] (add-player playername))

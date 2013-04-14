@@ -8,11 +8,10 @@
   [:div.navbar.navbar-fixed-top
    [:div.navbar-inner
     [:ul.nav
-     [:li (link-to "/report/match" "Report Match Result")]
-     [:li (link-to "/matches"      "Played Matches")]
-;     [:li (link-to "/stats/team"   "Team Statistics")]
-;     [:li (link-to "/stats/player" "Player Statistics")]
-     ]]])
+     [:li (link-to "/report/match"  "Report Match Result")]
+     [:li (link-to "/matches"       "Played Matches")]
+     [:li (link-to "/stats/players" "Player Statistics")]
+     [:li (link-to "/stats/teams"   "Team Statistics")]]]])
 
 (defn footer [] [:footer "Copyright &copy; " [:a {:href "mailto:thomas+foos@chrstnsn.dk"} "Thomas Christensen"]])
 
@@ -25,10 +24,14 @@
      (include-css
        "/css/bootstrap.min.css"
        "/css/bootstrap-responsive.min.css"
-       "/css/screen.css")
+       "/css/screen.css"
+       ;"http://ajax.aspnetcdn.com/ajax/jquery.dataTables/1.9.4/css/jquery.dataTables.css"
+       )
      (include-js
        "//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"
-       "/js/bootstrap.min.js")]
+       "/js/bootstrap.min.js"
+       ;"http://ajax.aspnetcdn.com/ajax/jquery.dataTables/1.9.4/jquery.dataTables.min.js"
+       )]
     [:body content]))
 
 (defn common [& content]
