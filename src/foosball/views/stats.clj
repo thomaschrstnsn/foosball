@@ -7,6 +7,8 @@
 (defn- determine-winner [{:keys [team1 team2] :as match}]
   (let [t1score  (:score team1)
         t2score  (:score team2)
+        t1delta  (- t1score t2score)
+        t2delta  (- t2score t1score)
         [t1 t2]  (map (fn [{:keys [player1 player2]}] #{player1 player2}) [team1 team2])
         [winners
          losers] (if (> t1score t2score)
@@ -14,7 +16,9 @@
                    [t2 t1])]
     (-> match
         (assoc-in [:winners] winners)
-        (assoc-in [:losers]  losers))))
+        (assoc-in [:losers]  losers)
+        (assoc-in [:score-delta] [[t1 t1delta]
+                                  [t2 t2delta]]))))
 
 (defn- players-from-matches [matches]
   (->> matches
@@ -28,25 +32,31 @@
        set))
 
 (defn- player-stats [matches player]
-  (let [wins      (->> (map :winners matches) (filter #(contains? % player)) count)
-        losses    (->> (map :losers  matches) (filter #(contains? % player)) count)
-        total     (+ wins losses)
-        win-perc  (* (/ wins total) 100)
-        loss-perc (* (/ losses total) 100)]
-    {:player player :wins wins :losses losses :total total :win-perc win-perc :loss-perc loss-perc}))
+  (let [wins        (->> (map :winners matches) (filter #(contains? % player)) count)
+        losses      (->> (map :losers  matches) (filter #(contains? % player)) count)
+        total       (+ wins losses)
+        win-perc    (* (/ wins total) 100)
+        loss-perc   (* (/ losses total) 100)
+        score-delta (->>  (map :score-delta matches) (reduce concat)
+                          (filter (fn [[t s]] (contains? t player))) (map (fn [[t s]] s))
+                          (reduce + 0))]
+    {:player player :wins wins :losses losses :total total
+     :win-perc win-perc :loss-perc loss-perc :score-delta score-delta}))
 
 (defn- team-stats [matches team]
   (let [wins      (->> (map :winners matches) (filter (partial = team)) count)
         losses    (->> (map :losers  matches) (filter (partial = team)) count)
         total     (+ wins losses)
         win-perc  (* (/ wins total) 100)
-        loss-perc (* (/ losses total) 100)]
-    {:team team :wins wins :losses losses :total total :win-perc win-perc :loss-perc loss-perc}))
+        loss-perc (* (/ losses total) 100)
+        score-delta (->>  (map :score-delta matches) (reduce concat)
+                          (filter (fn [[t s]] (= team t))) (map (fn [[t s]] s))
+                          (reduce + 0))]
+    {:team team :wins wins :losses losses :total total :win-perc win-perc :loss-perc loss-perc :score-delta score-delta}))
 
 (defn- calculate-player-stats [matches]
   (let [won-matches (map determine-winner matches)
-        players     (players-from-matches won-matches)
-        teams       (teams-from-matches won-matches)]
+        players     (players-from-matches won-matches)]
     (map (partial player-stats won-matches) players)))
 
 (defn- calculate-team-stats [matches]
@@ -64,7 +74,8 @@
    [:td (:losses p)]
    [:td (:total p)]
    [:td (format-percentage (:win-perc p))]
-   [:td (format-percentage (:loss-perc p))]])
+   [:td (format-percentage (:loss-perc p))]
+   [:td (:score-delta p)]])
 
 (defn- render-team [t]
   [:tr
@@ -73,7 +84,8 @@
    [:td (:losses t)]
    [:td (:total t)]
    [:td (format-percentage (:win-perc t))]
-   [:td (format-percentage (:loss-perc t))]])
+   [:td (format-percentage (:loss-perc t))]
+   [:td (:score-delta t)]])
 
 (defn- order-by [order seq]
   (if (= order :desc)
@@ -101,7 +113,8 @@
       (sortable-column "Losses total" :losses)
       (sortable-column "Games total" :total)
       (sortable-column "Wins percentage" :win-perc)
-      (sortable-column "Losses percentage" :loss-perc)]]
+      (sortable-column "Losses percentage" :loss-perc)
+      (sortable-column "Score difference" :score-delta)]]
     (info [:player-table sort order])
     [:tbody
      (->> matches
@@ -121,7 +134,8 @@
       (sortable-column "Losses total" :losses)
       (sortable-column "Games total" :total)
       (sortable-column "Wins percentage" :win-perc)
-      (sortable-column "Losses percentage" :loss-perc)]]
+      (sortable-column "Losses percentage" :loss-perc)
+      (sortable-column "Score difference" :score-delta)]]
     [:tbody
      (->> matches
           calculate-team-stats
