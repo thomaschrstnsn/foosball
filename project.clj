@@ -28,7 +28,8 @@
   :profiles {:production {:ring
                           {:open-browser? false, :stacktraces? false, :auto-reload? false}},
              :dev {:dependencies [[ring-mock "0.1.3"] [ring/ring-devel "1.1.8"]]}}
-  :url "http://example.com/FIXME"
+
+  :url "https://foosball.chrstnsn.dk/"
   :plugins [[lein-ring "0.8.3"] [lein-cljsbuild "0.2.10"]]
-  :description "FIXME: write description"
+  :description "Foosball result tracking and statistics site."
   :min-lein-version "2.0.0")
