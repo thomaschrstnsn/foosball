@@ -5,13 +5,17 @@
         [hiccup.page :only [html5 include-js include-css]]))
 
 (defn header []
-  [:div.navbar.navbar-fixed-top
+  [:div.navbar
    [:div.navbar-inner
+    [:a.brand {:href "#"} "Foosball"]
     [:ul.nav
      [:li (link-to "/report/match"  "Report Match Result")]
      [:li (link-to "/matches"       "Played Matches")]
      [:li (link-to "/stats/players" "Player Statistics")]
-     [:li (link-to "/stats/teams"   "Team Statistics")]]]])
+     [:li (link-to "/stats/teams"   "Team Statistics")]
+;     [:li.divider-vertical]
+;     [:li (link-to "/about"         "About")]
+     ]]])
 
 (defn footer [] [:footer "Copyright &copy; " [:a {:href "mailto:thomas+foos@chrstnsn.dk"} "Thomas Christensen"]])
 
@@ -21,6 +25,7 @@
   (html5
     [:head
      [:title "Foosball"]
+     [:link {:rel "icon" :type "image/x-icon" :href "/favicon.ico"}]
      (include-css
        "/css/bootstrap.min.css"
        "/css/bootstrap-responsive.min.css"

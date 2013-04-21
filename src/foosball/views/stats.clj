@@ -97,48 +97,40 @@
         desc (str "?" sort "&order=desc")
         asc  (str "?" sort "&order=asc")]
     [:th heading
-     " "
-     [:a.btn.btn-mini {:href desc} "^"]
-     [:a.btn.btn-mini {:href asc}  "v"]
-     ]))
+     [:span.pull-right
+      [:a {:href desc} [:i.icon-chevron-up]]
+      [:a {:href asc}  [:i.icon-chevron-down]]]]))
+
+(defn- common-columns [first-column]
+  [:tr
+   first-column
+   (sortable-column "Wins" :wins)
+   (sortable-column "Losses" :losses)
+   (sortable-column "Played" :total)
+   (sortable-column "Wins %" :win-perc)
+   (sortable-column "Losses %" :loss-perc)
+   (sortable-column "Score diff." :score-delta)])
 
 (defn player-table [matches & {:keys [sort order] :or {sort :wins order :desc}}]
   (html5
    [:table.table.table-hover.table-bordered
     [:caption [:h1 "Player Statistics"]]
-    [:thead
-     [:tr
-      (sortable-column "Player" :player)
-      (sortable-column "Wins total" :wins)
-      (sortable-column "Losses total" :losses)
-      (sortable-column "Games total" :total)
-      (sortable-column "Wins percentage" :win-perc)
-      (sortable-column "Losses percentage" :loss-perc)
-      (sortable-column "Score difference" :score-delta)]]
-    (info [:player-table sort order])
-    [:tbody
-     (->> matches
-          calculate-player-stats
-          (sort-by (if (nil? sort) :wins sort))
-          (order-by order)
-          (map render-player))]]))
+    [:thead (common-columns (sortable-column "Player" :player))
+     [:tbody
+      (->> matches
+           calculate-player-stats
+           (sort-by (if (nil? sort) :wins sort))
+           (order-by order)
+           (map render-player))]]]))
 
 (defn team-table [matches & {:keys [sort order] :or {sort :wins order :desc}}]
   (html5
    [:table.table.table-hover.table-bordered
     [:caption [:h1 "Team Statistics"]]
-    [:thead
-     [:tr
-      [:th "Team"]
-      (sortable-column "Wins total" :wins)
-      (sortable-column "Losses total" :losses)
-      (sortable-column "Games total" :total)
-      (sortable-column "Wins percentage" :win-perc)
-      (sortable-column "Losses percentage" :loss-perc)
-      (sortable-column "Score difference" :score-delta)]]
+    [:thead (common-columns [:th "Team"])
     [:tbody
      (->> matches
           calculate-team-stats
           (sort-by (if (nil? sort) :wins sort))
           (order-by order)
-          (map render-team))]]))
+          (map render-team))]]]))

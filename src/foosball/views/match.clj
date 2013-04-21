@@ -67,7 +67,7 @@
                                            :type "date" :value (format-time matchdate)}]]]]]
     [:div.row
      [:div.control-group.span4
-      [:button.btn.btn-primary.btn-large.btn-block.span4 {:type "submit" :value "Report"} "Report Match Result"]]]]))
+      [:button.btn.btn-primary.btn-large.btn-block.span4 {:type "submit" :value "Report"} "Report Match Result " [:i.icon-ok.icon-white]]]]]))
 
 (defn- render-player [playername]
   (if playername
