@@ -17,8 +17,10 @@
                  [midje "1.5.1"]]
 
   :hooks [configleaf.hooks]
-
   :configleaf {:verbose true}
+
+  :lein-release {:deploy-via :shell
+                 :shell ["echo" "releasing..."]}
 
   :cljsbuild {:builds [{:source-path "src-cljs",
                         :compiler {:pretty-print false,
@@ -34,6 +36,11 @@
              :dev {:dependencies [[ring-mock "0.1.3"] [ring/ring-devel "1.1.8"]]}}
 
   :url "https://foosball.chrstnsn.dk/"
-  :plugins [[lein-ring "0.8.3"] [lein-cljsbuild "0.2.10"] [configleaf "0.4.6"]]
+
+  :plugins [[lein-ring "0.8.3"]
+            [lein-cljsbuild "0.2.10"]
+            [configleaf "0.4.6"]
+            [lein-release "1.0.4"]]
+
   :description "Foosball result tracking and statistics site."
   :min-lein-version "2.0.0")
