@@ -1,4 +1,4 @@
-(defproject foosball "0.5.0-SNAPSHOT"
+(defproject foosball "0.7.0-SNAPSHOT"
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [com.datomic/datomic-free "0.8.3862"]
                  [lib-noir "0.4.9"]
@@ -16,6 +16,10 @@
                  [hiccup "1.0.2"]
                  [midje "1.5.1"]]
 
+  :hooks [configleaf.hooks]
+
+  :configleaf {:verbose true}
+
   :cljsbuild {:builds [{:source-path "src-cljs",
                         :compiler {:pretty-print false,
                                    :output-to "resources/public/js/tetris.js",
@@ -30,6 +34,6 @@
              :dev {:dependencies [[ring-mock "0.1.3"] [ring/ring-devel "1.1.8"]]}}
 
   :url "https://foosball.chrstnsn.dk/"
-  :plugins [[lein-ring "0.8.3"] [lein-cljsbuild "0.2.10"]]
+  :plugins [[lein-ring "0.8.3"] [lein-cljsbuild "0.2.10"] [configleaf "0.4.6"]]
   :description "Foosball result tracking and statistics site."
   :min-lein-version "2.0.0")

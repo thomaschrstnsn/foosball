@@ -2,7 +2,8 @@
   (:use hiccup.form
         [hiccup.def :only [defhtml]]
         [hiccup.element :only [link-to]]
-        [hiccup.page :only [html5 include-js include-css]]))
+        [hiccup.page :only [html5 include-js include-css]]
+        [cfg.current :only [project]]))
 
 (defn header []
   [:div.navbar
@@ -17,7 +18,12 @@
 ;     [:li (link-to "/about"         "About")]
      ]]])
 
-(defn footer [] [:footer "Copyright &copy; " [:a {:href "mailto:thomas+foos@chrstnsn.dk"} "Thomas Christensen"]])
+(defn footer [] [:footer
+                 [:div.row-fluid
+                  [:div.span4.offset4.text-center
+                   "Copyright &copy; " [:a {:href "mailto:thomas+foos@chrstnsn.dk"} "Thomas Christensen"]]
+                  [:div.span4.text-right
+                   [:small (str "Version " (:version project))]]]])
 
 (defhtml
   base
