@@ -38,17 +38,17 @@
 (defn add-player [name]
   (info {:add-player name})
   (db/create-player name)
-  (redirect-after-post "/administr4t0r"))
+  (redirect-after-post "/admin"))
 
 (defn remove-player [id]
   (info {:remove-player id})
   (db/delete-player (util/parse-id id))
-  (redirect-after-post "/administr4t0r"))
+  (redirect-after-post "/admin"))
 
 (defn remove-match [id]
   (info {:remove-match id})
   (db/delete-match (util/parse-id id))
-  (redirect-after-post "/administr4t0r"))
+  (redirect-after-post "/admin"))
 
 (defroutes home-routes
   (GET "/" [] (redirect "/report/match"))
@@ -61,7 +61,7 @@
   (GET "/stats/players" [sort order] (stats-players sort order))
   (GET "/stats/teams"   [sort order] (stats-teams sort order))
 
-  (GET "/administr4t0r" [] (admin-page))
-  (POST "/player/add" [playername] (add-player playername))
-  (POST "/player/remove" [playerid] (remove-player playerid))
-  (POST "/match/remove" [matchid] (remove-match matchid)))
+  (GET "/admin" [] (admin-page))
+  (POST "/admin/player/add" [playername] (add-player playername))
+  (POST "/admin/player/remove" [playerid] (remove-player playerid))
+  (POST "/admin/match/remove" [matchid] (remove-match matchid)))
