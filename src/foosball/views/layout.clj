@@ -20,7 +20,7 @@
 
 (defn footer []
   [:footer
-   [:script "foosball.main.hello(\"from footer\")"]
+   [:script "$(document).ready(foosball.main.set_active_navbar_BANG_)"]
    [:div.row-fluid
     [:div.span4.offset4.text-center
      "Copyright &copy; " [:a {:href "mailto:thomas+foos@chrstnsn.dk"} "Thomas Christensen"]]

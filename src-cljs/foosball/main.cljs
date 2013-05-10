@@ -1,9 +1,11 @@
 (ns foosball.main
-;  (:require [foosball.tetris :as tetris])
-  )
+  (:use-macros [dommy.macros :only [sel sel1 nodes]])
+  (:require [dommy.core :as dommy]))
 
 (defn log [& items]
   (.log js/console (apply str (interpose ", " items))))
 
-(defn ^:export hello [arg]
-  (js/alert (str "hey: " arg)))
+(defn ^:export set-active-navbar! []
+  (js/alert "hey: you")
+  (log (->> (sel [".nav" :li])
+            (map log))))

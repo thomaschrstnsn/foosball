@@ -7,8 +7,7 @@
                  [com.taoensso/timbre "1.5.2"]
                  [com.taoensso/tower "1.2.0"]
                  [markdown-clj "0.9.19"]
-                 [jayq "2.0.0"]
-                 [prismatic/dommy "0.0.2"]
+                 [prismatic/dommy "0.1.1"]
                  [log4j "1.2.15" :exclusions [javax.mail/mail
                                               javax.jms/jms
                                               com.sun.jdmk/jmxtools
@@ -22,10 +21,19 @@
   :lein-release {:deploy-via :shell
                  :shell ["echo" "releasing..."]}
 
-  :cljsbuild {:builds [{:source-path "src-cljs",
-                        :compiler {:pretty-print false,
-                                   :output-to "resources/public/js/foosball.js",
-                                   :optimizations :advanced}}]}
+  :cljsbuild {:builds {
+                       ;; :prod
+                       ;; {:source-paths ["src-cljs"]
+                       ;;  :compiler {:pretty-print false
+                       ;;             :output-to "resources/public/js/foosball.js"
+                       ;;             :optimizations :simple}}
+
+                       :dev
+                       {:source-paths ["src-cljs"],
+                        :compiler {:pretty-print true
+                                   :output-to "resources/public/js/foosball.js"
+                                   :optimizations :whitespace}}
+                       }}
 
   :ring {:handler foosball.handler/war-handler,
          :init foosball.handler/init,
@@ -38,7 +46,7 @@
   :url "https://foosball.chrstnsn.dk/"
 
   :plugins [[lein-ring "0.8.3"]
-            [lein-cljsbuild "0.2.10"]
+            [lein-cljsbuild "0.3.0"]
             [configleaf "0.4.6"]
             [lein-release "1.0.4"]]
 
