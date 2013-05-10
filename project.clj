@@ -24,7 +24,7 @@
 
   :cljsbuild {:builds [{:source-path "src-cljs",
                         :compiler {:pretty-print false,
-                                   :output-to "resources/public/js/tetris.js",
+                                   :output-to "resources/public/js/foosball.js",
                                    :optimizations :advanced}}]}
 
   :ring {:handler foosball.handler/war-handler,

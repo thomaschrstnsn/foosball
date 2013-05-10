@@ -11,3 +11,4 @@ resources/public/site.db.h2.db
 resources/public/site.db.trace.db
 .DS_Store
 src/cfg/
+resources/public/js/foosball.js

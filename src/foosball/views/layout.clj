@@ -18,16 +18,16 @@
 ;     [:li (link-to "/about"         "About")]
      ]]])
 
-(defn footer [] [:footer
-                 [:div.row-fluid
-                  [:div.span4.offset4.text-center
-                   "Copyright &copy; " [:a {:href "mailto:thomas+foos@chrstnsn.dk"} "Thomas Christensen"]]
-                  [:div.span4.text-right
-                   [:small (str "Version " (:version project))]]]])
+(defn footer []
+  [:footer
+   [:script "foosball.main.hello(\"from footer\")"]
+   [:div.row-fluid
+    [:div.span4.offset4.text-center
+     "Copyright &copy; " [:a {:href "mailto:thomas+foos@chrstnsn.dk"} "Thomas Christensen"]]
+    [:div.span4.text-right
+     [:small (str "Version " (:version project))]]]])
 
-(defhtml
-  base
-  [& content]
+(defhtml base [& content]
   (html5
     [:head
      [:title "Foosball"]
@@ -35,14 +35,11 @@
      (include-css
        "/css/bootstrap.min.css"
        "/css/bootstrap-responsive.min.css"
-       "/css/screen.css"
-       ;"http://ajax.aspnetcdn.com/ajax/jquery.dataTables/1.9.4/css/jquery.dataTables.css"
-       )
+       "/css/screen.css")
      (include-js
        "//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"
        "/js/bootstrap.min.js"
-       ;"http://ajax.aspnetcdn.com/ajax/jquery.dataTables/1.9.4/jquery.dataTables.min.js"
-       )]
+       "/js/foosball.js")]
     [:body content]))
 
 (defn common [& content]
