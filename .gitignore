@@ -12,3 +12,5 @@ resources/public/site.db.trace.db
 .DS_Store
 src/cfg/
 resources/public/js/foosball.js
+out/
+repl/
