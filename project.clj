@@ -1,18 +1,18 @@
-(defproject foosball "0.7.2-SNAPSHOT"
+(defproject foosball "0.8.0-SNAPSHOT"
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [com.datomic/datomic-free "0.8.3941"]
-                 [lib-noir "0.4.9"]
+                 [lib-noir "0.5.2"]
                  [compojure "1.1.5"]
-                 [ring-server "0.2.7"]
-                 [com.taoensso/timbre "1.5.2"]
-                 [com.taoensso/tower "1.2.0"]
+                 [ring-server "0.2.8"]
+                 [com.taoensso/timbre "1.6.0"]
+                 [com.taoensso/tower "1.5.1"]
                  [markdown-clj "0.9.19"]
                  [prismatic/dommy "0.1.1"]
                  [log4j "1.2.15" :exclusions [javax.mail/mail
                                               javax.jms/jms
                                               com.sun.jdmk/jmxtools
                                               com.sun.jmx/jmxri]]
-                 [hiccup "1.0.2"]
+                 [hiccup "1.0.3"]
                  [midje "1.5.1"]]
 
   :hooks [configleaf.hooks]
