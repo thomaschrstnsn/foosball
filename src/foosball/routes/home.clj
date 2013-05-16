@@ -5,6 +5,7 @@
             [foosball.views.match  :as match]
             [foosball.views.stats  :as stats]
             [foosball.views.admin  :as admin]
+            [foosball.views.about  :as about]
             [foosball.util :as util]
             [foosball.models.db :as db]))
 
@@ -35,6 +36,9 @@
 (defn admin-page []
   (layout/common (admin/form (db/get-players) (db/get-matches))))
 
+(defn about-page []
+  (layout/common (about/page)))
+
 (defn add-player [name]
   (info {:add-player name})
   (db/create-player name)
@@ -64,4 +68,6 @@
   (GET "/admin" [] (admin-page))
   (POST "/admin/player/add" [playername] (add-player playername))
   (POST "/admin/player/remove" [playerid] (remove-player playerid))
-  (POST "/admin/match/remove" [matchid] (remove-match matchid)))
+  (POST "/admin/match/remove" [matchid] (remove-match matchid))
+
+  (GET "/about" [] (about-page)))

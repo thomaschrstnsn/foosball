@@ -2,3 +2,11 @@
 ** v0.7 [2/2]
 *** DONE Show version in footer
 *** DONE lein-release plugin
+** v0.8 [3/3]
+*** DONE About page
+    CLOSED: [2013-05-16 Thu 21:09]
+**** List software components used (cfg.current?)
+*** DONE cljs spike (set active page in navbar)
+    CLOSED: [2013-05-11 Sat 09:30]
+*** DONE Upgrade to latest version on central dependencies (cljs, dommy, datomic)
+    CLOSED: [2013-05-11 Sat 09:31]

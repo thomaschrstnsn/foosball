@@ -14,9 +14,8 @@
      [:li (link-to "/matches"       "Played Matches")]
      [:li (link-to "/stats/players" "Player Statistics")]
      [:li (link-to "/stats/teams"   "Team Statistics")]
-;     [:li.divider-vertical]
-;     [:li (link-to "/about"         "About")]
-     ]]])
+     [:li.divider-vertical]
+     [:li (link-to "/about"         "About")]]]])
 
 (defn footer []
   [:footer
