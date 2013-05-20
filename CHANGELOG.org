@@ -10,3 +10,6 @@
     CLOSED: [2013-05-11 Sat 09:30]
 *** DONE Upgrade to latest version on central dependencies (cljs, dommy, datomic)
     CLOSED: [2013-05-11 Sat 09:31]
+** v0.8.5 [1/1]
+*** DONE ELO Rating system
+    CLOSED: [2013-05-20 Mon 22:31]

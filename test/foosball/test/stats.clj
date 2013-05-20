@@ -1,8 +1,5 @@
 (ns foosball.test.stats
-  (:use midje.sweet foosball.views.stats)
-  (:use [midje.util :only [testable-privates]]))
-
-(testable-privates foosball.views.stats determine-winner calculate-player-stats calculate-team-stats)
+  (:use midje.sweet foosball.statistics.core foosball.statistics.ratings foosball.statistics.team-player))
 
 (facts "about determining winners"
        (let [winning-team     {:score 10 :player1 ...wp1... :player2 ...wp2...}
@@ -20,21 +17,22 @@
                                                                   :score-delta [[expected-winners 9]
                                                                                 [expected-losers -9]]})))
 
-(facts "an example for determining statistics"
-       (let [matches
-             [{:id 17592186045430, :matchdate #inst "2013-04-13T22:00:00.000-00:00",
-               :team1 {:score 10, :player2 "Lisse", :player1 "Thomas", :id 17592186045428},
-               :team2 {:score 8, :player2 "Maria", :player1 "Anders", :id 17592186045429}}
-              {:id 17592186045442, :matchdate #inst "2013-04-13T22:00:00.000-00:00",
-               :team1 {:score 10, :player2 "Thomas", :player1 "Maria", :id 17592186045440},
-               :team2 {:score 2, :player2 "Lisse", :player1 "Anders", :id 17592186045441}}
-              {:id 17592186045438, :matchdate #inst "2013-04-13T22:00:00.000-00:00",
-               :team1 {:score 10, :player2 "Knud Erik", :player1 "Lisse", :id 17592186045436},
-               :team2 {:score 7, :player2 "Thomas", :player1 "Anders", :id 17592186045437}}
-              {:id 17592186045446, :matchdate #inst "2013-04-13T22:00:00.000-00:00",
-               :team1 {:score 10, :player2 "Anders", :player1 "Knud Erik", :id 17592186045444},
-               :team2 {:score 6, :player2 "Lisse", :player1 "Maria", :id 17592186045445}}]
-             players-expected
+(def example-matches
+  [{:id 17592186045430, :matchdate #inst "2013-04-13T22:00:00.000-00:00",
+    :team1 {:score 10, :player2 "Lisse", :player1 "Thomas", :id 17592186045428},
+    :team2 {:score 8, :player2 "Maria", :player1 "Anders", :id 17592186045429}}
+   {:id 17592186045442, :matchdate #inst "2013-04-12T22:00:00.000-00:00",
+    :team1 {:score 10, :player2 "Thomas", :player1 "Maria", :id 17592186045440},
+    :team2 {:score 2, :player2 "Lisse", :player1 "Anders", :id 17592186045441}}
+   {:id 17592186045438, :matchdate #inst "2013-04-11T22:00:00.000-00:00",
+    :team1 {:score 10, :player2 "Knud Erik", :player1 "Lisse", :id 17592186045436},
+    :team2 {:score 7, :player2 "Thomas", :player1 "Anders", :id 17592186045437}}
+   {:id 17592186045446, :matchdate #inst "2013-04-15T22:00:00.000-00:00",
+    :team1 {:score 10, :player2 "Anders", :player1 "Knud Erik", :id 17592186045444},
+    :team2 {:score 6, :player2 "Lisse", :player1 "Maria", :id 17592186045445}}])
+
+(facts "about statistics when applied to example matches"
+       (let [players-expected
              [{:player "Thomas",   :wins 2, :losses 1, :total 3, :win-perc 200/3, :loss-perc 100/3 :score-delta  7}
               {:player "Lisse",    :wins 2, :losses 2, :total 4, :win-perc 50N,   :loss-perc 50N   :score-delta -7}
               {:player "Anders",   :wins 1, :losses 3, :total 4, :win-perc 25N,   :loss-perc 75N   :score-delta -9}
@@ -49,7 +47,15 @@
               {:team #{"Lisse" "Anders"},    :wins 0, :losses 1, :total 1, :win-perc 0,   :loss-perc 100 :score-delta -8}
               {:team #{"Thomas" "Maria"},    :wins 1, :losses 0, :total 1, :win-perc 100, :loss-perc 0   :score-delta  8}
               {:team #{"Lisse" "Maria"},     :wins 0, :losses 1, :total 1, :win-perc 0,   :loss-perc 100 :score-delta -4}]]
-         (fact "about player statistics"
-               (calculate-player-stats matches) => players-expected)
-         (fact "about team statistics"
-               (calculate-team-stats matches) => teams-expected)))
+         (fact "it should calculate player statistics as expected"
+               (calculate-player-stats example-matches) => players-expected)
+         (fact "it should calculate team statistics as expected"
+               (calculate-team-stats example-matches) => teams-expected)))
+
+(facts "about ratings when applied to example matches"
+       (fact "it should calculate as expected"
+             (recalculate-ratings example-matches) => {"Knud Erik" 1562.1461949826285,
+                                                       "Maria"     1462.7240210480477,
+                                                       "Anders"    1452.1107022471238,
+                                                       "Lisse"     1489.7470455796167,
+                                                       "Thomas"    1533.2720361425836}))
