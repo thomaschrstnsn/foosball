@@ -1,10 +1,13 @@
 (ns foosball.test.elo
   (:use midje.sweet foosball.statistics.elo))
 
+(def ^:private wikipedia-ratings-increase-value (double 400))
+
 (tabular "about expected-score"
          (fact "it should match the wikipedia example"
-               (expected-score 1613 ?opponent-rating) => (just (roughly ?expected-score-a 0.00049)
-                                                               anything))
+               (expected-score 1613 ?opponent-rating :increase-rating-points wikipedia-ratings-increase-value)
+               => (just (roughly ?expected-score-a 0.00049)
+                        anything))
          ?opponent-rating ?expected-score-a
          1609             0.506
          1477             0.686

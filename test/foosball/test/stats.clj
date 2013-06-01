@@ -18,18 +18,18 @@
                                                                                 [expected-losers -9]]})))
 
 (def example-matches
-  [{:id 17592186045430, :matchdate #inst "2013-04-13T22:00:00.000-00:00",
-    :team1 {:score 10, :player2 "Lisse", :player1 "Thomas", :id 17592186045428},
-    :team2 {:score 8, :player2 "Maria", :player1 "Anders", :id 17592186045429}}
-   {:id 17592186045442, :matchdate #inst "2013-04-12T22:00:00.000-00:00",
-    :team1 {:score 10, :player2 "Thomas", :player1 "Maria", :id 17592186045440},
-    :team2 {:score 2, :player2 "Lisse", :player1 "Anders", :id 17592186045441}}
-   {:id 17592186045438, :matchdate #inst "2013-04-11T22:00:00.000-00:00",
-    :team1 {:score 10, :player2 "Knud Erik", :player1 "Lisse", :id 17592186045436},
-    :team2 {:score 7, :player2 "Thomas", :player1 "Anders", :id 17592186045437}}
-   {:id 17592186045446, :matchdate #inst "2013-04-15T22:00:00.000-00:00",
-    :team1 {:score 10, :player2 "Anders", :player1 "Knud Erik", :id 17592186045444},
-    :team2 {:score 6, :player2 "Lisse", :player1 "Maria", :id 17592186045445}}])
+  [{:id 111, :matchdate #inst "2013-04-13T22:00:00.000-00:00",
+    :team1 {:score 10, :player2 "Lisse", :player1 "Thomas", :id 1111},
+    :team2 {:score 8, :player2 "Maria", :player1 "Anders", :id 2222}}
+   {:id 222, :matchdate #inst "2013-04-12T22:00:00.000-00:00",
+    :team1 {:score 10, :player2 "Thomas", :player1 "Maria", :id 3333},
+    :team2 {:score 2, :player2 "Lisse", :player1 "Anders", :id 4444}}
+   {:id 333, :matchdate #inst "2013-04-11T22:00:00.000-00:00",
+    :team1 {:score 10, :player2 "Knud Erik", :player1 "Lisse", :id 5555},
+    :team2 {:score 7, :player2 "Thomas", :player1 "Anders", :id 6666}}
+   {:id 444, :matchdate #inst "2013-04-15T22:00:00.000-00:00",
+    :team1 {:score 10, :player2 "Anders", :player1 "Knud Erik", :id 7777},
+    :team2 {:score 6, :player2 "Lisse", :player1 "Maria", :id 8888}}])
 
 (facts "about statistics when applied to example matches"
        (let [players-expected
@@ -54,8 +54,8 @@
 
 (facts "about ratings when applied to example matches"
        (fact "it should calculate as expected"
-             (recalculate-ratings example-matches) => {"Knud Erik" 1562.1461949826285,
-                                                       "Maria"     1462.7240210480477,
-                                                       "Anders"    1452.1107022471238,
-                                                       "Lisse"     1489.7470455796167,
-                                                       "Thomas"    1533.2720361425836}))
+             (calculate-ratings example-matches) => {"Anders"    1471.4228435342122,
+                                                     "Knud Erik" 1531.6733612916798,
+                                                     "Lisse"     1497.7516300971445,
+                                                     "Maria"     1482.8648524571677,
+                                                     "Thomas"    1516.278225286596}))

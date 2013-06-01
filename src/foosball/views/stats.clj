@@ -64,7 +64,7 @@
                             (sortable-column "Rating" :rating))
      [:tbody
       (let [stats             (calculate-player-stats matches)
-            ratings           (recalculate-ratings matches)
+            ratings           (calculate-ratings matches)
             stats-and-ratings (map (fn [{:keys [player] :as stat}]
                                      (merge stat {:rating (ratings player)}))
                                    stats)]
