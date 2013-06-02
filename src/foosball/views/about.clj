@@ -41,6 +41,7 @@
 
 (defn page []
   (html5
+   [:p.lead "Copyright &copy; 2013 " [:a {:href "mailto:thomas+foos@chrstnsn.dk"} "Thomas Christensen"]]
    [:table.table.table-hover.table-bordered.span4 [:caption [:h1 "Built using"]]
     [:thead
      [:tr

@@ -9,22 +9,18 @@
   [:div.navbar
    [:div.navbar-inner
     [:a.brand {:href "/"} "Foosball"]
-    [:ul.nav
+    [:ul.nav.pull-left
      [:li (link-to "/report/match"  "Report Match Result")]
      [:li (link-to "/matches"       "Played Matches")]
      [:li (link-to "/stats/players" "Player Statistics")]
      [:li (link-to "/stats/teams"   "Team Statistics")]
      [:li.divider-vertical]
-     [:li (link-to "/about"         "About")]]]])
+     [:li (link-to "/about"         "About")]]
+    [:ul.nav.pull-right
+     [:li [:small (str "Version " (:version project))]]]]])
 
 (defn footer []
-  [:footer
-   [:script "$(document).ready(foosball.main.page_loaded)"]
-   [:div.row-fluid
-    [:div.span4.offset4.text-center
-     "Copyright &copy; " [:a {:href "mailto:thomas+foos@chrstnsn.dk"} "Thomas Christensen"]]
-    [:div.span4.text-right
-     [:small (str "Version " (:version project))]]]])
+  [:script "$(document).ready(foosball.main.page_loaded)"])
 
 (defhtml base [& content]
   (html5
@@ -33,8 +29,7 @@
      [:link {:rel "icon" :type "image/x-icon" :href "/favicon.ico"}]
      (include-css
        "/css/bootstrap.min.css"
-       "/css/bootstrap-responsive.min.css"
-       "/css/screen.css")
+       "/css/bootstrap-responsive.min.css")
      (include-js
        "//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"
        "/js/bootstrap.min.js"
