@@ -17,7 +17,7 @@
      [:li.divider-vertical]
      [:li (link-to "/about"         "About")]]
     [:ul.nav.pull-right
-     [:li [:small (str "Version " (:version project))]]]]])
+     [:li (link-to "#" (str "Version " (:version project)))]]]])
 
 (defn footer []
   [:script "$(document).ready(foosball.main.page_loaded)"])
