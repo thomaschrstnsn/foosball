@@ -8,7 +8,7 @@
 (defn header []
   [:div.navbar
    [:div.navbar-inner
-    [:a.brand {:href "#"} "Foosball"]
+    [:a.brand {:href "/"} "Foosball"]
     [:ul.nav
      [:li (link-to "/report/match"  "Report Match Result")]
      [:li (link-to "/matches"       "Played Matches")]
