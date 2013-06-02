@@ -1,5 +1,5 @@
 (ns foosball.handler
-  (:use foosball.routes.home compojure.core)
+  (:use foosball.routes.home foosball.routes.report foosball.routes.admin foosball.routes.stats compojure.core)
   (:use [taoensso.timbre :only [trace debug info warn error fatal spy]])
   (:require [noir.util.middleware :as middleware]
             [compojure.route :as route]
@@ -25,8 +25,11 @@
   []
   (info "shutting down..."))
 
-;;append your application routes to the all-routes vector
-(def all-routes [home-routes app-routes])
+(def all-routes [home-routes
+                 report-routes
+                 stats-routes
+                 admin-routes
+                 app-routes])
 
 (def app (-> all-routes
              middleware/app-handler
