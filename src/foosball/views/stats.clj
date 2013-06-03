@@ -5,16 +5,24 @@
   (:use [foosball.util])
   (:require [clojure.string :as string]))
 
+(defn- format-match-percentage [p wins?]
+  (format-value p
+                :printer format-percentage
+                :class? #(not= (double 50) (double %))
+                :checker (if wins?
+                           (partial < 50)
+                           (partial > 50))))
+
 (defn- render-player [players p]
   [:tr
    [:td (->> p :player (get-player-by-name players) link-to-player-log)]
    [:td (:wins p)]
    [:td (:losses p)]
    [:td (:total p)]
-   [:td (format-percentage (:win-perc p))]
-   [:td (format-percentage (:loss-perc p))]
-   [:td (:score-delta p)]
-   [:td (format-rating (:rating p))]])
+   [:td (format-match-percentage (:win-perc p)  true)]
+   [:td (format-match-percentage (:loss-perc p) false)]
+   [:td (format-value (:score-delta p))]
+   [:td (format-value (:rating p) :printer format-rating :class? nil :checker (partial < 1500))]])
 
 (defn- render-team [players t]
   [:tr
@@ -24,9 +32,9 @@
    [:td (:wins t)]
    [:td (:losses t)]
    [:td (:total t)]
-   [:td (format-percentage (:win-perc t))]
-   [:td (format-percentage (:loss-perc t))]
-   [:td (:score-delta t)]])
+   [:td (format-match-percentage (:win-perc  t) true)]
+   [:td (format-match-percentage (:loss-perc t) false)]
+   [:td (format-value (:score-delta t))]])
 
 (defn- order-by [order seq]
   (if (= order :desc)

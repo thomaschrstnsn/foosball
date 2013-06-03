@@ -4,7 +4,7 @@
          [hiccup.def :only [defhtml]]
          [hiccup.element :only [link-to]]
          [hiccup.page :only [html5 include-js include-css]]
-         [foosball.util :only [format-datetime parse-time parse-id link-to-player-log get-player-by-name]]))
+         [foosball.util]))
 
 (defn- validation-error? [validation-errors typekw kw]
   (->> validation-errors
@@ -81,10 +81,10 @@
      [:td (format-datetime matchdate)]
      [:td (render-player t1p1 players)]
      [:td (render-player t1p2 players)]
-     [:td t1score]
+     [:td (format-score t1score)]
      [:td (render-player t2p1 players)]
      [:td (render-player t2p2 players)]
-     [:td t2score]
+     [:td (format-score t2score)]
      (when admin [:td [:button.btn.btn-danger {:type "submit" :name "matchid" :value id} "Remove!"]])]))
 
 (defn match-table-data [matches players & {:keys [admin] :or {admin false}}]

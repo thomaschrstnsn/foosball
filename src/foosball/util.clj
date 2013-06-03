@@ -33,9 +33,19 @@
 (defn format-rating [r]
   (format "%.1f" (double r)))
 
-(defn md->html
-  "reads a markdown file from public/md and returns an HTML string"
-  [filename]
-  (->>
-    (io/slurp-resource filename)
-    (md/md-to-html-string)))
+(defn format-value
+  "Formats a value with text-success and text-error classes, based on optional checker.
+   Defaults to pos? such that positive numbers are text-success and negative are text-error.
+   Values failing the optional class? predicate are not given a class.
+   Default 0 is not given a class. With class? nil everthing is given a class
+   Optional argument printer is used to format value to string, defaults to str"
+  [d & {:keys [checker class? printer] :or {checker pos?
+                                            class?  (partial not= 0)
+                                            printer str}}]
+  [:div
+   (when (or (nil? class?) (class? d))
+     {:class (if (checker d) "text-success" "text-error")})
+   (printer d)])
+
+(defn format-score [s]
+  (format-value s :checker (partial < 9) :class? nil))
