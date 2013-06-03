@@ -46,3 +46,11 @@
 
 (defn calculate-ratings [matches]
   (:ratings (ratings-with-log matches)))
+
+(defn calculate-current-form-for-player [logs number-of-matches player]
+  (->> logs
+       (filter (fn [l] (= (:player l) player)))
+       reverse
+       (take number-of-matches)
+       reverse
+       (map :win?)))

@@ -39,10 +39,11 @@
    Values failing the optional class? predicate are not given a class.
    Default 0 is not given a class. With class? nil everthing is given a class
    Optional argument printer is used to format value to string, defaults to str"
-  [d & {:keys [checker class? printer] :or {checker pos?
-                                            class?  (partial not= 0)
-                                            printer str}}]
-  [:div
+  [d & {:keys [checker class? printer container-tag] :or {checker pos?
+                                                          class?  (partial not= 0)
+                                                          printer str
+                                                          container-tag :div}}]
+  [container-tag
    (when (or (nil? class?) (class? d))
      {:class (if (checker d) "text-success" "text-error")})
    (printer d)])

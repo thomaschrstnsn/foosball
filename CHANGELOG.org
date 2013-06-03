@@ -13,9 +13,11 @@
 ** v0.8.5 [1/1]
 *** DONE ELO Rating system
     CLOSED: [2013-05-20 Mon 22:31]
-** v0.9.0 [1/1]
+** v0.9.0 [5/5]
 *** DONE Tweak ratings algorithm
 *** DONE Add player log page (played matches and ratings changes)
 *** DONE Remove footer (add info to navbar/about-page)
 *** DONE Link to player log page in each table where players are mentioned
 *** DONE Pretty print tables with colors of the rainbow!!!
+** v0.9.1 [1/1]
+*** DONE Implement player form (W/L) for latest five matches

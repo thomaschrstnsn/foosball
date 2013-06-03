@@ -22,6 +22,7 @@
    [:td (format-match-percentage (:win-perc p)  true)]
    [:td (format-match-percentage (:loss-perc p) false)]
    [:td (format-value (:score-delta p))]
+   [:td (map #(format-value % :printer {true "W" false "L"} :class? nil :checker true? :container-tag :span) (:form p))]
    [:td (format-value (:rating p) :printer format-rating :class? nil :checker (partial < 1500))]])
 
 (defn- render-team [players t]
@@ -50,7 +51,7 @@
       [:a {:href desc} [:i.icon-chevron-up]]
       [:a {:href asc}  [:i.icon-chevron-down]]]]))
 
-(defn- common-columns [first-column & last-column]
+(defn- common-columns [first-column & last-columns]
   [:tr
    first-column
    (sortable-column "Wins" :wins)
@@ -59,19 +60,24 @@
    (sortable-column "Wins %" :win-perc)
    (sortable-column "Losses %" :loss-perc)
    (sortable-column "Score diff." :score-delta)
-   last-column])
+   last-columns])
 
 (defn player-table [matches players & {:keys [sort order] :or {sort :wins order :desc}}]
   (html5
    [:table.table.table-hover.table-bordered
     [:caption [:h1 "Player Statistics"]]
     [:thead (common-columns (sortable-column "Player" :player)
+                            [:th "Form"]
                             (sortable-column "Rating" :rating))
      [:tbody
       (let [stats             (calculate-player-stats matches)
-            ratings           (calculate-ratings matches)
+            log-and-ratings   (ratings-with-log matches)
+            ratings           (:ratings log-and-ratings)
+            logs              (:logs log-and-ratings)
             stats-and-ratings (map (fn [{:keys [player] :as stat}]
-                                     (merge stat {:rating (ratings player)}))
+                                     (merge stat
+                                            {:rating (ratings player)}
+                                            {:form   (calculate-current-form-for-player logs 5 player)}))
                                    stats)]
         (->> stats-and-ratings
              (sort-by (if (nil? sort) :rating sort))
