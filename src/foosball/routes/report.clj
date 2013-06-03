@@ -22,7 +22,7 @@
       (layout/common (match/form (db/get-players) validated-report)))))
 
 (defn matches-page []
-  (layout/common (match/table (db/get-matches))))
+  (layout/common (match/table (db/get-matches) (db/get-players))))
 
 (defroutes report-routes
   (GET "/" [] (redirect "/report/match"))

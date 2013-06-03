@@ -11,7 +11,7 @@
   (layout/common (stats/player-table (db/get-matches) (db/get-players) :sort (keyword sort) :order (keyword order))))
 
 (defn stats-teams [sort order]
-  (layout/common (stats/team-table (db/get-matches) :sort (keyword sort) :order (keyword order))))
+  (layout/common (stats/team-table (db/get-matches) (db/get-players) :sort (keyword sort) :order (keyword order))))
 
 (defn log-for-player [playerid]
   (layout/common (player-log/player-log-page (db/get-matches) (db/get-players) playerid)))

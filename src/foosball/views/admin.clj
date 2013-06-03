@@ -24,4 +24,4 @@
      [:button.btn.btn-danger {:type "submit" :value "delete"} "Remove!"]]]
 
    [:form {:action "/admin/match/remove" :method "POST"}
-    (match-table-data matches :admin true)]))
+    (match-table-data matches players :admin true)]))

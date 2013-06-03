@@ -1,6 +1,13 @@
 (ns foosball.util
+  (:use [hiccup.element :only [link-to]])
   (:require [noir.io :as io]
             [markdown.core :as md]))
+
+(defn link-to-player-log [{:keys [id name]}]
+  (link-to (str "/player/log?playerid=" id) name))
+
+(defn get-player-by-name [players name]
+  (->> players (filter (fn [p] (= name (:name p)))) first))
 
 (def ^:private time-format "yyyy-MM-dd")
 

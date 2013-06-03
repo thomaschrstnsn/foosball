@@ -4,7 +4,7 @@
          [hiccup.def :only [defhtml]]
          [hiccup.element :only [link-to]]
          [hiccup.page :only [html5 include-js include-css]]
-         [foosball.util :only [format-datetime parse-time parse-id]]))
+         [foosball.util :only [format-datetime parse-time parse-id link-to-player-log get-player-by-name]]))
 
 (defn- validation-error? [validation-errors typekw kw]
   (->> validation-errors
@@ -69,25 +69,25 @@
      [:div.control-group.span4
       [:button.btn.btn-primary.btn-large.btn-block.span4 {:type "submit" :value "Report"} "Report Match Result " [:i.icon-ok.icon-white]]]]]))
 
-(defn- render-player [playername]
+(defn- render-player [playername players]
   (if playername
-    [:p playername]
+    [:p (->> playername (get-player-by-name players) link-to-player-log)]
     [:p.text-error "Deleted"]))
 
-(defn- render-match [{:keys [matchdate team1 team2 id]} & {:keys [admin] :or {admin false}}]
+(defn- render-match [{:keys [matchdate team1 team2 id]} players & {:keys [admin] :or {admin false}}]
   (let [[t1p1 t1p2 t1score] (map team1 [:player1 :player2 :score])
         [t2p1 t2p2 t2score] (map team2 [:player1 :player2 :score])]
     [:tr
      [:td (format-datetime matchdate)]
-     [:td (render-player t1p1)]
-     [:td (render-player t1p2)]
+     [:td (render-player t1p1 players)]
+     [:td (render-player t1p2 players)]
      [:td t1score]
-     [:td (render-player t2p1)]
-     [:td (render-player t2p2)]
+     [:td (render-player t2p1 players)]
+     [:td (render-player t2p2 players)]
      [:td t2score]
      (when admin [:td [:button.btn.btn-danger {:type "submit" :name "matchid" :value id} "Remove!"]])]))
 
-(defn match-table-data [matches & {:keys [admin] :or {admin false}}]
+(defn match-table-data [matches players & {:keys [admin] :or {admin false}}]
   [:table.table.table-hover.table-bordered [:caption [:h1 "Played Matches"]]
     [:thead
      [:tr
@@ -108,10 +108,10 @@
      (->> matches
           (sort-by :matchdate)
           reverse
-          (map (fn [match] (render-match match :admin admin))))]])
+          (map (fn [match] (render-match match players :admin admin))))]])
 
-(defn table [matches]
-  (html5 (match-table-data matches)))
+(defn table [matches players]
+  (html5 (match-table-data matches players)))
 
 (defn parse-form [p]
   {:matchdate       (-> p :matchdate parse-time)

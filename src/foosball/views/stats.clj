@@ -1,14 +1,13 @@
 (ns foosball.views.stats
   (:use [hiccup.page :only [html5]])
-  (:use [hiccup.element :only [link-to]])
   (:use [taoensso.timbre :only [trace debug info warn error fatal spy]])
   (:use [foosball.statistics team-player ratings])
   (:use [foosball.util])
   (:require [clojure.string :as string]))
 
-(defn- render-player [p]
+(defn- render-player [players p]
   [:tr
-   [:td (link-to (str "/player/log?playerid=" (:playerid p)) (:player p))]
+   [:td (->> p :player (get-player-by-name players) link-to-player-log)]
    [:td (:wins p)]
    [:td (:losses p)]
    [:td (:total p)]
@@ -17,9 +16,11 @@
    [:td (:score-delta p)]
    [:td (format-rating (:rating p))]])
 
-(defn- render-team [t]
+(defn- render-team [players t]
   [:tr
-   [:td (string/join ", " (:team t))]
+   [:td (->> (:team t)
+             (map #(->> % (get-player-by-name players) link-to-player-log))
+             (interpose ", "))]
    [:td (:wins t)]
    [:td (:losses t)]
    [:td (:total t)]
@@ -62,16 +63,14 @@
       (let [stats             (calculate-player-stats matches)
             ratings           (calculate-ratings matches)
             stats-and-ratings (map (fn [{:keys [player] :as stat}]
-                                     (merge stat
-                                            {:rating   (ratings player)}
-                                            {:playerid (->> players (filter (fn [p] (= player (:name p)))) first :id)}))
+                                     (merge stat {:rating (ratings player)}))
                                    stats)]
         (->> stats-and-ratings
              (sort-by (if (nil? sort) :rating sort))
              (order-by (if (nil? order) :desc order))
-             (map render-player)))]]]))
+             (map (partial render-player players))))]]]))
 
-(defn team-table [matches & {:keys [sort order] :or {sort :wins order :desc}}]
+(defn team-table [matches players & {:keys [sort order] :or {sort :wins order :desc}}]
   (html5
    [:table.table.table-hover.table-bordered
     [:caption [:h1 "Team Statistics"]]
@@ -81,4 +80,4 @@
           calculate-team-stats
           (sort-by (if (nil? sort) :wins sort))
           (order-by (if (nil? order) :desc order))
-          (map render-team))]]]))
+          (map (partial render-team players)))]]]))

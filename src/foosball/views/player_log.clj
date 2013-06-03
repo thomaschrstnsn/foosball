@@ -14,17 +14,19 @@
                                (when (= id selected) {:selected "selected"}))
                 name])))])
 
-(defn- render-log [l]
+(defn- render-log [players l]
   [:tr
    [:td (format-datetime (:matchdate l))]
-   [:td (:team-mate l)]
-   [:td (string/join ", " (:opponents l))]
+   [:td (->> (:team-mate l) (get-player-by-name players) link-to-player-log)]
+   [:td (->> (:opponents l)
+             (map #(->> % (get-player-by-name players) link-to-player-log))
+             (interpose ", "))]
    [:td (format-percentage (* 100 (:expected l)))]
    [:td {:class (if (:win? l) "text-success" "text-error")} (if (:win? l) "Won" "Lost")]
    [:td (format-rating (:delta l))]
    [:td (format-rating (:new-rating l))]])
 
-(defn player-table [matches player]
+(defn player-table [matches players player]
   [:table.table.table-hover.table-bordered
    [:caption [:h2 (str "Played Matches: " player) ]]
    [:thead [:tr
@@ -41,15 +43,15 @@
           :logs
           (filter (fn [l] (= player (:player l))))
           reverse
-          (map render-log))]]])
+          (map (partial render-log players)))]]])
 
 (defn player-log-page [matches players selected-playerid]
   (let [playerid (parse-id selected-playerid)
         player   (->> players (filter (fn [p] (= (:id p) playerid))) first)]
     (html5
      [:h1 (str "Player Log")]
-     [:form {:action "/rating/player" :method "GET"}
+     [:form {:action "/player/log" :method "GET"}
       [:div.input-append
        (players-select "playerid" players playerid)
        [:button.btn {:type "submit" :value "select"} "Select"]]]
-     (when player (player-table matches (:name player))))))
+     (when player (player-table matches players (:name player))))))
