@@ -3,7 +3,6 @@
         [hiccup.def :only [defhtml]]
         [hiccup.element :only [link-to]]
         [hiccup.page :only [html5 include-js include-css]]
-        [foosball.util :only [format-time]]
         [cfg.current :only [project]]
         [taoensso.timbre :only [trace debug info warn error fatal spy]]))
 

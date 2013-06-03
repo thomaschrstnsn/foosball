@@ -1,18 +1,14 @@
 (ns foosball.views.stats
   (:use [hiccup.page :only [html5]])
+  (:use [hiccup.element :only [link-to]])
   (:use [taoensso.timbre :only [trace debug info warn error fatal spy]])
   (:use [foosball.statistics team-player ratings])
+  (:use [foosball.util])
   (:require [clojure.string :as string]))
-
-(defn- format-percentage [p]
-  (format "%.1f%%" (double p)))
-
-(defn- format-rating [r]
-  (format "%.1f" (double r)))
 
 (defn- render-player [p]
   [:tr
-   [:td (:player p)]
+   [:td (link-to (str "/player/log?playerid=" (:playerid p)) (:player p))]
    [:td (:wins p)]
    [:td (:losses p)]
    [:td (:total p)]
@@ -56,7 +52,7 @@
    (sortable-column "Score diff." :score-delta)
    last-column])
 
-(defn player-table [matches & {:keys [sort order] :or {sort :wins order :desc}}]
+(defn player-table [matches players & {:keys [sort order] :or {sort :wins order :desc}}]
   (html5
    [:table.table.table-hover.table-bordered
     [:caption [:h1 "Player Statistics"]]
@@ -66,7 +62,9 @@
       (let [stats             (calculate-player-stats matches)
             ratings           (calculate-ratings matches)
             stats-and-ratings (map (fn [{:keys [player] :as stat}]
-                                     (merge stat {:rating (ratings player)}))
+                                     (merge stat
+                                            {:rating   (ratings player)}
+                                            {:playerid (->> players (filter (fn [p] (= player (:name p)))) first :id)}))
                                    stats)]
         (->> stats-and-ratings
              (sort-by (if (nil? sort) :rating sort))

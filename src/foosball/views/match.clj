@@ -4,7 +4,7 @@
          [hiccup.def :only [defhtml]]
          [hiccup.element :only [link-to]]
          [hiccup.page :only [html5 include-js include-css]]
-         [foosball.util :only [format-time parse-time parse-id]]))
+         [foosball.util :only [format-datetime parse-time parse-id]]))
 
 (defn- validation-error? [validation-errors typekw kw]
   (->> validation-errors
@@ -64,7 +64,7 @@
       [:div.control-group
        [:label.control-label {:for "matchdate"} "Date played"]
        [:div.controls [:input.span2 {:id "matchdate" :name "matchdate"
-                                           :type "date" :value (format-time matchdate)}]]]]]
+                                           :type "date" :value (format-datetime matchdate)}]]]]]
     [:div.row
      [:div.control-group.span4
       [:button.btn.btn-primary.btn-large.btn-block.span4 {:type "submit" :value "Report"} "Report Match Result " [:i.icon-ok.icon-white]]]]]))
@@ -78,7 +78,7 @@
   (let [[t1p1 t1p2 t1score] (map team1 [:player1 :player2 :score])
         [t2p1 t2p2 t2score] (map team2 [:player1 :player2 :score])]
     [:tr
-     [:td (format-time matchdate)]
+     [:td (format-datetime matchdate)]
      [:td (render-player t1p1)]
      [:td (render-player t1p2)]
      [:td t1score]

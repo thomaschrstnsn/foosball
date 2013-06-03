@@ -8,21 +8,25 @@
         rb2 (->> opponents (map ratings) (reduce + 0))]
     (->> (expected-score ra (/ rb2 2)) first)))
 
-(defn- updated-rating-for-player [ratings player opponents actual]
-  (updated-rating (ratings player) actual (expected-sum-for-player ratings player opponents)))
+(defn- updated-rating-for-player [ratings player actual expected]
+  (updated-rating (ratings player) actual expected))
 
 (defn- updated-rating-and-log-for-player-in-match [ratings match winners losers player]
   (let [winner?     (player-is-winner? player  match)
         team        (if winner?        winners losers)
         opponents   (if winner?        losers  winners)
         actual      (if winner?        1.0     0.0)
-        new-rating  (updated-rating-for-player ratings player opponents actual)
+        expected    (expected-sum-for-player ratings player opponents)
+        new-rating  (updated-rating-for-player ratings player actual expected)
         team-mate   (->> (difference team #{player}) first)]
     {:rating {player new-rating}
-     :log    {:player player
-              :team-mate team-mate :opponents opponents
-              :win? winner?
-              :delta (- new-rating (ratings player))
+     :log    {:player     player
+              :matchdate  (:matchdate match)
+              :team-mate  team-mate
+              :opponents  opponents
+              :expected   expected
+              :win?       winner?
+              :delta      (- new-rating (ratings player))
               :new-rating new-rating}}))
 
 (defn update-ratings-from-match [{:keys [ratings logs]}

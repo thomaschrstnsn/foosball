@@ -4,12 +4,11 @@
 
 (def ^:private time-format "yyyy-MM-dd")
 
-(defn format-time
-  "formats the time using SimpleDateFormat, the default format is
+(defn format-datetime
+  "formats the datetime using SimpleDateFormat, the default format is
    \"dd-MM-yyyy\" and a custom one can be passed in as the second argument"
-  ([time] (format-time time time-format))
-  ([time fmt]
-    (.format (new java.text.SimpleDateFormat fmt) time)))
+  ([datetime]     (format-datetime datetime time-format))
+  ([datetime fmt] (.format (new java.text.SimpleDateFormat fmt) datetime)))
 
 (defn parse-time
   ([s] (parse-time s time-format))
@@ -20,6 +19,12 @@
   (try
     (. Long parseLong s)
     (catch Exception e nil)))
+
+(defn format-percentage [p]
+  (format "%.1f%%" (double p)))
+
+(defn format-rating [r]
+  (format "%.1f" (double r)))
 
 (defn md->html
   "reads a markdown file from public/md and returns an HTML string"
