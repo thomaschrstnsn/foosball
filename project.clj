@@ -19,7 +19,7 @@
 
   :lein-release {:deploy-via :shell
                  :build-via  :lein-ring-uberwar
-                 :shell ["echo" "releasing..."]}
+                 :shell ["scp" :build-artifact "webber:/var/lib/tomcat7/webapps/ROOT.war"]}
 
   :cljsbuild {:builds {
                        ;; :prod
