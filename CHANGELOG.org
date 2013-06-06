@@ -21,3 +21,6 @@
 *** DONE Pretty print tables with colors of the rainbow!!!
 ** v0.9.1 [1/1]
 *** DONE Implement player form (W/L) for latest five matches
+** v0.9.2 [1/1]
+*** DONE autorefresh pages (javascript?)
+    CLOSED: [2013-06-06 Thu 21:13]
