@@ -50,3 +50,6 @@
 
 (defn format-score [s]
   (format-value s :checker (partial < 9) :class? nil))
+
+(defn auto-refresh-page []
+  [:script "foosball.main.page_autorefresh(90)"])

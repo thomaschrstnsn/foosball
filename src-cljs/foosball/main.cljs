@@ -27,3 +27,7 @@
 (defn ^:export page-loaded []
   ;(repl/connect "http://localhost:9000/repl")
   (set-active-navbar-element!))
+
+(defn ^:export page-autorefresh [seconds]
+  (js/setTimeout #(.reload js/location)
+                 (* seconds 1000)))

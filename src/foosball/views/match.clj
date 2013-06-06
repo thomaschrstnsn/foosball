@@ -67,7 +67,8 @@
                                            :type "date" :value (format-datetime matchdate)}]]]]]
     [:div.row
      [:div.control-group.span4
-      [:button.btn.btn-primary.btn-large.btn-block.span4 {:type "submit" :value "Report"} "Report Match Result " [:i.icon-ok.icon-white]]]]]))
+      [:button.btn.btn-primary.btn-large.btn-block.span4
+       {:type "submit" :value "Report"} "Report Match Result " [:i.icon-ok.icon-white]]]]]))
 
 (defn- render-player [playername players]
   (if playername
@@ -111,7 +112,9 @@
           (map (fn [match] (render-match match players :admin admin))))]])
 
 (defn table [matches players]
-  (html5 (match-table-data matches players)))
+  (html5
+   (auto-refresh-page)
+   (match-table-data matches players)))
 
 (defn parse-form [p]
   {:matchdate       (-> p :matchdate parse-time)

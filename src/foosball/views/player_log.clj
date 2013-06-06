@@ -49,6 +49,7 @@
   (let [playerid (parse-id selected-playerid)
         player   (->> players (filter (fn [p] (= (:id p) playerid))) first)]
     (html5
+     (auto-refresh-page)
      [:h1 (str "Player Log")]
      [:form {:action "/player/log" :method "GET"}
       [:div.input-append
