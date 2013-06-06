@@ -18,6 +18,7 @@
   :configleaf {:verbose true}
 
   :lein-release {:deploy-via :shell
+                 :build-via  :lein-ring-uberwar
                  :shell ["echo" "releasing..."]}
 
   :cljsbuild {:builds {
