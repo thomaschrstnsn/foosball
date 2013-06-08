@@ -21,7 +21,7 @@
    [:td (->> (:opponents l)
              (map #(->> % (get-player-by-name players) link-to-player-log))
              (interpose ", "))]
-   [:td (format-value (* 100 (:expected l)) :printer format-percentage :class? (partial not= (double 50)) :checker (partial > 50))]
+   [:td (format-value (* 100 (:expected l)) :printer format-percentage :class? (partial not= (double 50)) :checker (partial < 50))]
    [:td (format-value (:win? l) :class? nil :printer {true "Won" false "Lost"} :checker true?)]
    [:td (format-value (:delta l) :printer format-rating)]
    [:td (format-value (:new-rating l) :printer format-rating :class? nil :checker (partial < 1500))]])
