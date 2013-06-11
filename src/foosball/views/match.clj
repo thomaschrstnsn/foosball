@@ -107,7 +107,6 @@
         [:th ""])]]
     [:tbody
      (->> matches
-          (sort-by :matchdate)
           reverse
           (map (fn [match] (render-match match players :admin admin))))]])
 

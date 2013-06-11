@@ -58,10 +58,10 @@
 
 (defn get-matches []
   (let [dbc (db conn)]
-    (->> (d/q '[:find ?m ?mt ?t1 ?t2
+    (->> (d/q '[:find ?m ?mt ?t1 ?t2 ?tx
                 :in $
                 :where
-                [?m :match/time  ?mt]
+                [?m :match/time  ?mt ?tx]
                 [?m :match/team1 ?t1]
                 [?m :match/team2 ?t2]
                 [?t1 :team/player1 _]
@@ -70,6 +70,8 @@
                 [?t2 :team/player1 _]
                 [?t2 :team/player2 _]
                 [?t2 :team/score   _]] dbc)
-         (map (fn [[mid mt t1 t2]] {:id mid :matchdate mt
-                                   :team1 (merge {:id t1} (get-team t1 dbc))
-                                   :team2 (merge {:id t2} (get-team t2 dbc))})))))
+         (map (fn [[mid mt t1 t2 tx]]
+                {:id mid :matchdate mt :tx tx
+                 :team1 (merge {:id t1} (get-team t1 dbc))
+                 :team2 (merge {:id t2} (get-team t2 dbc))}))
+         (sort-by (juxt :matchdate :tx)))))

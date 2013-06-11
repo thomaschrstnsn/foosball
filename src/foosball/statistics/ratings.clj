@@ -39,7 +39,7 @@
 (def ^:private initial-rating 1500)
 
 (defn ratings-with-log [matches]
-  (let [won-matches (->> matches (map determine-winner) (sort-by :matchdate))
+  (let [won-matches (map determine-winner matches)
         players     (players-from-matches won-matches)
         initial     (->> players (map (fn [p] {p initial-rating})) (apply merge))]
     (reduce update-ratings-from-match {:ratings initial :logs []} won-matches)))
