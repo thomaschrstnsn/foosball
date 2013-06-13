@@ -3,10 +3,10 @@
   (:use [clojure.set :only [difference]])
   (:use [taoensso.timbre :only [trace debug info warn error fatal spy]]))
 
-(defn- expected-sum-for-player [ratings player opponents]
-  (let [ra  (ratings player)
+(defn- expected-sum-for-player [ratings player team-mate opponents]
+  (let [ra  (->> [player team-mate] (map ratings) (reduce + 0))
         rb2 (->> opponents (map ratings) (reduce + 0))]
-    (->> (expected-score ra (/ rb2 2)) first)))
+    (->> (expected-score (/ ra 2) (/ rb2 2)) first)))
 
 (defn- updated-rating-for-player [ratings player actual expected]
   (updated-rating (ratings player) actual expected))
@@ -16,9 +16,9 @@
         team        (if winner?        winners losers)
         opponents   (if winner?        losers  winners)
         actual      (if winner?        1.0     0.0)
-        expected    (expected-sum-for-player ratings player opponents)
-        new-rating  (updated-rating-for-player ratings player actual expected)
-        team-mate   (->> (difference team #{player}) first)]
+        team-mate   (->> (difference team #{player}) first)
+        expected    (expected-sum-for-player ratings player team-mate opponents)
+        new-rating  (updated-rating-for-player ratings player actual expected)]
     {:rating {player new-rating}
      :log    {:player     player
               :matchdate  (:matchdate match)

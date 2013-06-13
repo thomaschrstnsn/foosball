@@ -54,8 +54,8 @@
 
 (facts "about ratings when applied to example matches"
        (fact "it should calculate as expected"
-             (calculate-ratings example-matches) => {"Anders"    1471.4228435342122,
-                                                     "Knud Erik" 1531.6733612916798,
-                                                     "Lisse"     1497.7516300971445,
-                                                     "Maria"     1482.8648524571677,
-                                                     "Thomas"    1516.278225286596}))
+             (calculate-ratings example-matches) => {"Anders" 1468.883293697148,
+                                                     "Knud Erik" 1532.883293697148,
+                                                     "Lisse" 1498.5273111823453,
+                                                     "Maria" 1483.7061014233586,
+                                                     "Thomas" 1516.0}))
