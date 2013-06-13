@@ -1,4 +1,4 @@
-(defproject foosball "0.9.5-SNAPSHOT"
+(defproject foosball "0.9.5"
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [com.datomic/datomic-free "0.8.3941"]
                  [lib-noir "0.5.2"]
