@@ -18,7 +18,7 @@
       (do
         (info {:validated-report validated-report})
         (db/create-match validated-report)
-        (redirect-after-post "/matches"))
+        (redirect-after-post "/stats/players"))
       (layout/common (match/form (db/get-players) validated-report)))))
 
 (defn matches-page []
