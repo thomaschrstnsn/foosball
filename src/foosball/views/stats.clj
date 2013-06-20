@@ -2,8 +2,7 @@
   (:use [hiccup.page :only [html5]])
   (:use [taoensso.timbre :only [trace debug info warn error fatal spy]])
   (:use [foosball.statistics team-player ratings])
-  (:use [foosball.util])
-  (:require [clojure.string :as string]))
+  (:use [foosball.util]))
 
 (defn- format-match-percentage [p wins?]
   (format-value p

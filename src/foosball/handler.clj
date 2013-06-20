@@ -1,5 +1,10 @@
 (ns foosball.handler
-  (:use foosball.routes.home foosball.routes.report foosball.routes.admin foosball.routes.stats compojure.core)
+  (:use foosball.routes.home
+        foosball.routes.report
+        foosball.routes.admin
+        foosball.routes.stats
+        foosball.routes.matchup
+        compojure.core)
   (:use [taoensso.timbre :only [trace debug info warn error fatal spy]])
   (:require [noir.util.middleware :as middleware]
             [compojure.route :as route]
@@ -28,6 +33,7 @@
 (def all-routes [home-routes
                  report-routes
                  stats-routes
+                 matchup-routes
                  admin-routes
                  app-routes])
 

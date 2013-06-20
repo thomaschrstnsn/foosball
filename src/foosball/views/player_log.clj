@@ -2,8 +2,7 @@
   (:use [hiccup.page :only [html5]])
   (:use [taoensso.timbre :only [trace debug info warn error fatal spy]])
   (:use [foosball.statistics team-player ratings])
-  (:use [foosball.util])
-  (:require [clojure.string :as string]))
+  (:use [foosball.util]))
 
 (defn- players-select [id players & [selected]]
   [:select.input-medium.submit-on-select {:id id :name id}

@@ -12,6 +12,7 @@
                                               com.sun.jdmk/jmxtools
                                               com.sun.jmx/jmxri]]
                  [hiccup "1.0.3"]
+                 [org.clojure/math.combinatorics "0.0.4"]
                  [midje "1.5.1"]]
 
   :hooks [configleaf.hooks]

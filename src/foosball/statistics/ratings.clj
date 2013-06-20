@@ -1,12 +1,21 @@
 (ns foosball.statistics.ratings
   (:use foosball.statistics.elo foosball.statistics.core)
   (:use [clojure.set :only [difference]])
-  (:use [taoensso.timbre :only [trace debug info warn error fatal spy]]))
+  (:use [taoensso.timbre :only [trace debug info warn error fatal spy]])
+  (:require [clojure.math.combinatorics :as combo]))
 
-(defn- expected-sum-for-player [ratings player team-mate opponents]
-  (let [ra  (->> [player team-mate] (map ratings) (reduce + 0))
-        rb2 (->> opponents (map ratings) (reduce + 0))]
-    (->> (expected-score (/ ra 2) (/ rb2 2)) first)))
+(defn- expected-sum-for-teams [ratings heroes opponents]
+  (let [rate-team (fn [players] (->> players
+                                    (map ratings)
+                                    (reduce + 0)
+                                    ((fn [r] (/ r 2)))))
+        rating-a    (rate-team heroes)
+        rating-b    (rate-team opponents)]
+    (expected-score rating-a rating-b)))
+
+(defn- expected-sum-for-player [ratings heroes opponents]
+  (->> (expected-sum-for-teams ratings heroes opponents)
+       first))
 
 (defn- updated-rating-for-player [ratings player actual expected]
   (updated-rating (ratings player) actual expected))
@@ -17,7 +26,7 @@
         opponents   (if winner?        losers  winners)
         actual      (if winner?        1.0     0.0)
         team-mate   (->> (difference team #{player}) first)
-        expected    (expected-sum-for-player ratings player team-mate opponents)
+        expected    (expected-sum-for-player ratings [player team-mate] opponents)
         new-rating  (updated-rating-for-player ratings player actual expected)]
     {:rating {player new-rating}
      :log    {:player     player
@@ -54,3 +63,30 @@
        (take number-of-matches)
        reverse
        (map :win?)))
+
+(defn teams-from-players [players]
+  (let [ps (set players)]
+    (->> (combo/combinations players 2)
+         (map set)
+         (map (fn [t1] (set [t1 (difference ps t1)]))))))
+
+(defn possible-matchups [players]
+  (->> (combo/combinations players 4)
+       (map teams-from-players)
+       (reduce concat)
+       set))
+
+(defn matchup-with-rating [ratings teams]
+  (let [[heroes opponents]            (vec teams)
+        [hero-rating opponent-rating] (expected-sum-for-teams ratings heroes opponents)]
+    {:t1-rating hero-rating     :t1-players heroes
+     :t2-rating opponent-rating :t2-players opponents}))
+
+(defn calculate-matchup [matches selected-players]
+  (let [current-ratings   (calculate-ratings matches)
+        player-names      (map :name selected-players)
+        possible-matchups (possible-matchups player-names)
+        result (map (partial matchup-with-rating current-ratings) possible-matchups)]
+    (info {:possible-matches (vec possible-matchups)})
+    (info {:result result})
+    result))
