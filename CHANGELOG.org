@@ -26,3 +26,10 @@
     CLOSED: [2013-06-06 Thu 21:13]
 ** v0.9.4 [1/1]
 *** DONE Fix issue #1 - incorrect color for "expected %" on player log
+** v0.9.5 [1/1]
+*** DONE Handle sorting of matches played on same day by transaction order
+    CLOSED: [2013-06-11 Tue 22:08]
+
+** v0.9.6 [1/1]
+*** DONE Matchup feature showing potential matches between a group of players with expected outcome.
+    CLOSED: [2013-06-24 Man 07:20]

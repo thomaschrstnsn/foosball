@@ -18,23 +18,21 @@
                   name])))]
     [:span.help-inline "Select atleast four players"]]])
 
-(defn- format-matchup-percentage [p wins?]
+(defn- format-matchup-permil [p]
   (format-value p
-                :printer format-percentage
-                :class? #(not= (double 50) (double %))
-                :checker (if wins?
-                           (partial < 50)
-                           (partial > 50))))
+                :printer format-permil
+                :class? #(not= (double 0) (double %))))
 
 (defn- headers-matchup []
   [:thead
    [:tr
-    [:th "Team 1"]
+    [:th [:div.text-right "Team 1"]]
     [:th {:colspan 2} [:div.text-center "Versus"]]
     [:th "Team 2"]]
    [:tr
     [:th ""]
-    [:th {:colspan 2} [:div.text-center "Expected win"]]
+    [:th [:div.text-center "Expected ‰"]]
+    [:th [:div.text-center "Rating"]]
     [:th ""]]])
 
 (defn- render-team [players team]
@@ -42,13 +40,13 @@
        (map #(->> % (get-player-by-name players) link-to-player-log))
        (interpose ", ")))
 
-(defn- render-matchup [players {:keys [t1-rating t1-players t2-rating t2-players] :as input}]
+(defn- render-matchup [players {:keys [pos-players neg-players diff-expected diff-rating] :as input}]
   (info {:input input})
   [:tr
-   [:td [:div.text-right (render-team players t1-players)]]
-   [:td (format-matchup-percentage (* 100 t1-rating) true)]
-   [:td [:div.text-right (format-matchup-percentage (* 100 t2-rating) true)]]
-   [:td (render-team players t2-players)]])
+   [:td [:div.text-right (render-team players pos-players)]]
+   [:td [:div.text-center (format-matchup-permil (* 1000 diff-expected))]]
+   [:td [:div.text-center (format-rating diff-rating)]]
+   [:td (render-team players neg-players)]])
 
 (defn page [players & [matches selected-playerids]]
   (let [playerid-set (set selected-playerids)]
@@ -69,4 +67,6 @@
           [:caption [:h1 "Matchups"]]
           (headers-matchup)
           [:tbody
-           (map (partial render-matchup players) matchups)]])))))
+           (->> matchups
+                (sort-by :diff-rating)
+                (map (partial render-matchup players)))]])))))

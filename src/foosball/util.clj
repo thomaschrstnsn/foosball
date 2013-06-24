@@ -30,6 +30,9 @@
 (defn format-percentage [p]
   (format "%.1f%%" (double p)))
 
+(defn format-permil [p]
+  (format "%.2f‰" (double p)))
+
 (defn format-rating [r]
   (format "%.1f" (double r)))
 

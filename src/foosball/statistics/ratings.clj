@@ -77,10 +77,18 @@
        set))
 
 (defn matchup-with-rating [ratings teams]
-  (let [[heroes opponents]            (vec teams)
-        [hero-rating opponent-rating] (expected-sum-for-teams ratings heroes opponents)]
-    {:t1-rating hero-rating     :t1-players heroes
-     :t2-rating opponent-rating :t2-players opponents}))
+  (let [[heroes opponents]  (vec teams)
+        [hero-expected
+         opponent-expected] (expected-sum-for-teams ratings heroes opponents)
+         selected-hero      (first heroes)
+         new-rating         (updated-rating-for-player ratings selected-hero 1.0 hero-expected)
+         rating-diff        (- new-rating (ratings selected-hero))]
+    {:pos-expected hero-expected
+     :pos-players heroes
+     :neg-expected opponent-expected
+     :neg-players opponents
+     :diff-expected (- hero-expected opponent-expected)
+     :diff-rating rating-diff}))
 
 (defn calculate-matchup [matches selected-players]
   (let [current-ratings   (calculate-ratings matches)
