@@ -1,13 +1,13 @@
 (defproject foosball "0.9.7-SNAPSHOT"
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [com.datomic/datomic-free "0.8.3941"]
-                 [lib-noir "0.5.2"]
+                 [lib-noir "0.6.4"]
                  [compojure "1.1.5"]
                  [ring-server "0.2.8"]
-                 [com.taoensso/timbre "1.6.0"]
-                 [markdown-clj "0.9.19"]
+                 [com.taoensso/timbre "2.1.2"]
+                 [markdown-clj "0.9.28"]
                  [prismatic/dommy "0.1.1"]
-                 [log4j "1.2.15" :exclusions [javax.mail/mail
+                 [log4j "1.2.17" :exclusions [javax.mail/mail
                                               javax.jms/jms
                                               com.sun.jdmk/jmxtools
                                               com.sun.jmx/jmxri]]
@@ -42,7 +42,7 @@
 
   :profiles {:production {:ring
                           {:open-browser? false, :stacktraces? false, :auto-reload? false}},
-             :dev {:dependencies [[ring-mock "0.1.3"] [ring/ring-devel "1.1.8"]]}}
+             :dev {:dependencies [[ring-mock "0.1.5"] [ring/ring-devel "1.1.8"]]}}
 
   :url "https://foosball.chrstnsn.dk/"
 
