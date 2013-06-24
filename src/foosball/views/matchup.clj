@@ -18,21 +18,22 @@
                   name])))]
     [:span.help-inline "Select atleast four players"]]])
 
-(defn- format-matchup-permil [p]
+(defn- format-matchup-percentage [p]
   (format-value p
-                :printer format-permil
+                :printer (partial format-percentage 3)
                 :class? #(not= (double 0) (double %))))
 
 (defn- headers-matchup []
   [:thead
    [:tr
     [:th [:div.text-right "Team 1"]]
-    [:th {:colspan 2} [:div.text-center "Versus"]]
+    [:th {:colspan 3} [:div.text-center "Versus"]]
     [:th "Team 2"]]
    [:tr
     [:th ""]
-    [:th [:div.text-center "Expected ‰"]]
-    [:th [:div.text-center "Rating"]]
+    [:th [:div.text-center "Won rating diff."]]
+    [:th [:div.text-center "Expected %"]]
+    [:th [:div.text-center "Won rating diff."]]
     [:th ""]]])
 
 (defn- render-team [players team]
@@ -40,12 +41,12 @@
        (map #(->> % (get-player-by-name players) link-to-player-log))
        (interpose ", ")))
 
-(defn- render-matchup [players {:keys [pos-players neg-players diff-expected diff-rating] :as input}]
-  (info {:input input})
+(defn- render-matchup [players {:keys [pos-players neg-players expected-diff pos-rating-diff neg-rating-diff]}]
   [:tr
    [:td [:div.text-right (render-team players pos-players)]]
-   [:td [:div.text-center (format-matchup-permil (* 1000 diff-expected))]]
-   [:td [:div.text-center (format-rating diff-rating)]]
+   [:td [:div.text-center (format-rating pos-rating-diff)]]
+   [:td [:div.text-center (format-matchup-percentage (* 100 expected-diff))]]
+   [:td [:div.text-center (format-rating neg-rating-diff)]]
    [:td (render-team players neg-players)]])
 
 (defn page [players & [matches selected-playerids]]
@@ -68,5 +69,5 @@
           (headers-matchup)
           [:tbody
            (->> matchups
-                (sort-by :diff-rating)
+                (sort-by :expected-sortable)
                 (map (partial render-matchup players)))]])))))

@@ -77,24 +77,26 @@
        set))
 
 (defn matchup-with-rating [ratings teams]
-  (let [[heroes opponents]  (vec teams)
-        [hero-expected
-         opponent-expected] (expected-sum-for-teams ratings heroes opponents)
-         selected-hero      (first heroes)
-         new-rating         (updated-rating-for-player ratings selected-hero 1.0 hero-expected)
-         rating-diff        (- new-rating (ratings selected-hero))]
+  (let [[heroes foes]                (vec teams)
+        [hero-expected foe-expected] (expected-sum-for-teams ratings heroes foes)
+        expected-diff                (- hero-expected foe-expected)
+        selected-hero                (first heroes)
+        selected-foe                 (first foes)
+        hero-new-rating              (updated-rating-for-player ratings selected-hero 1.0 hero-expected)
+        foe-new-rating               (updated-rating-for-player ratings selected-foe  1.0 foe-expected)
+        hero-rating-diff             (- hero-new-rating (ratings selected-hero))
+        foe-rating-diff              (- foe-new-rating  (ratings selected-foe))]
     {:pos-expected hero-expected
      :pos-players heroes
-     :neg-expected opponent-expected
-     :neg-players opponents
-     :diff-expected (- hero-expected opponent-expected)
-     :diff-rating rating-diff}))
+     :neg-expected foe-expected
+     :neg-players foes
+     :expected-diff expected-diff
+     :expected-sortable (Math/abs expected-diff)
+     :pos-rating-diff hero-rating-diff
+     :neg-rating-diff foe-rating-diff}))
 
 (defn calculate-matchup [matches selected-players]
   (let [current-ratings   (calculate-ratings matches)
         player-names      (map :name selected-players)
-        possible-matchups (possible-matchups player-names)
-        result (map (partial matchup-with-rating current-ratings) possible-matchups)]
-    (info {:possible-matches (vec possible-matchups)})
-    (info {:result result})
-    result))
+        possible-matchups (possible-matchups player-names)]
+    (map (partial matchup-with-rating current-ratings) possible-matchups)))
