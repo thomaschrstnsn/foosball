@@ -1,5 +1,8 @@
 (ns foosball.test.stats
-  (:use midje.sweet foosball.statistics.core foosball.statistics.ratings foosball.statistics.team-player))
+  (:use midje.sweet
+        foosball.statistics.core
+        foosball.statistics.ratings
+        foosball.statistics.team-player))
 
 (facts "about determining winners"
        (let [winning-team     {:score 10 :player1 ...wp1... :player2 ...wp2...}
@@ -59,3 +62,28 @@
                                                      "Lisse" 1498.5273111823453,
                                                      "Maria" 1483.7061014233586,
                                                      "Thomas" 1516.0}))
+
+(facts "about player log when applied to example matches"
+       (let [{:keys [logs]} (ratings-with-log example-matches)
+             thomas-logs    (->> logs (filter (fn [l] (= "Thomas" (:player l)))) vec)]
+         (fact "it should match the example log for Thomas"
+               (count thomas-logs) => 3
+               (map :new-rating thomas-logs) => (just [1484.0 (roughly 1500.29 0.009) 1516.0]))))
+
+(facts "about player form when applied to example matches"
+       (let [{:keys [logs]} (ratings-with-log example-matches)]
+         (fact "it should calculate as expected"
+               (calculate-current-form-for-player logs 5 "Thomas")     => [false true true]
+               (calculate-current-form-for-player logs 2 "Thomas")     => [true true]
+               (calculate-current-form-for-player logs 1 "Thomas")     => [true]
+               (calculate-current-form-for-player logs 5 "Anders")     => [false false false true]
+               (calculate-current-form-for-player logs 5 "Lisse")      => [true false true false]
+               (calculate-current-form-for-player logs 5 "Knud Erik")  => [true true]
+               (calculate-current-form-for-player logs 5 "Maria")      => [true false false])))
+
+(facts "about possible-matchups"
+       (fact "the number of results is bound to the size of the input"
+             (possible-matchups (range 4)) => (just (repeat 3 anything))
+             (possible-matchups (range 5)) => (just (repeat 15 anything))
+             (possible-matchups (range 6)) => (just (repeat 45 anything))
+             (possible-matchups (range 7)) => (just (repeat 105 anything))))
