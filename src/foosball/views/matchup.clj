@@ -27,12 +27,14 @@
   [:thead
    [:tr
     [:th [:div.text-right "Team 1"]]
-    [:th {:colspan 3} [:div.text-center "Versus"]]
+    [:th {:colspan 5} [:div.text-center "Versus"]]
     [:th "Team 2"]]
    [:tr
     [:th ""]
     [:th [:div.text-center "Won rating diff."]]
+    [:th ""]
     [:th [:div.text-center "Expected %"]]
+    [:th ""]
     [:th [:div.text-center "Won rating diff."]]
     [:th ""]]])
 
@@ -43,9 +45,11 @@
 
 (defn- render-matchup [players {:keys [pos-players neg-players expected-diff pos-rating-diff neg-rating-diff]}]
   [:tr
-   [:td [:div.text-right (render-team players pos-players)]]
+   [:td [:div.text-right  (render-team players pos-players)]]
    [:td [:div.text-center (format-rating pos-rating-diff)]]
+   [:td [:div.text-center (when (neg? expected-diff) [:i.icon-arrow-left])]]
    [:td [:div.text-center (format-matchup-percentage (* 100 expected-diff))]]
+   [:td [:div.text-center (when (pos? expected-diff) [:i.icon-arrow-right])]]
    [:td [:div.text-center (format-rating neg-rating-diff)]]
    [:td (render-team players neg-players)]])
 
