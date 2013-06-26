@@ -39,3 +39,4 @@
     CLOSED: [2013-06-26 Ons 16:45]
 *** DONE Show arrow for winner team in matchup table
     CLOSED: [2013-06-26 Ons 16:45]
+*** DONE Styling of tables now without bordered class

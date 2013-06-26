@@ -70,39 +70,26 @@
       [:button.btn.btn-primary.btn-large.btn-block.span4
        {:type "submit" :value "Report"} "Report Match Result " [:i.icon-ok.icon-white]]]]]))
 
-(defn- render-player [playername players]
-  (if playername
-    [:p (->> playername (get-player-by-name players) link-to-player-log)]
-    [:p.text-error "Deleted"]))
-
 (defn- render-match [{:keys [matchdate team1 team2 id]} players & {:keys [admin] :or {admin false}}]
   (let [[t1p1 t1p2 t1score] (map team1 [:player1 :player2 :score])
         [t2p1 t2p2 t2score] (map team2 [:player1 :player2 :score])]
     [:tr
-     [:td (format-datetime matchdate)]
-     [:td (render-player t1p1 players)]
-     [:td (render-player t1p2 players)]
-     [:td (format-score t1score)]
-     [:td (render-player t2p1 players)]
-     [:td (render-player t2p2 players)]
-     [:td (format-score t2score)]
+     [:td [:div.text-center (format-datetime matchdate)]]
+     [:td [:div.text-center (render-team players [t1p1 t1p2])]]
+     [:td [:div.text-center (format-score t1score)]]
+     [:td [:div.text-center (render-team players [t2p1 t2p2])]]
+     [:td [:div.text-center (format-score t2score)]]
      (when admin [:td [:button.btn.btn-danger {:type "submit" :name "matchid" :value id} "Remove!"]])]))
 
 (defn match-table-data [matches players & {:keys [admin] :or {admin false}}]
-  [:table.table.table-hover.table-bordered [:caption [:h1 "Played Matches"]]
+  [:table.table.table-hover.table-condensed [:caption [:h1 "Played Matches"]]
     [:thead
      [:tr
-      [:th {:colspan 1} ""]
-      [:th {:colspan 3} "Team1"]
-      [:th {:colspan 3} "Team2"]]
-     [:tr
-      [:th "Date played"]
-      [:th "Player 1"]
-      [:th "Player 2"]
-      [:th "Score"]
-      [:th "Player 1"]
-      [:th "Player 2"]
-      [:th "Score"]
+      [:th [:div.text-center "Date played"]]
+      [:th [:div.text-center "Team 1"]]
+      [:th [:div.text-center "Score"]]
+      [:th [:div.text-center "Team 2"]]
+      [:th [:div.text-center "Score"]]
       (when admin
         [:th ""])]]
     [:tbody

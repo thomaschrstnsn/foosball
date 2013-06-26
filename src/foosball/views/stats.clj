@@ -24,7 +24,7 @@
    [:td (map #(format-value % :printer {true "W" false "L"} :class? nil :checker true? :container-tag :span) (:form p))]
    [:td (format-value (:rating p) :printer format-rating :class? nil :checker (partial < 1500))]])
 
-(defn- render-team [players t]
+(defn- render-team-row [players t]
   [:tr
    [:td (->> (:team t)
              (map #(->> % (get-player-by-name players) link-to-player-log))
@@ -96,4 +96,4 @@
           calculate-team-stats
           (sort-by (if (nil? sort) :wins sort))
           (order-by (if (nil? order) :desc order))
-          (map (partial render-team players)))]]]))
+          (map (partial render-team-row players)))]]]))

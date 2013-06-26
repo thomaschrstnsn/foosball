@@ -34,11 +34,6 @@
     [:th [:div.text-center "Rating ±"]]
     [:th "Team 2"]]])
 
-(defn- render-team [players team]
-  (->> team
-       (map #(->> % (get-player-by-name players) link-to-player-log))
-       (interpose ", ")))
-
 (defn- render-matchup [players {:keys [pos-players neg-players expected-diff pos-rating-diff neg-rating-diff]}]
   [:tr
    [:td [:div.text-right  (render-team players pos-players)]]
