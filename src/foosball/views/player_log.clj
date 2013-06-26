@@ -26,7 +26,7 @@
    [:td (format-value (:new-rating l) :printer format-rating :class? nil :checker (partial < 1500))]])
 
 (defn player-table [matches players player]
-  [:table.table.table-hover.table-bordered
+  [:table.table.table-hover
    [:caption [:h2 (str "Played Matches: " player) ]]
    [:thead [:tr
             [:th "Match date"]

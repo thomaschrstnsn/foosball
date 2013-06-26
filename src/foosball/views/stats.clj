@@ -46,9 +46,8 @@
         desc (str "?" sort "&order=desc")
         asc  (str "?" sort "&order=asc")]
     [:th heading
-     [:span.pull-right
-      [:a {:href desc} [:i.icon-chevron-up]]
-      [:a {:href asc}  [:i.icon-chevron-down]]]]))
+     [:a {:href desc} [:i.icon-chevron-up]]
+     [:a {:href asc}  [:i.icon-chevron-down]]]))
 
 (defn- common-columns [first-column & last-columns]
   [:tr
@@ -64,7 +63,7 @@
 (defn player-table [matches players & {:keys [sort order] :or {sort :wins order :desc}}]
   (html5
    (auto-refresh-page)
-   [:table.table.table-hover.table-bordered
+   [:table.table.table-hover
     [:caption [:h1 "Player Statistics"]]
     [:thead (common-columns (sortable-column "Player" :player)
                             [:th "Form"]
@@ -89,7 +88,7 @@
 (defn team-table [matches players & {:keys [sort order] :or {sort :wins order :desc}}]
   (html5
    (auto-refresh-page)
-   [:table.table.table-hover.table-bordered
+   [:table.table.table-hover
     [:caption [:h1 "Team Statistics"]]
     [:thead (common-columns [:th "Team"])
     [:tbody

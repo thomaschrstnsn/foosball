@@ -27,16 +27,12 @@
   [:thead
    [:tr
     [:th [:div.text-right "Team 1"]]
-    [:th {:colspan 5} [:div.text-center "Versus"]]
-    [:th "Team 2"]]
-   [:tr
-    [:th ""]
-    [:th [:div.text-center "Won rating diff."]]
+    [:th [:div.text-center "Rating ±"]]
     [:th ""]
     [:th [:div.text-center "Expected %"]]
     [:th ""]
-    [:th [:div.text-center "Won rating diff."]]
-    [:th ""]]])
+    [:th [:div.text-center "Rating ±"]]
+    [:th "Team 2"]]])
 
 (defn- render-team [players team]
   (->> team
@@ -68,7 +64,7 @@
      (when (<= 4 (count playerid-set))
        (let [selected-players (filter (fn [{:keys [id]}] (contains? playerid-set id)) players)
              matchups (ratings/calculate-matchup matches selected-players)]
-         [:table.table.table-hover.table-bordered
+         [:table.table.table-hover
           [:caption [:h1 "Matchups"]]
           (headers-matchup)
           [:tbody
