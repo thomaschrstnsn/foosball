@@ -38,9 +38,9 @@
   [:tr
    [:td [:div.text-right  (render-team players pos-players)]]
    [:td [:div.text-center (format-rating pos-rating-diff)]]
-   [:td [:div.text-center (when (neg? expected-diff) [:i.icon-arrow-left])]]
+   [:td [:div.text-center (when (pos? expected-diff) [:i.icon-arrow-left])]]
    [:td [:div.text-center (format-matchup-percentage (* 100 expected-diff))]]
-   [:td [:div.text-center (when (pos? expected-diff) [:i.icon-arrow-right])]]
+   [:td [:div.text-center (when (neg? expected-diff) [:i.icon-arrow-right])]]
    [:td [:div.text-center (format-rating neg-rating-diff)]]
    [:td (render-team players neg-players)]])
 
