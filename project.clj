@@ -2,7 +2,8 @@
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [com.datomic/datomic-free "0.8.3941" :exclusions [com.amazonaws/aws-java-sdk]]
                  [lib-noir "0.6.4"]
-                 [compojure "1.1.5"]
+                 [compojure "1.1.5" :exclusions [org.clojure/tools.macro
+                                                 ring/ring-core]]
                  [ring-server "0.2.8"]
                  [com.taoensso/timbre "2.1.2"]
                  [markdown-clj "0.9.28"]
@@ -12,8 +13,7 @@
                                               com.sun.jdmk/jmxtools
                                               com.sun.jmx/jmxri]]
                  [hiccup "1.0.3"]
-                 [org.clojure/math.combinatorics "0.0.4"]
-                 [midje "1.5.1"]]
+                 [org.clojure/math.combinatorics "0.0.4"]]
 
   :hooks [configleaf.hooks]
   :configleaf {:verbose true}
@@ -42,7 +42,9 @@
 
   :profiles {:production {:ring
                           {:open-browser? false, :stacktraces? false, :auto-reload? false}},
-             :dev {:dependencies [[ring-mock "0.1.5"] [ring/ring-devel "1.1.8"]]}}
+             :dev {:dependencies [[ring-mock "0.1.5"]
+                                  [ring/ring-devel "1.1.8"]
+                                  [midje "1.5.1"]]}}
 
   :url "https://foosball.chrstnsn.dk/"
 
