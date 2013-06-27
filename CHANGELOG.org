@@ -40,3 +40,6 @@
 *** DONE Show arrow for winner team in matchup table
     CLOSED: [2013-06-26 Ons 16:45]
 *** DONE Styling of tables now without bordered class
+** v0.9.8 [1/1]
+*** DONE bugfix arrows' direction on matchup table
+    CLOSED: [2013-06-27 Tor 06:46]
