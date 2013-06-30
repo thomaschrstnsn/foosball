@@ -37,13 +37,17 @@
                        }}
 
   :ring {:handler foosball.handler/war-handler,
-         :init foosball.handler/init,
-         :destroy foosball.handler/destroy}
+         :init foosball.servlet-lifecycle/init,
+         :destroy foosball.servlet-lifecycle/destroy}
+
+  :repl-options {:port 1234}
 
   :profiles {:production {:ring
                           {:open-browser? false, :stacktraces? false, :auto-reload? false}},
-             :dev {:dependencies [[ring-mock "0.1.5"]
-                                  [ring/ring-devel "1.1.8"]
+             :dev {:source-paths ["dev"]
+                   :dependencies [[org.clojure/tools.namespace "0.2.3"]
+                                  [org.clojure/java.classpath "0.2.0"]
+                                  [ring-mock "0.1.5"]
                                   [midje "1.5.1"]]}}
 
   :url "https://foosball.chrstnsn.dk/"

@@ -1,6 +1,24 @@
 (ns foosball.models.db
+  (:use [taoensso.timbre :only [trace debug info warn error fatal spy]])
   (:use [datomic.api :only [q db] :as d])
-  (:use [foosball.models.schema :only [conn]]))
+  (:use [foosball.models.schema :only [eav-schema]]))
+
+(def ^:dynamic ^:private conn)
+
+(defn create-db-and-connect [uri]
+  (info "creating database on uri:" uri)
+  (d/create-database uri)
+  (info "connecting to database")
+  (alter-var-root #'conn (constantly (d/connect uri)))
+  (info "transacting schema")
+  @(d/transact conn eav-schema)
+  (info "database initialized")
+  conn)
+
+
+(defn delete-db-and-disconnect [uri]
+  (d/delete-database uri)
+  (alter-var-root #'conn (constantly nil)))
 
 (defn create-player [name]
   (d/transact conn [{:db/id (d/tempid :db.part/user)
