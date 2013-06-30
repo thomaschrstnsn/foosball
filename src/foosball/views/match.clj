@@ -46,29 +46,33 @@
                                           :min "0" :max "11"
                                           :value score}]]]]))
 
+(defn- filter-active-players [players]
+  (filter :active players))
+
 (defn form [players & [{:keys [team1 team2 validation-errors matchdate]
                         :or {matchdate (java.util.Date.)}}]]
-  (html5
-   [:h1 "Report Match Result"]
-   [:p.lead
-    "A match winner is the first team to reach ten goals while atleast two goals ahead of the opposing team." [:br]
-    "In case of tie-break, report 11-9 or 9-11."]
-   [:form.form-horizontal {:action "/report/match" :method "POST"}
-    [:div.row
-     (team-controls :team1 1 team1 players validation-errors)
-     (team-controls :team2 2 team2 players validation-errors)]
+  (let [active-players (filter-active-players players)]
+    (html5
+     [:h1 "Report Match Result"]
+     [:p.lead
+      "A match winner is the first team to reach ten goals while atleast two goals ahead of the opposing team." [:br]
+      "In case of tie-break, report 11-9 or 9-11."]
+     [:form.form-horizontal {:action "/report/match" :method "POST"}
+      [:div.row
+       (team-controls :team1 1 team1 active-players validation-errors)
+       (team-controls :team2 2 team2 active-players validation-errors)]
 
-    [:div.row
-     [:div.span4.well
-      [:h2 "Match:"]
-      [:div.control-group
-       [:label.control-label {:for "matchdate"} "Date played"]
-       [:div.controls [:input.span2 {:id "matchdate" :name "matchdate"
-                                           :type "date" :value (format-datetime matchdate)}]]]]]
-    [:div.row
-     [:div.control-group.span4
-      [:button.btn.btn-primary.btn-large.btn-block.span4
-       {:type "submit" :value "Report"} "Report Match Result " [:i.icon-ok.icon-white]]]]]))
+      [:div.row
+       [:div.span4.well
+        [:h2 "Match:"]
+        [:div.control-group
+         [:label.control-label {:for "matchdate"} "Date played"]
+         [:div.controls [:input.span2 {:id "matchdate" :name "matchdate"
+                                       :type "date" :value (format-datetime matchdate)}]]]]]
+      [:div.row
+       [:div.control-group.span4
+        [:button.btn.btn-primary.btn-large.btn-block.span4
+         {:type "submit" :value "Report"} "Report Match Result " [:i.icon-ok.icon-white]]]]])))
 
 (defn- render-match [{:keys [matchdate team1 team2 id]} players & {:keys [admin] :or {admin false}}]
   (let [[t1p1 t1p2 t1score] (map team1 [:player1 :player2 :score])

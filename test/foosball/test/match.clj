@@ -4,6 +4,7 @@
   (:require [foosball.util :as util]))
 
 (testable-privates foosball.views.match
+                   filter-active-players
                    validate-scores
                    validate-players
                    validation-error?
@@ -102,14 +103,16 @@
                (form ...players... report-without-validation-errors) => truthy
                (provided
                 (util/format-datetime ...date...) => ...datestring...
-                (#'foosball.views.match/team-controls :team1 1 team1 ...players... nil) => ...team1controls...
-                (#'foosball.views.match/team-controls :team2 2 team2 ...players... nil) => ...team2controls...))
+                (#'foosball.views.match/team-controls :team1 1 team1 ...active-players... nil) => ...team1controls...
+                (#'foosball.views.match/team-controls :team2 2 team2 ...active-players... nil) => ...team2controls...
+                (#'foosball.views.match/filter-active-players ...players...) => ...active-players...))
          (fact "it works with a report structure with validation-errors"
                (form ...players... report-with-validation-errors) => truthy
                (provided
                 (util/format-datetime ...date...) => ...datestring...
-                (#'foosball.views.match/team-controls :team1 1 team1 ...players... [...some-error...]) => ...team1controls...
-                (#'foosball.views.match/team-controls :team2 2 team2 ...players... [...some-error...]) => ...team2controls...))))
+                (#'foosball.views.match/team-controls :team1 1 team1 ...active-players... [...some-error...]) => ...team1controls...
+                (#'foosball.views.match/team-controls :team2 2 team2 ...active-players... [...some-error...]) => ...team2controls...
+                (#'foosball.views.match/filter-active-players ...players...) => ...active-players...))))
 
 (facts "about validation-error?"
        (fact "it is truthy when it should be"

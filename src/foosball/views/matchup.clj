@@ -45,19 +45,20 @@
    [:td (render-team players neg-players)]])
 
 (defn page [players & [matches selected-playerids]]
-  (let [playerid-set (set selected-playerids)]
+  (let [active-players (filter :active players)
+        playerid-set (set selected-playerids)]
     (html5
      [:h1 "Design the perfect matchup"]
      [:p.lead
       "Pick the players available for a match (atleast four)." [:br]
       "Then see the possible combinations of teams and their expected win/lose ratios."]
      [:form.form-horizontal {:action "/matchup" :method "POST"}
-      (players-select players playerid-set)
+      (players-select active-players playerid-set)
       [:div.row
        [:div.control-group
         [:button.btn.btn-primary.btn-large {:type "submit" :value "show"} "Show possible matchups"]]]]
      (when (<= 4 (count playerid-set))
-       (let [selected-players (filter (fn [{:keys [id]}] (contains? playerid-set id)) players)
+       (let [selected-players (filter (fn [{:keys [id]}] (contains? playerid-set id)) active-players)
              matchups (ratings/calculate-matchup matches selected-players)]
          [:table.table.table-hover
           [:caption [:h1 "Matchups"]]
@@ -65,4 +66,4 @@
           [:tbody
            (->> matchups
                 (sort-by :expected-sortable)
-                (map (partial render-matchup players)))]])))))
+                (map (partial render-matchup active-players)))]])))))

@@ -3,10 +3,10 @@
   (:require [noir.io :as io]
             [markdown.core :as md]))
 
-(defn link-to-player-log [{:keys [id name]}]
-  (if (nil? id)
-    [:span.text-error "Deleted"]
-    (link-to (str "/player/log?playerid=" id) name)))
+(defn link-to-player-log [{:keys [id name active]}]
+  [:span
+   (link-to (str "/player/log?playerid=" id) name)
+   (when-not active [:span.text-error " (inactive)"])])
 
 (defn get-player-by-name [players name]
   (->> players

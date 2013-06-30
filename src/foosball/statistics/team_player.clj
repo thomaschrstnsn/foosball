@@ -27,8 +27,7 @@
 
 (defn calculate-player-stats [matches]
   (let [won-matches (map determine-winner matches)
-        players     (players-from-matches won-matches)
-        ratings     ()]
+        players     (players-from-matches won-matches)]
     (map (partial player-stats won-matches) players)))
 
 (defn calculate-team-stats [matches]

@@ -83,8 +83,6 @@
              (order-by (if (nil? order) :desc order))
              (map (partial render-player players))))]]]))
 
-
-
 (defn team-table [matches players & {:keys [sort order] :or {sort :wins order :desc}}]
   (html5
    (auto-refresh-page)

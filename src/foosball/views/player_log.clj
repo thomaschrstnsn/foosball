@@ -4,14 +4,22 @@
   (:use [foosball.statistics team-player ratings])
   (:use [foosball.util]))
 
+(defn- player-option [selected {:keys [id name]}]
+  [:option (merge {:value id}
+                  (when (= id selected) {:selected "selected"}))
+   name])
+
 (defn- players-select [id players & [selected]]
-  [:select.input-medium.submit-on-select {:id id :name id}
-   [:option {:value "nil" :disabled "disabled" :selected "selected"} "Select a player"]
-   (->> players
-        (map (fn [{:keys [id name]}]
-               [:option (merge {:value id}
-                               (when (= id selected) {:selected "selected"}))
-                name])))])
+  (let [grouped  (group-by :active players)
+        active   (get grouped true)
+        inactive (get grouped false)]
+    [:select.input-medium.submit-on-select {:id id :name id}
+     [:option {:value "nil" :disabled "disabled" :selected "selected"} "Active players"]
+     (map (partial player-option selected) active)
+     (when inactive
+       [:option {:value "nil" :disabled "disabled"} "Inactive players"])
+     (when inactive
+       (map (partial player-option selected) inactive))]))
 
 (defn- render-log [players l]
   [:tr
@@ -25,9 +33,9 @@
    [:td (format-value (:delta l) :printer format-rating)]
    [:td (format-value (:new-rating l) :printer format-rating :class? nil :checker (partial < 1500))]])
 
-(defn player-table [matches players player]
+(defn player-table [matches players {:keys [name active] :as player}]
   [:table.table.table-hover
-   [:caption [:h2 (str "Played Matches: " player) ]]
+   [:caption [:h2 (str "Played Matches: " name (when-not active " (inactive)")) ]]
    [:thead [:tr
             [:th "Match date"]
             [:th "Team mate"]
@@ -40,7 +48,7 @@
      (->> matches
           ratings-with-log
           :logs
-          (filter (fn [l] (= player (:player l))))
+          (filter (comp (partial = name) :player))
           reverse
           (map (partial render-log players)))]]])
 
@@ -54,4 +62,4 @@
       [:div.input-append
        (players-select "playerid" players playerid)
        [:button.btn {:type "submit" :value "select"} "Select"]]]
-     (when player (player-table matches players (:name player))))))
+     (when player (player-table matches players player)))))
