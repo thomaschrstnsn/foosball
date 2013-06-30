@@ -14,9 +14,14 @@
   (db/create-player name)
   (redirect-after-post "/admin"))
 
-(defn remove-player [id]
+(defn activate-player [id]
   (info {:remove-player id})
-  (db/delete-player (util/parse-id id))
+  (db/activate-player (util/parse-id id))
+  (redirect-after-post "/admin"))
+
+(defn deactivate-player [id]
+  (info {:remove-player id})
+  (db/deactivate-player (util/parse-id id))
   (redirect-after-post "/admin"))
 
 (defn remove-match [id]
@@ -27,5 +32,6 @@
 (defroutes admin-routes
   (GET "/admin" [] (admin-page))
   (POST "/admin/player/add" [playername] (add-player playername))
-  (POST "/admin/player/remove" [playerid] (remove-player playerid))
+  (POST "/admin/player/deactivate" [playerid] (deactivate-player playerid))
+  (POST "/admin/player/activate" [playerid] (activate-player playerid))
   (POST "/admin/match/remove" [matchid] (remove-match matchid)))

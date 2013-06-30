@@ -1,37 +1,64 @@
 (ns foosball.models.db
   (:use [taoensso.timbre :only [trace debug info warn error fatal spy]])
   (:use [datomic.api :only [q db] :as d])
-  (:use [foosball.models.schema :only [eav-schema]]))
+  (:use [foosball.models.schema :only [eav-schema]])
+  (:use [clojure.set :only [difference]]))
 
 (def ^:dynamic ^:private conn)
+
+(defn- ensure-players-have-active-flags []
+  (let [dbc                      (db conn)
+        players-with-names       (->> (d/q '[:find ?pid :where [?pid :player/name _]] dbc)
+                                      (map (fn [[id]] id))
+                                      set)
+        players-with-active-flag (->> (d/q '[:find ?pid :where [?pid :player/active _]] dbc)
+                                      (map (fn [[id]] id))
+                                      set)
+        players-to-default       (difference players-with-names players-with-active-flag)
+        transaction              (map (fn [id] {:db/id id :player/active true}) players-to-default)]
+    @(d/transact conn transaction)))
+
+(def migrations
+  "seq of idempotent migration functions"
+  {"ensure-players-have-active-flags" ensure-players-have-active-flags})
 
 (defn create-db-and-connect [uri]
   (info "creating database on uri:" uri)
   (d/create-database uri)
+
   (info "connecting to database")
   (alter-var-root #'conn (constantly (d/connect uri)))
+
   (info "transacting schema")
   @(d/transact conn eav-schema)
+
+  (doseq [[name migration-fn] migrations]
+    (info "running migration:" name)
+    (migration-fn))
+
   (info "database initialized")
   conn)
-
 
 (defn delete-db-and-disconnect [uri]
   (d/delete-database uri)
   (alter-var-root #'conn (constantly nil)))
 
 (defn create-player [name]
-  (d/transact conn [{:db/id (d/tempid :db.part/user)
-                     :player/name name}]))
+  (let [player-id (d/tempid :db.part/user)]
+    @(d/transact conn [{:db/id player-id :player/name name}
+                       {:db/id player-id :player/active true}])))
 
-(defn delete-player [id]
-  (let [name (-> (d/q '[:find ?n :in $ ?id :where [?id :player/name ?n]] (db conn) id)
-                  first first)]
-    (d/transact conn [[:db/retract id :player/name name]])))
+(defn activate-player [id]
+  @(d/transact conn [{:db/id id :player/active true}]))
+
+(defn deactivate-player [id]
+  @(d/transact conn [{:db/id id :player/active false}]))
 
 (defn get-players []
-  (->> (d/q '[:find ?c ?n :where [?c player/name ?n]] (db conn))
-       (map (fn [[id name]] {:id id :name name}))))
+  (->> (d/q '[:find ?pid ?n ?a :where
+              [?pid :player/name ?n]
+              [?pid :player/active ?a]] (db conn))
+       (map (fn [[id name active]] {:id id :name name :active active}))))
 
 (defn create-match [{:keys [matchdate team1 team2]}]
   (let [[match-id team1-id team2-id] (repeatedly #(d/tempid :db.part/user))
@@ -52,14 +79,14 @@
 
 (defn delete-match [id]
   (let [matchdate (->> (d/q '[:find ?mt :in $ ?id :where [?id :match/time ?mt]] (db conn) id)
-                       first first)]
+                       ffirst)]
     (d/transact conn [[:db/retract id :match/time matchdate]])))
 
 (defn get-player
   ([id] (get-player id (db conn)))
   ([id dbc]
      (->> (d/q '[:find ?player :in $ ?id :where [?id :player/name ?player]] dbc id)
-          first first)))
+          ffirst)))
 
 (defn get-team
   ([id] (get-team id (db conn)))

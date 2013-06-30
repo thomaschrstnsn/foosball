@@ -11,6 +11,13 @@
     :db.install/_attribute :db.part/db}
 
    {:db/id (d/tempid :db.part/db)
+    :db/ident :player/active
+    :db/valueType :db.type/boolean
+    :db/cardinality :db.cardinality/one
+    :db/doc "A player's active flag"
+    :db.install/_attribute :db.part/db}
+
+   {:db/id (d/tempid :db.part/db)
     :db/ident :team/player1
     :db/valueType :db.type/ref
     :db/cardinality :db.cardinality/one
