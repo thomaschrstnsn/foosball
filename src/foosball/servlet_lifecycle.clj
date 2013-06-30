@@ -10,9 +10,7 @@
   []
   (info "instantiating system")
   (def ^:private system-inst
-    (-> (system/system)
-        ;; override war handler - we are running inside a servlet, it will run it
-        (merge  {:war-handler nil})
+    (-> (system/system :handler-wrapper (constantly nil)) ;; override war handler - we are running inside a servlet, it will run it
         (system/start)))
   (info "foosball started successfully"))
 

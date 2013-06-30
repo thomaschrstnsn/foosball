@@ -21,8 +21,6 @@
                  app-routes])
 
 (def app (-> all-routes
-             middleware/app-handler
-             ;;add your middlewares here
-             ))
+             middleware/app-handler))
 
 (def war-handler (middleware/war-handler app))
