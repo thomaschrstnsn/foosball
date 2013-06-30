@@ -33,7 +33,8 @@
   "Initializes the current development system and starts it running."
   []
   (init)
-  (start))
+  (start)
+  true)
 
 (defn reset []
   (stop)
