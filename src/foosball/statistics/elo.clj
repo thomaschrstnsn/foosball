@@ -1,7 +1,7 @@
 (ns foosball.statistics.elo
   (:use [taoensso.timbre :only [trace debug info warn error fatal spy]]))
 
-(def ^:private
+(def ^:private ^:const
   ten-times-winning-increase-rating
    "It then follows that for each X rating points of advantage over the opponent, the chance of winning is magnified
   ten times in comparison to the opponent's chance of winning."
@@ -17,7 +17,7 @@
         eb (/ qb (+ qa qb))]
     [ea eb]))
 
-(def ^:private K (double 32))
+(def ^:private ^:const K (double 32))
 
 (defn updated-rating [current-rating actually-scored expected-score]
   (+ current-rating (* K (- actually-scored expected-score))))

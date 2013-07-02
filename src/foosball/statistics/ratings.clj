@@ -1,5 +1,6 @@
 (ns foosball.statistics.ratings
-  (:use foosball.statistics.elo foosball.statistics.core)
+  (:use [foosball.statistics.core])
+  (:use [foosball.statistics.elo])
   (:use [clojure.set :only [difference]])
   (:use [taoensso.timbre :only [trace debug info warn error fatal spy]])
   (:require [clojure.math.combinatorics :as combo]))
@@ -58,7 +59,7 @@
 
 (defn calculate-current-form-for-player [logs number-of-matches player]
   (->> logs
-       (filter (fn [l] (= (:player l) player)))
+       (filter (comp (partial = player) :player))
        reverse
        (take number-of-matches)
        reverse

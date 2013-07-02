@@ -1,7 +1,8 @@
 (ns foosball.views.player-log
   (:use [hiccup.page :only [html5]])
   (:use [taoensso.timbre :only [trace debug info warn error fatal spy]])
-  (:use [foosball.statistics team-player ratings])
+  (:use [foosball.statistics.team-player])
+  (:use [foosball.statistics.ratings])
   (:use [foosball.util]))
 
 (defn- player-option [selected {:keys [id name]}]
@@ -54,7 +55,7 @@
 
 (defn player-log-page [matches players selected-playerid]
   (let [playerid (parse-id selected-playerid)
-        player   (->> players (filter (fn [p] (= (:id p) playerid))) first)]
+        player   (->> players (filter (comp (partial = playerid) :id)) first)]
     (html5
      (auto-refresh-page)
      [:h1 (str "Player Log")]

@@ -1,5 +1,5 @@
 (ns foosball.statistics.team-player
-  (:use [foosball.statistics core]))
+  (:use [foosball.statistics.core]))
 
 (defn- player-stats [matches player]
   (let [wins        (->> (filter (partial player-is-winner? player) matches) count)
