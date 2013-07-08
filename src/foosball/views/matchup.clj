@@ -8,15 +8,16 @@
   (:use [taoensso.timbre :only [trace debug info warn error fatal spy]]))
 
 (defn- players-select [players selected]
-  [:div.row
-   [:div.control-group
-    [:select {:id "playerids" :name "playerids[]" :multiple "multiple" :size "8"}
-     (->> players
-          (map (fn [{:keys [id name]}]
-                 [:option (merge {:value id}
-                                 (when (contains? selected id) {:selected "selected"}))
-                  name])))]
-    [:span.help-inline "Select atleast four players"]]])
+  (let [number-of-players-to-show (min 16 (count players))]
+    [:div.row
+     [:div.control-group
+      [:select {:id "playerids" :name "playerids[]" :multiple "multiple" :size number-of-players-to-show}
+       (->> players
+            (map (fn [{:keys [id name]}]
+                   [:option (merge {:value id}
+                                   (when (contains? selected id) {:selected "selected"}))
+                    name])))]
+      [:span.help-inline "Select atleast four players"]]]))
 
 (defn- format-matchup-percentage [p]
   (format-value p
