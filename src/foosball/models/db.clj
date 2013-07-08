@@ -58,7 +58,8 @@
   (->> (d/q '[:find ?pid ?n ?a :where
               [?pid :player/name ?n]
               [?pid :player/active ?a]] (db conn))
-       (map (fn [[id name active]] {:id id :name name :active active}))))
+       (map (fn [[id name active]] {:id id :name name :active active}))
+       (sort-by :name)))
 
 (defn create-match [{:keys [matchdate team1 team2]}]
   (let [[match-id team1-id team2-id] (repeatedly #(d/tempid :db.part/user))

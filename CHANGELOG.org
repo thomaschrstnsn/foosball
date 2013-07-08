@@ -43,3 +43,9 @@
 ** v0.9.8 [1/1]
 *** DONE bugfix arrows' direction on matchup table
     CLOSED: [2013-06-27 Tor 06:46]
+** v0.9.9 [1/1]
+*** DONE rethink/redo delete player functionality
+    CLOSED: [2013-07-02 Tir 09:20]
+
+** v0.9.10 [1/1]
+*** DONE sort players by name as default
