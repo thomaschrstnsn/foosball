@@ -27,14 +27,15 @@
   "Shuts down and destroys the current development system."
   []
   (alter-var-root #'system
-                  (fn [s] (when s (system/stop s)))))
+                  (fn [s] (when s (system/stop s))))
+  :ok)
 
 (defn go
   "Initializes the current development system and starts it running."
   []
   (init)
   (start)
-  true)
+  :ok)
 
 (defn reset []
   (stop)

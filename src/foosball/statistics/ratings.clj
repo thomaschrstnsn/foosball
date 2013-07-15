@@ -1,8 +1,8 @@
 (ns foosball.statistics.ratings
-  (:use [foosball.statistics.core])
-  (:use [foosball.statistics.elo])
-  (:use [clojure.set :only [difference]])
-  (:use [taoensso.timbre :only [trace debug info warn error fatal spy]])
+  (:use foosball.statistics.core
+        foosball.statistics.elo
+        [clojure.set :only [difference]]
+        [taoensso.timbre :only [trace debug info warn error fatal spy]])
   (:require [clojure.math.combinatorics :as combo]))
 
 (defn- expected-sum-for-teams [ratings heroes opponents]

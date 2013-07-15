@@ -48,11 +48,13 @@
 
              :dev {:ring {:stacktraces? true}
                    :source-paths ["dev"]
-                   :dependencies [[org.clojure/tools.namespace "0.2.3"]
+                   :dependencies [[org.clojure/tools.namespace "0.2.4-SNAPSHOT"]
                                   [org.clojure/java.classpath "0.2.0"]
                                   [ring-mock "0.1.5"]
                                   [ring/ring-devel "1.1.8"]
-                                  [midje "1.5.1"]]}}
+                                  [midje "1.5.1"]]
+                   :repositories {"sonatype-oss-public"
+                                  "https://oss.sonatype.org/content/groups/public/"}}}
 
   :url "https://foosball.chrstnsn.dk/"
 
