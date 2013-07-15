@@ -33,10 +33,7 @@
     "https://github.com/Prismatic/dommy"]
    ['com.taoensso/timbre
     "Timbre"
-    "https://github.com/ptaoussanis/timbre"]
-   ['midje/midje
-    "Midje"
-    "https://github.com/marick/Midje"]])
+    "https://github.com/ptaoussanis/timbre"]])
 
 (defn page []
   (html5
