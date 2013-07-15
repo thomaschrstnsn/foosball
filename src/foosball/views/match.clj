@@ -26,7 +26,7 @@
         idp2    (str prefix "player" 2)
         idscore (str prefix "score")
         error-class {:class "control-group error"}]
-    [:div.span4.well
+    [:div.span6.well
      [:h2 (str "Team " team-num ":")]
 
      [:div.control-group
@@ -58,20 +58,20 @@
       "A match winner is the first team to reach ten goals while atleast two goals ahead of the opposing team." [:br]
       "In case of tie-break, report 11-9 or 9-11."]
      [:form.form-horizontal {:action "/report/match" :method "POST"}
-      [:div.row
+      [:div.row-fluid
        (team-controls :team1 1 team1 active-players validation-errors)
        (team-controls :team2 2 team2 active-players validation-errors)]
 
-      [:div.row
-       [:div.span4.well
+      [:div.row-fluid
+       [:div.offset2.span8.well
         [:h2 "Match:"]
         [:div.control-group
          [:label.control-label {:for "matchdate"} "Date played"]
-         [:div.controls [:input.span2 {:id "matchdate" :name "matchdate"
+         [:div.controls [:input.input-medium {:id "matchdate" :name "matchdate"
                                        :type "date" :value (format-datetime matchdate)}]]]]]
-      [:div.row
-       [:div.control-group.span4
-        [:button.btn.btn-primary.btn-large.btn-block.span4
+      [:div.row-fluid
+       [:div.control-group
+        [:button.btn.btn-primary.btn-large.btn-block.span8.offset2
          {:type "submit" :value "Report"} "Report Match Result " [:i.icon-ok.icon-white]]]]])))
 
 (defn- render-match [{:keys [matchdate team1 team2 id]} players & {:keys [admin] :or {admin false}}]
