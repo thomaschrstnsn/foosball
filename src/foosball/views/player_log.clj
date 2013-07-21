@@ -60,7 +60,5 @@
      (auto-refresh-page)
      [:h1 (str "Player Log")]
      [:form {:action "/player/log" :method "GET"}
-      [:div.input-append
-       (players-select "playerid" players playerid)
-       [:button.btn {:type "submit" :value "select"} "Select"]]]
+      [:div.input-append (players-select "playerid" players playerid)]]
      (when player (player-table matches players player)))))

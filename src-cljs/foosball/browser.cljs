@@ -1,4 +1,4 @@
-(ns foosball.main
+(ns foosball.browser
   (:use-macros [dommy.macros :only [sel sel1 nodes]])
   (:require [dommy.core :as dommy]
             [clojure.browser.repl :as repl]))
@@ -24,9 +24,18 @@
     (when el
       (dommy/add-class! el :active))))
 
+(defn auto-submit-playerlog []
+  (let [input (sel1 [:#playerid])
+        form  (sel1 [:form])]
+    (dommy/listen! input :change #(.submit form))))
+
+(def page-fns {"/player/log" auto-submit-playerlog})
+
 (defn ^:export page-loaded []
   ;(repl/connect "http://localhost:9000/repl")
-  (set-active-navbar-element!))
+  (let [auto-fn (get page-fns (current-path) nil)]
+    (set-active-navbar-element!)
+    (when auto-fn (auto-fn))))
 
 (defn ^:export page-autorefresh [seconds]
   (js/setTimeout #(.reload js/location)
