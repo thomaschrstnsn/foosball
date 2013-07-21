@@ -1,4 +1,4 @@
-(defproject foosball "0.9.11-SNAPSHOT"
+(defproject foosball "0.10.0-SNAPSHOT"
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [com.datomic/datomic-free "0.8.3941" :exclusions [com.amazonaws/aws-java-sdk]]
                  [lib-noir "0.6.4"]
@@ -29,11 +29,10 @@
                        ;;             :output-to "resources/public/js/foosball.js"
                        ;;             :optimizations :simple}}
 
-                       :dev
-                       {:source-paths ["src-cljs"],
-                        :compiler {:pretty-print true
-                                   :output-to "resources/public/js/foosball.js"
-                                   :optimizations :whitespace}}
+                       :dev {:source-paths ["src-cljs"],
+                             :compiler {:pretty-print true
+                                        :output-to "resources/public/js/foosball.js"
+                                        :optimizations :whitespace}}
                        }}
 
   :ring {:handler foosball.handler/war-handler,
