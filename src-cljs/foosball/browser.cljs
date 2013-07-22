@@ -1,6 +1,6 @@
 (ns foosball.browser
   (:use-macros [dommy.macros :only [sel sel1 nodes]])
-  (:use [jayq.core :only [$]])
+  (:use [jayq.core :only [$ document-ready]])
   (:require [dommy.core :as dommy]
             [clojure.browser.repl :as repl]
             [cljs.core.async :as async
@@ -66,6 +66,9 @@
   (let [auto-fn (get page-fns (current-path) nil)]
     (set-active-navbar-element!)
     (when auto-fn (auto-fn))))
+
+(defn ^:export register-document-ready []
+  (document-ready page-loaded))
 
 (defn ^:export page-autorefresh [seconds]
   (js/setTimeout #(.reload js/location)

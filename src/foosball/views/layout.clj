@@ -23,7 +23,7 @@
      [:li (link-to "#" (str "Version " (:version project)))]]]])
 
 (defn footer []
-  [:script "$(document).ready(foosball.browser.page_loaded)"])
+  [:script "foosball.browser.register_document_ready()"])
 
 (defhtml base [& content]
   (html5
