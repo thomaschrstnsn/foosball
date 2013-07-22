@@ -1,5 +1,6 @@
 (defproject foosball "0.10.0-SNAPSHOT"
   :dependencies [[org.clojure/clojure "1.5.1"]
+                 [org.clojure/clojurescript "0.0-1844"]
                  [com.datomic/datomic-free "0.8.3941" :exclusions [com.amazonaws/aws-java-sdk]]
                  [lib-noir "0.6.4"]
                  [compojure "1.1.5" :exclusions [org.clojure/tools.macro
@@ -13,7 +14,10 @@
                                               com.sun.jdmk/jmxtools
                                               com.sun.jmx/jmxri]]
                  [hiccup "1.0.3"]
-                 [org.clojure/math.combinatorics "0.0.4"]]
+                 [org.clojure/core.async "0.1.0-SNAPSHOT"]
+                 [org.clojure/math.combinatorics "0.0.4"]
+                 [jayq "2.4.0"] ; advanced compiling: https://github.com/ibdknox/jayq#compiling
+                 ]
 
   :hooks [configleaf.hooks]
   :configleaf {:verbose true}
@@ -58,7 +62,7 @@
   :url "https://foosball.chrstnsn.dk/"
 
   :plugins [[lein-ring "0.8.3"]
-            [lein-cljsbuild "0.3.0"]
+            [lein-cljsbuild "0.3.2"]
             [configleaf "0.4.6"]
             [lein-release "1.0.4"]]
 

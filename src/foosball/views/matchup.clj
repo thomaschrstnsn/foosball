@@ -46,8 +46,9 @@
    [:td (render-team players neg-players)]])
 
 (defn page [players & [matches selected-playerids]]
-  (let [active-players (filter :active players)
-        playerid-set (set selected-playerids)]
+  (let [active-players  (filter :active players)
+        playerid-set    (set selected-playerids)
+        enough-players? (<= 4 (count playerid-set))]
     (html5
      [:h1 "Design the perfect matchup"]
      [:p.lead
@@ -57,8 +58,10 @@
       (players-select active-players playerid-set)
       [:div.row
        [:div.control-group
-        [:button.btn.btn-primary.btn-large {:type "submit" :value "show"} "Show possible matchups"]]]]
-     (when (<= 4 (count playerid-set))
+        [:button.btn.btn-primary.btn-large (merge  {:type "submit" :value "show"}
+                                                   (when-not enough-players? {:disabled "disabled"}))
+         "Show possible matchups"]]]]
+     (when enough-players?
        (let [selected-players (filter (fn [{:keys [id]}] (contains? playerid-set id)) active-players)
              matchups (ratings/calculate-matchup matches selected-players)]
          [:table.table.table-hover

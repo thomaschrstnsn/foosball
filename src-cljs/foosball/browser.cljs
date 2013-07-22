@@ -1,7 +1,11 @@
 (ns foosball.browser
   (:use-macros [dommy.macros :only [sel sel1 nodes]])
+  (:use [jayq.core :only [$]])
   (:require [dommy.core :as dommy]
-            [clojure.browser.repl :as repl]))
+            [clojure.browser.repl :as repl]
+            [cljs.core.async :as async
+             :refer [<! >! chan close! sliding-buffer put! alts!]])
+  (:require-macros [cljs.core.async.macros :as m :refer [go alt!]]))
 
 (defn log [& items]
   (.log js/console (apply str (interpose ", " items))))
@@ -29,7 +33,33 @@
         form  (sel1 [:form])]
     (dommy/listen! input :change #(.submit form))))
 
-(def page-fns {"/player/log" auto-submit-playerlog})
+(defn event-chan [el event-type]
+  (let [c (chan)]
+    (dommy/listen! el event-type #(put! c %))
+    c))
+
+(defn enable-el [el]
+  (dommy/remove-attr! el :disabled))
+
+(defn disable-el [el]
+  (dommy/set-attr! el :disabled "disabled"))
+
+(defn enable-submit-on-enough-players []
+  (let [select-el   (sel1 [:#playerids])
+        select-chan (event-chan select-el :change)
+        button      (sel1 :button)]
+    (go (loop []
+          (let [event           (<! select-chan)
+                target (.-target event)
+                selected ($ "option:selected" target)
+                enough-players? (<= 4 (count selected))]
+            (if enough-players?
+              (enable-el button)
+              (disable-el button))
+            (recur))))))
+
+(def page-fns {"/player/log" auto-submit-playerlog
+               "/matchup"    enable-submit-on-enough-players})
 
 (defn ^:export page-loaded []
   ;(repl/connect "http://localhost:9000/repl")
