@@ -3,6 +3,7 @@
   (:use [taoensso.timbre :only [trace debug info warn error fatal spy]])
   (:require [foosball.views.layout :as layout]
             [foosball.views.match  :as match]
+            [foosball.validation.match :as validation]
             [foosball.util :as util]
             [foosball.models.db :as db]))
 
@@ -13,7 +14,7 @@
   (info {:report-match-params params})
   (let [validated-report (->> params
                               match/parse-form
-                              match/validate-report)]
+                              validation/validate-report)]
     (if (->> validated-report :validation-errors empty?)
       (do
         (info {:validated-report validated-report})

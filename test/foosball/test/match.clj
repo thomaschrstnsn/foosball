@@ -1,13 +1,15 @@
 (ns foosball.test.match
-  (:use midje.sweet foosball.views.match)
+  (:use midje.sweet foosball.views.match foosball.validation.match)
   (:use [midje.util :only [testable-privates]])
   (:require [foosball.util :as util]))
 
 (testable-privates foosball.views.match
                    filter-active-players
+                   validation-error?)
+
+(testable-privates foosball.validation.match
                    validate-scores
                    validate-players
-                   validation-error?
                    pick-players)
 
 (facts "about validation of scores"
@@ -63,29 +65,30 @@
              (let [report {:team1 ...team1... :team2 ...team2...}]
                (validate-report report) => (contains {:validation-errors empty?})
                (provided
-                (#'foosball.views.match/validate-players (#'foosball.views.match/pick-players report)) => []
-                (#'foosball.views.match/validate-scores  (#'foosball.views.match/pick-scores  report)) => [])))
+                (#'foosball.validation.match/validate-players (#'foosball.validation.match/pick-players report)) => []
+                (#'foosball.validation.match/validate-scores  (#'foosball.validation.match/pick-scores  report)) => [])))
        (fact "a report with invalid players should have validation for players added"
              (let [report {:team1 ...team1... :team2 ...team2...}]
                (validate-report report) => (contains {:validation-errors {:players [...error...]}})
                (provided
-                (#'foosball.views.match/validate-players (#'foosball.views.match/pick-players report)) => [...error...]
-                (#'foosball.views.match/validate-scores  (#'foosball.views.match/pick-scores  report)) => [])))
+                (#'foosball.validation.match/validate-players (#'foosball.validation.match/pick-players report)) => [...error...]
+                (#'foosball.validation.match/validate-scores  (#'foosball.validation.match/pick-scores  report)) => [])))
        (fact "a report with invalid scores should have validation for scores added"
              (let [report {:team1 ...team1... :team2 ...team2...}]
                (validate-report report) => (contains {:validation-errors {:scores [...error...]}})
                (provided
-                (#'foosball.views.match/validate-players (#'foosball.views.match/pick-players report)) => []
-                (#'foosball.views.match/validate-scores  (#'foosball.views.match/pick-scores  report)) => [...error...])))
+                (#'foosball.validation.match/validate-players (#'foosball.validation.match/pick-players report)) => []
+                (#'foosball.validation.match/validate-scores  (#'foosball.validation.match/pick-scores  report)) => [...error...])))
        (fact "a report with invalid scores and invalid players should have validation for scores and players added"
              (let [report {:team1 ...team1... :team2 ...team2...}]
                (validate-report report) => (contains {:validation-errors {:scores  [...score-error...]
                                                                           :players [...player-error...]}
                                                       :team1 ...team1...
                                                       :team2 ...team2...})
-               (provided
-                (#'foosball.views.match/validate-players (#'foosball.views.match/pick-players report)) => [...player-error...]
-                (#'foosball.views.match/validate-scores  (#'foosball.views.match/pick-scores  report)) => [...score-error...]))))
+               (provided (#'foosball.validation.match/validate-players
+                          (#'foosball.validation.match/pick-players report)) => [...player-error...]
+                         (#'foosball.validation.match/validate-scores
+                          (#'foosball.validation.match/pick-scores  report)) => [...score-error...]))))
 
 (facts "about the form"
        (fact "it works with just a players arguments"
