@@ -51,7 +51,7 @@
 
              :dev {:ring {:stacktraces? true}
                    :source-paths ["dev"]
-                   :dependencies [[org.clojure/tools.namespace "0.2.4-SNAPSHOT"]
+                   :dependencies [[org.clojure/tools.namespace "0.2.4"]
                                   [org.clojure/java.classpath "0.2.0"]
                                   [ring-mock "0.1.5"]
                                   [ring/ring-devel "1.1.8"]

@@ -6,11 +6,6 @@
          [hiccup.page :only [html5 include-js include-css]]
          [foosball.util]))
 
-(defn- validation-error? [validation-errors typekw kw]
-  (->> validation-errors
-       typekw
-       (some #{kw})))
-
 (defn- players-select [id players & [selected]]
   [:select.input-medium {:id id :name id}
    [:option {:value "nil" :disabled "disabled" :selected "selected"} "Pick a player"]
@@ -20,27 +15,23 @@
                                (when (= id selected) {:selected "selected"}))
                 name])))])
 
-(defn- team-controls [kw team-num {:keys [player1 player2 score]} players validation-errors]
+(defn- team-controls [kw team-num {:keys [player1 player2 score]} players]
   (let [prefix  (name kw)
         idp1    (str prefix "player" 1)
         idp2    (str prefix "player" 2)
-        idscore (str prefix "score")
-        error-class {:class "control-group error"}]
+        idscore (str prefix "score")]
     [:div.span6.well
      [:h2 (str "Team " team-num ":")]
 
      [:div.control-group
-      (when (validation-error? validation-errors :players (keyword idp1)) error-class)
       [:label.control-label {:for idp1} (str "Player " 1)]
       [:div.controls (players-select idp1 players player1)]]
 
      [:div.control-group
-      (when (validation-error? validation-errors :players (keyword idp2)) error-class)
       [:label.control-label {:for idp2} (str "Player " 2)]
       [:div.controls (players-select idp2 players player2)]]
 
      [:div.control-group
-      (when (validation-error? validation-errors :scores kw) error-class)
       [:label.control-label {:for idscore} "Score"]
       [:div.controls [:input.input-mini {:id idscore :name idscore :type "number" :placeholder "0"
                                           :min "0" :max "11"
@@ -49,7 +40,7 @@
 (defn- filter-active-players [players]
   (filter :active players))
 
-(defn form [players & [{:keys [team1 team2 validation-errors matchdate]
+(defn form [players & [{:keys [team1 team2 matchdate]
                         :or {matchdate (java.util.Date.)}}]]
   (let [active-players (filter-active-players players)]
     (html5
@@ -59,8 +50,8 @@
       "In case of tie-break, report 11-9 or 9-11."]
      [:form.form-horizontal {:action "/report/match" :method "POST"}
       [:div.row-fluid
-       (team-controls :team1 1 team1 active-players validation-errors)
-       (team-controls :team2 2 team2 active-players validation-errors)]
+       (team-controls :team1 1 team1 active-players)
+       (team-controls :team2 2 team2 active-players)]
 
       [:div.row-fluid
        [:div.offset2.span8.well

@@ -12,15 +12,15 @@
 
 (defn report-match [{:keys [params]}]
   (info {:report-match-params params})
-  (let [validated-report (->> params
-                              match/parse-form
-                              validation/validate-report)]
-    (if (->> validated-report :validation-errors empty?)
+  (let [parsed-form      (match/parse-form params)
+        validated-report (validation/validate-report parsed-form)
+        valid-report?    (->> validated-report vals ((partial every? identity)))]
+    (if valid-report?
       (do
         (info {:validated-report validated-report})
-        (db/create-match validated-report)
+        (db/create-match parsed-form)
         (redirect-after-post "/stats/players"))
-      (layout/common (match/form (db/get-players) validated-report)))))
+      (layout/common (match/form (db/get-players) parsed-form)))))
 
 (defn matches-page []
   (layout/common (match/table (db/get-matches) (db/get-players))))
