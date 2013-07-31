@@ -101,11 +101,12 @@
                                                  [path (parse-int (.-value e))]))
                                           (reduce (fn [m [p v]]
                                                     (update-in m p (constantly v))) {})))
-        update-ui-from-state  (fn [] (let [validation-map (->> (get-state)
+        update-ui-from-state  (fn [] (let [no-validation-ids #{:#matchdate}
+                                          validation-map (->> (get-state)
                                                               match-validation/validate-report
                                                               validation-map-with-ids
-                                                              validation-map-nil-is-valid)]
-                                      (log validation-map)
+                                                              validation-map-nil-is-valid
+                                                              (filter (fn [[k v]] (not (no-validation-ids k)))))]
                                       (doseq [[id valid?] validation-map]
                                         (toggle-error-on-control-group-by-id id (not valid?)))))]
     (update-ui-from-state)

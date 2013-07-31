@@ -24,7 +24,7 @@
 
 (defn- render-log [players l]
   [:tr
-   [:td (format-datetime (:matchdate l))]
+   [:td (format-date (:matchdate l))]
    [:td (->> (:team-mate l) (get-player-by-name players) link-to-player-log)]
    [:td (->> (:opponents l)
              (map #(->> % (get-player-by-name players) link-to-player-log))

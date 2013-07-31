@@ -1,12 +1,16 @@
 (ns foosball.test.validation-match
   (:use midje.sweet
-        foosball.validation.match)
+        foosball.validation.match
+        [foosball.util :as util])
   (:use [midje.util :only [testable-privates]]))
 
 (testable-privates foosball.validation.match
                    validate-scores
                    validate-players
-                   pick-players)
+                   validate-matchdate
+                   pick-players
+                   pick-scores
+                   pick-matchdate)
 
 (facts "about validation of scores"
        (fact "team 1 scores which should be invalid"
@@ -61,31 +65,37 @@
                (validate-players [1 1 nil nil]) => {:team1player1 false :team1player2 false
                                                     :team2player1 nil   :team2player2 nil})))
 
+(tabular "about validating matchdate"
+       (fact "it works like this"
+             (validate-matchdate ?input) => {:matchdate ?output})
+       ?input             ?output
+       :invalid-matchdate false
+       nil                nil
+       :something         true)
+
 (facts "about validating reports"
-       (let [all-keys     [:team1player1 :team2player1 :team1player2 :team2player2 :team1score :team2score]
+       (let [all-keys     [:team1player1 :team2player1
+                           :team1player2 :team2player2
+                           :team1score   :team2score
+                           :matchdate]
              same-vals-fn (fn [val] (apply assoc {} (interleave all-keys
                                                                (repeatedly (constantly val)))))]
          (fact "a valid report should should only contain true values"
                (validate-report {:team1 {:player1 1 :player2 2 :score 8}
-                                 :team2 {:player1 3 :player2 4 :score 10}}) => (same-vals-fn true))
+                                 :team2 {:player1 3 :player2 4 :score 10}
+                                 :matchdate "2013-07-15"}) => (same-vals-fn true)
+               (validate-report {:team1 {:player1 1 :player2 2 :score 8}
+                                 :team2 {:player1 3 :player2 4 :score 10}
+                                 :matchdate (util/parse-date "2013-07-15")}) => (same-vals-fn true))
          (fact "an empty report should only contain nil values"
                (validate-report {}) => (same-vals-fn nil)))
-       (fact "a report with invalid players should have validation for players added"
-             (let [report {:team1 ...team1... :team2 ...team2...}]
-               (validate-report report) => {:p1 false}
+       (fact "validated reports is merge of maps from validation functions"
+             (let [report {:team1 ...team1... :team2 ...team2... :matchdate ...matchdate...}]
+               (validate-report report) => {:vp ...vp... :vs ...vs... :vmd ...vmd...}
                (provided
-                (#'foosball.validation.match/validate-players (#'foosball.validation.match/pick-players report)) => {:p1 false}
-                (#'foosball.validation.match/validate-scores  (#'foosball.validation.match/pick-scores  report)) => {})))
-       (fact "a report with invalid scores should have validation for scores added"
-             (let [report {:team1 ...team1... :team2 ...team2...}]
-               (validate-report report) => {:score false}
-               (provided
-                (#'foosball.validation.match/validate-players (#'foosball.validation.match/pick-players report)) => {}
-                (#'foosball.validation.match/validate-scores  (#'foosball.validation.match/pick-scores  report)) => {:score false})))
-       (fact "a report with invalid scores and invalid players should have validation for scores and players added"
-             (let [report {:team1 ...team1... :team2 ...team2...}]
-               (validate-report report) => {:players false :score false}
-               (provided (#'foosball.validation.match/validate-players
-                          (#'foosball.validation.match/pick-players report)) => {:players false}
-                         (#'foosball.validation.match/validate-scores
-                          (#'foosball.validation.match/pick-scores  report)) => {:score false}))))
+                (#'foosball.validation.match/validate-players
+                 (#'foosball.validation.match/pick-players report)) => {:vp ...vp...}
+                (#'foosball.validation.match/validate-scores
+                 (#'foosball.validation.match/pick-scores  report)) => {:vs ...vs...}
+                (#'foosball.validation.match/validate-matchdate
+                 (#'foosball.validation.match/pick-matchdate report)) => {:vmd ...vmd...}))))

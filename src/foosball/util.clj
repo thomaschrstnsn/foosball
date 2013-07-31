@@ -1,7 +1,8 @@
 (ns foosball.util
   (:use [hiccup.element :only [link-to]])
   (:require [noir.io :as io]
-            [markdown.core :as md]))
+            [markdown.core :as md]
+            [clojure.edn :as edn]))
 
 (defn link-to-player-log [{:keys [id name active]}]
   [:span
@@ -20,18 +21,30 @@
                   link-to-player-log))
        (interpose ", ")))
 
-(def ^:private time-format "yyyy-MM-dd")
+(def ^:private date-format "yyyy-MM-dd")
 
 (defn format-datetime
-  "formats the datetime using SimpleDateFormat, the default format is
-   \"dd-MM-yyyy\" and a custom one can be passed in as the second argument"
-  ([datetime]     (format-datetime datetime time-format))
-  ([datetime fmt] (.format (new java.text.SimpleDateFormat fmt) datetime)))
+  "formats the datetime using SimpleDateFormat using the format passed in as the second argument"
+  [datetime fmt]
+  (.format (new java.text.SimpleDateFormat fmt) datetime))
 
-(defn parse-time
-  ([s] (parse-time s time-format))
-  ([s fmt]
-     (.parse (new java.text.SimpleDateFormat fmt) s)))
+(defn format-date "Formats a date as edn compatible date"
+  [d]
+  (format-datetime d date-format))
+
+(defn parsable-date?
+  "Returns true when s is a string which is parsable as an edn #inst formatted date, false otherwise."
+  [d]
+  (try (do (edn/read-string (str "#inst \"" d "T00:00:00\""))
+             true)
+         (catch Exception _ false)))
+
+(defn parse-date "Parse an edn compatible date, returns failure-value (default nil) in the case of no parse"
+  ([s] (parse-date s nil))
+  ([s failure-value]
+     (if (parsable-date? s)
+       (.parse (new java.text.SimpleDateFormat date-format) s)
+       failure-value)))
 
 (defn parse-id [s]
   (try

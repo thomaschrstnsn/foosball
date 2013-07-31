@@ -36,6 +36,9 @@
         {t2player1 :player1 t2player2 :player2} team2]
     [t1player1 t1player2 t2player1 t2player2]))
 
+(defn- pick-matchdate [{:keys [matchdate]}]
+  matchdate)
+
 (defn- validate-players [players]
   (let [mapped      (apply assoc {} (interleave [:team1player1 :team1player2
                                                  :team2player1 :team2player2]
@@ -57,6 +60,13 @@
          (apply (partial merge {:team1player1 true :team1player2 true
              :team2player1 true :team2player2 true})))))
 
+(defn- validate-matchdate [md]
+  {:matchdate (when md
+                (if (= :invalid-matchdate md)
+                  false
+                  true))})
+
 (defn validate-report [report]
-  (merge (->> report pick-scores  validate-scores)
-         (->> report pick-players validate-players)))
+  (merge (->> report pick-scores    validate-scores)
+         (->> report pick-players   validate-players)
+         (->> report pick-matchdate validate-matchdate)))

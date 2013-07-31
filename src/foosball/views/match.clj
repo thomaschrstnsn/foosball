@@ -40,8 +40,7 @@
 (defn- filter-active-players [players]
   (filter :active players))
 
-(defn form [players & [{:keys [team1 team2 matchdate]
-                        :or {matchdate (java.util.Date.)}}]]
+(defn form [players & [{:keys [team1 team2 matchdate]}]]
   (let [active-players (filter-active-players players)]
     (html5
      [:h1 "Report Match Result"]
@@ -59,7 +58,10 @@
         [:div.control-group
          [:label.control-label {:for "matchdate"} "Date played"]
          [:div.controls [:input.input-medium {:id "matchdate" :name "matchdate"
-                                       :type "date" :value (format-datetime matchdate)}]]]]]
+                                              :type "date"
+                                              :value (format-date (->> matchdate
+                                                                   ((fn [x] (when-not (= :invalid-matchdate x) x)))
+                                                                   ((fnil identity (java.util.Date.)))))}]]]]]
       [:div.row-fluid
        [:div.control-group
         [:button.btn.btn-primary.btn-large.btn-block.span8.offset2
@@ -69,7 +71,7 @@
   (let [[t1p1 t1p2 t1score] (map team1 [:player1 :player2 :score])
         [t2p1 t2p2 t2score] (map team2 [:player1 :player2 :score])]
     [:tr
-     [:td [:div.text-center (format-datetime matchdate)]]
+     [:td [:div.text-center (format-date matchdate)]]
      [:td [:div.text-center (render-team players [t1p1 t1p2])]]
      [:td [:div.text-center (format-score t1score)]]
      [:td [:div.text-center (render-team players [t2p1 t2p2])]]
@@ -98,7 +100,7 @@
    (match-table-data matches players)))
 
 (defn parse-form [p]
-  {:matchdate       (-> p :matchdate    parse-time)
+  {:matchdate       (-> p :matchdate   (parse-date :invalid-matchdate))
    :team1 {:player1 (-> p :team1player1 parse-id)
            :player2 (-> p :team1player2 parse-id)
            :score   (-> p :team1score   parse-id)}
