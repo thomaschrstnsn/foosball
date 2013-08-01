@@ -8,7 +8,7 @@
 
 (defn matchup-page
   ([]
-     (layout/common (matchup/page (db/get-players))))
+     (layout/common (matchup/page (db/get-players) (db/get-matches))))
   ([{:keys [params]}]
      (let [{:keys [playerids]} params]
        (layout/common (matchup/page (db/get-players) (db/get-matches) (map util/parse-id playerids))))))

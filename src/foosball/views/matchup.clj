@@ -4,7 +4,8 @@
         [hiccup.element :only [link-to]]
         [hiccup.page :only [html5 include-js include-css]]
         [foosball.util])
-  (:require [foosball.statistics.ratings :as ratings])
+  (:require [foosball.statistics.ratings :as ratings]
+            [foosball.statistics.team-player :as stats])
   (:use [taoensso.timbre :only [trace debug info warn error fatal spy]]))
 
 (defn- players-select [players selected]
@@ -45,8 +46,14 @@
    [:td [:div.text-center (format-rating neg-rating-diff)]]
    [:td (render-team players neg-players)]])
 
-(defn page [players & [matches selected-playerids]]
-  (let [active-players  (filter :active players)
+(defn page [players matches & [selected-playerids]]
+  (let [players-stats   (->> matches stats/calculate-player-stats
+                             (map (fn [{:keys [player] :as player-struct}] {player player-struct}))
+                             (apply merge))
+        active-players  (filter :active players)
+        sorted-players  (->> active-players
+                             (sort-by (fn [{:keys [name]}] (->> name (get players-stats) :total)))
+                             reverse)
         playerid-set    (set selected-playerids)
         enough-players? (<= 4 (count playerid-set))]
     (html5
@@ -55,7 +62,7 @@
       "Pick the players available for a match (atleast four)." [:br]
       "Then see the possible combinations of teams and their expected win/lose ratios."]
      [:form.form-horizontal {:action "/matchup" :method "POST"}
-      (players-select active-players playerid-set)
+      (players-select sorted-players playerid-set)
       [:div.row
        [:div.control-group
         [:button.btn.btn-primary.btn-large (merge  {:type "submit" :value "show"}
@@ -70,4 +77,5 @@
           [:tbody
            (->> matchups
                 (sort-by :expected-sortable)
-                (map (partial render-matchup active-players)))]])))))
+                (map (partial render-matchup active-players)))]]))))
+)
