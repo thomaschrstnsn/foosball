@@ -70,7 +70,7 @@
                             (sortable-column "Rating" :rating))
      [:tbody
       (let [stats             (calculate-player-stats matches)
-            log-and-ratings   (ratings-with-log matches)
+            log-and-ratings   (ratings-with-log players matches)
             ratings           (:ratings log-and-ratings)
             logs              (:logs log-and-ratings)
             stats-and-ratings (map (fn [{:keys [player] :as stat}]

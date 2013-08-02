@@ -47,7 +47,7 @@
             [:th "New Rating"]]
     [:tbody
      (->> matches
-          ratings-with-log
+          ((partial ratings-with-log (map :name players)))
           :logs
           (filter (comp (partial = name) :player))
           reverse

@@ -1,9 +1,9 @@
 (ns foosball.statistics.ratings
   (:use foosball.statistics.core
         foosball.statistics.elo
-        [clojure.set :only [difference]]
         [taoensso.timbre :only [trace debug info warn error fatal spy]])
-  (:require [clojure.math.combinatorics :as combo]))
+  (:require [clojure.math.combinatorics :as combo]
+            [clojure.set :as set]))
 
 (defn- expected-sum-for-teams [ratings heroes opponents]
   (let [rate-team (fn [players] (->> players
@@ -26,7 +26,7 @@
         team        (if winner?        winners losers)
         opponents   (if winner?        losers  winners)
         actual      (if winner?        1.0     0.0)
-        team-mate   (->> (difference team #{player}) first)
+        team-mate   (->> (set/difference team #{player}) first)
         expected    (expected-sum-for-player ratings [player team-mate] opponents)
         new-rating  (updated-rating-for-player ratings player actual expected)]
     {:rating {player new-rating}
@@ -48,14 +48,18 @@
 
 (def ^:private initial-rating 1500)
 
-(defn ratings-with-log [matches]
+(defn ratings-with-log [players matches]
   (let [won-matches (map determine-winner matches)
-        players     (players-from-matches won-matches)
-        initial     (->> players (map (fn [p] {p initial-rating})) (apply merge))]
+        all-players (set/union (players-from-matches won-matches) (set players))
+        initial     (->> all-players
+                         (map (fn [p] {p initial-rating}))
+                         (apply merge))]
     (reduce update-ratings-from-match {:ratings initial :logs []} won-matches)))
 
-(defn calculate-ratings [matches]
-  (:ratings (ratings-with-log matches)))
+(defn calculate-ratings [players matches]
+  (-> (ratings-with-log players matches)
+      :ratings
+      (select-keys players)))
 
 (defn calculate-current-form-for-player [logs number-of-matches player]
   (->> logs
@@ -69,7 +73,7 @@
   (let [ps (set players)]
     (->> (combo/combinations players 2)
          (map set)
-         (map (fn [t1] (set [t1 (difference ps t1)]))))))
+         (map (fn [t1] (set [t1 (set/difference ps t1)]))))))
 
 (defn possible-matchups [players]
   (->> (combo/combinations players 4)
@@ -97,7 +101,7 @@
      :neg-rating-diff foe-rating-diff}))
 
 (defn calculate-matchup [matches selected-players]
-  (let [current-ratings   (calculate-ratings matches)
+  (let [current-ratings   (calculate-ratings (map :name selected-players) matches)
         player-names      (map :name selected-players)
         possible-matchups (possible-matchups player-names)]
     (map (partial matchup-with-rating current-ratings) possible-matchups)))

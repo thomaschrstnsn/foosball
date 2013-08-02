@@ -56,22 +56,27 @@
                (calculate-team-stats example-matches) => teams-expected)))
 
 (facts "about ratings when applied to example matches"
-       (fact "it should calculate as expected"
-             (calculate-ratings example-matches) => {"Anders" 1468.883293697148,
-                                                     "Knud Erik" 1532.883293697148,
-                                                     "Lisse" 1498.5273111823453,
-                                                     "Maria" 1483.7061014233586,
-                                                     "Thomas" 1516.0}))
+       (let [all-players ["Anders" "Knud Erik" "Lisse" "Maria" "Thomas"]]
+         (fact "it should calculate as expected"
+               (calculate-ratings all-players example-matches) => {"Anders" 1468.883293697148,
+                                                                   "Knud Erik" 1532.883293697148,
+                                                                   "Lisse" 1498.5273111823453,
+                                                                   "Maria" 1483.7061014233586,
+                                                                   "Thomas" 1516.0}
+               (calculate-ratings ["Lisse"] example-matches) => {"Lisse" 1498.5273111823453}
+               (calculate-ratings [] example-matches) => {})
+         (fact "it should work with a player without matches"
+               (calculate-ratings ["non-existing"] example-matches) => {"non-existing" 1500})))
 
 (facts "about player log when applied to example matches"
-       (let [{:keys [logs]} (ratings-with-log example-matches)
+       (let [{:keys [logs]} (ratings-with-log ["Thomas"] example-matches)
              thomas-logs    (->> logs (filter (fn [l] (= "Thomas" (:player l)))) vec)]
          (fact "it should match the example log for Thomas"
                (count thomas-logs) => 3
                (map :new-rating thomas-logs) => (just [1484.0 (roughly 1500.29 0.009) 1516.0]))))
 
 (facts "about player form when applied to example matches"
-       (let [{:keys [logs]} (ratings-with-log example-matches)]
+       (let [{:keys [logs]} (ratings-with-log ["Thomas"] example-matches)]
          (fact "it should calculate as expected"
                (calculate-current-form-for-player logs 5 "Thomas")     => [false true true]
                (calculate-current-form-for-player logs 2 "Thomas")     => [true true]
