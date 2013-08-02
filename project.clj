@@ -2,18 +2,18 @@
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [org.clojure/clojurescript "0.0-1844"]
                  [com.datomic/datomic-free "0.8.3941" :exclusions [com.amazonaws/aws-java-sdk]]
-                 [lib-noir "0.6.4"]
+                 [lib-noir "0.6.6"]
                  [compojure "1.1.5" :exclusions [org.clojure/tools.macro
                                                  ring/ring-core]]
                  [ring-server "0.2.8"]
-                 [com.taoensso/timbre "2.1.2"]
+                 [com.taoensso/timbre "2.4.1"]
                  [markdown-clj "0.9.28"]
                  [prismatic/dommy "0.1.1"]
                  [log4j "1.2.17" :exclusions [javax.mail/mail
                                               javax.jms/jms
                                               com.sun.jdmk/jmxtools
                                               com.sun.jmx/jmxri]]
-                 [hiccup "1.0.3"]
+                 [hiccup "1.0.4"]
                  [org.clojure/core.async "0.1.0-SNAPSHOT"]
                  [org.clojure/math.combinatorics "0.0.4"]
                  [jayq "2.4.0"] ; advanced compiling: https://github.com/ibdknox/jayq#compiling
@@ -52,9 +52,9 @@
              :dev {:ring {:stacktraces? true}
                    :source-paths ["dev"]
                    :dependencies [[org.clojure/tools.namespace "0.2.4"]
-                                  [org.clojure/java.classpath "0.2.0"]
+                                  [org.clojure/java.classpath "0.2.1"]
                                   [ring-mock "0.1.5"]
-                                  [ring/ring-devel "1.1.8"]
+                                  [ring/ring-devel "1.2.0"]
                                   [midje "1.5.1"]]
                    :repositories {"sonatype-oss-public"
                                   "https://oss.sonatype.org/content/groups/public/"}}}
