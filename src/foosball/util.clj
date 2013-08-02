@@ -73,7 +73,7 @@
                                                           container-tag :div}}]
   [container-tag
    (when (or (nil? class?) (class? d))
-     {:class (if (checker d) "text-success" "text-error")})
+     {:class (if (checker d) "text-success" "text-danger")})
    (printer d)])
 
 (defn format-score [s]

@@ -14,7 +14,7 @@
   (let [grouped  (group-by :active players)
         active   (get grouped true)
         inactive (get grouped false)]
-    [:select.input-medium.submit-on-select {:id id :name id}
+    [:select.form-control.submit-on-select {:id id :name id}
      [:option {:value "nil" :disabled "disabled" :selected "selected"} "Active players"]
      (map (partial player-option selected) active)
      (when inactive
@@ -59,6 +59,7 @@
     (html5
      (auto-refresh-page)
      [:h1 (str "Player Log")]
+     [:p.lead "Pick a player to see the played matches of this player."]
      [:form {:action "/player/log" :method "GET"}
-      [:div.input-append (players-select "playerid" players playerid)]]
+      [:div.form-group.col-lg-3 (players-select "playerid" players playerid)]]
      (when player (player-table matches players player)))))

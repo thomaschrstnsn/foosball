@@ -7,7 +7,7 @@
          [foosball.util]))
 
 (defn- players-select [id players & [selected]]
-  [:select.input-medium {:id id :name id}
+  [:select.form-control {:id id :name id}
    [:option {:value "nil" :disabled "disabled" :selected "selected"} "Pick a player"]
    (->> players
         (map (fn [{:keys [id name]}]
@@ -20,22 +20,23 @@
         idp1    (str prefix "player" 1)
         idp2    (str prefix "player" 2)
         idscore (str prefix "score")]
-    [:div.span6.well
-     [:h2 (str "Team " team-num ":")]
+    [:div.col-lg-5.panel
+     [:div.panel-heading
+      [:h3 (str "Team " team-num ":")]]
 
-     [:div.control-group
-      [:label.control-label {:for idp1} (str "Player " 1)]
-      [:div.controls (players-select idp1 players player1)]]
+     [:div.form-group
+      [:label.control-label.col-lg-4 {:for idp1} (str "Player " 1)]
+      [:div.controls.col-lg-8 (players-select idp1 players player1)]]
 
-     [:div.control-group
-      [:label.control-label {:for idp2} (str "Player " 2)]
-      [:div.controls (players-select idp2 players player2)]]
+     [:div.form-group
+      [:label.control-label.col-lg-4 {:for idp2} (str "Player " 2)]
+      [:div.controls.col-lg-8 (players-select idp2 players player2)]]
 
-     [:div.control-group
-      [:label.control-label {:for idscore} "Score"]
-      [:div.controls [:input.input-mini {:id idscore :name idscore :type "number" :placeholder "0"
-                                          :min "0" :max "11"
-                                          :value score}]]]]))
+     [:div.form-group
+      [:label.control-label.col-lg-4 {:for idscore} "Score"]
+      [:div.controls.col-lg-8
+       [:input.form-control {:id idscore :name idscore :type "number" :placeholder "0"
+                             :min "0" :max "11" :value score}]]]]))
 
 (defn- filter-active-players [players]
   (filter :active players))
@@ -48,23 +49,23 @@
       "A match winner is the first team to reach ten goals while atleast two goals ahead of the opposing team." [:br]
       "In case of tie-break, report 11-9 or 9-11."]
      [:form.form-horizontal {:action "/report/match" :method "POST"}
-      [:div.row-fluid
+      [:div.form-group.col-lg-12
        (team-controls :team1 1 team1 active-players)
+       [:div.col-lg-2]
        (team-controls :team2 2 team2 active-players)]
 
-      [:div.row-fluid
-       [:div.offset2.span8.well
-        [:h2 "Match:"]
-        [:div.control-group
-         [:label.control-label {:for "matchdate"} "Date played"]
-         [:div.controls [:input.input-medium {:id "matchdate" :name "matchdate"
-                                              :type "date"
-                                              :value (format-date (->> matchdate
-                                                                   ((fn [x] (when-not (= :invalid-matchdate x) x)))
-                                                                   ((fnil identity (java.util.Date.)))))}]]]]]
-      [:div.row-fluid
-       [:div.control-group
-        [:button.btn.btn-primary.btn-large.btn-block.span8.offset2
+      [:div.form-group.col-lg-12
+       [:div.form-group.pull-right.col-lg-4
+        [:label.control-label.col-lg-6 {:for "matchdate"} "Date played"]
+        [:div.controls.col-lg-6
+         [:input.input-medium.form-control {:id "matchdate" :name "matchdate"
+                                            :type "date"
+                                            :value (format-date (->> matchdate
+                                                                     ((fn [x] (when-not (= :invalid-matchdate x) x)))
+                                                                     ((fnil identity (java.util.Date.)))))}]]]]
+      [:div.form-group.col-lg-12
+       [:div.form-group.col-lg-6.pull-right
+        [:button.btn.btn-primary.btn-large.btn-block
          {:type "submit" :value "Report"} "Report Match Result " [:i.icon-ok.icon-white]]]]])))
 
 (defn- render-match [{:keys [matchdate team1 team2 id]} players & {:keys [admin] :or {admin false}}]

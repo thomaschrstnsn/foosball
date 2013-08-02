@@ -37,15 +37,19 @@
 
 (defn page []
   (html5
-   [:p.lead "Copyright &copy; 2013 " [:a {:href "mailto:thomas+foos@chrstnsn.dk"} "Thomas Christensen"]]
-   [:table.table.table-hover.span4 [:caption [:h1 "Built using"]]
-    [:thead
-     [:tr
-      [:th "Software"]
-      [:th "Version"]]]
-    [:tbody
-     (map (fn [[k name url]]
-            [:tr
-             [:td [:a {:href url} name]]
-             [:td (k (current-versions))]])
-          softwares)]]))
+   [:div.col-lg-8.jumbotron
+    [:h1 "Foosball"]
+    [:p.lead "Copyright &copy; 2013 " [:a {:href "mailto:thomas+foos@chrstnsn.dk"} "Thomas Christensen"]]
+    [:h2 "Built using"]
+    [:div.col-lg-12
+     [:table.table.table-hover
+      [:thead
+       [:tr
+        [:th.text-right "Software"]
+        [:th "Version"]]]
+      [:tbody
+       (map (fn [[k name url]]
+              [:tr
+               [:td.text-right [:a {:href url} name]]
+               [:td (k (current-versions))]])
+            softwares)]]]]))

@@ -10,7 +10,7 @@
   [:form {:action action-uri :method "POST"}
     [:div.input-append
      [:h1 header-label]
-     [:select.span3 {:name "playerid"}
+     [:select.col-lg-3 {:name "playerid"}
       [:option "Player"]
       (->> players
            (map (fn [{:keys [id name]}] [:option {:value id} name])))]
@@ -21,7 +21,7 @@
    [:form {:action "/admin/player/add" :method "POST"}
     [:div.input-append
      [:h1 "Add player"]
-     [:input.span3 {:type "text" :name "playername" :placeholder "New Player"}]
+     [:input.col-lg-3 {:type "text" :name "playername" :placeholder "New Player"}]
      [:button.btn.btn-primary {:type "submit" :value "Report"} "Add!"]]]
 
    (player-select "/admin/player/activate" "Activate player" "Set active" "btn-success"

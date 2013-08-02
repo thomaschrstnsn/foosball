@@ -8,18 +8,6 @@
             [foosball.statistics.team-player :as stats])
   (:use [taoensso.timbre :only [trace debug info warn error fatal spy]]))
 
-(defn- players-select [players selected]
-  (let [number-of-players-to-show (min 16 (count players))]
-    [:div.row
-     [:div.control-group
-      [:select {:id "playerids" :name "playerids[]" :multiple "multiple" :size number-of-players-to-show}
-       (->> players
-            (map (fn [{:keys [id name]}]
-                   [:option (merge {:value id}
-                                   (when (contains? selected id) {:selected "selected"}))
-                    name])))]
-      [:span.help-inline "Select atleast four players"]]]))
-
 (defn- format-matchup-percentage [p]
   (format-value p
                 :printer (partial format-percentage 3)
@@ -46,6 +34,15 @@
    [:td [:div.text-center (format-rating neg-rating-diff)]]
    [:td (render-team players neg-players)]])
 
+(defn- players-select [players selected]
+  (let [number-of-players-to-show (min 16 (count players))]
+    [:select.form-control {:id "playerids" :name "playerids[]" :multiple "multiple" :size number-of-players-to-show}
+     (->> players
+          (map (fn [{:keys [id name]}]
+                 [:option (merge {:value id}
+                                 (when (contains? selected id) {:selected "selected"}))
+                  name])))]))
+
 (defn page [players matches & [selected-playerids]]
   (let [players-stats   (->> matches stats/calculate-player-stats
                              (map (fn [{:keys [player] :as player-struct}] {player player-struct}))
@@ -62,12 +59,14 @@
       "Pick the players available for a match (atleast four)." [:br]
       "Then see the possible combinations of teams and their expected win/lose ratios."]
      [:form.form-horizontal {:action "/matchup" :method "POST"}
-      (players-select sorted-players playerid-set)
-      [:div.row
-       [:div.control-group
-        [:button.btn.btn-primary.btn-large (merge  {:type "submit" :value "show"}
-                                                   (when-not enough-players? {:disabled "disabled"}))
-         "Show possible matchups"]]]]
+      [:div.control-group
+       [:label.control-label.col-lg-2 {:for "playerids"} "Select atleast four players"]
+       [:div.col-lg-2
+        (players-select sorted-players playerid-set)]]
+      [:div.control-group.col-lg-3
+       [:button.btn.btn-primary.btn-large.btn-block (merge  {:type "submit" :value "show"}
+                                                            (when-not enough-players? {:disabled "disabled"}))
+        "Show possible matchups"]]]
      (when enough-players?
        (let [selected-players (filter (fn [{:keys [id]}] (contains? playerid-set id)) active-players)
              matchups (ratings/calculate-matchup matches selected-players)]

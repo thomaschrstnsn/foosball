@@ -6,21 +6,20 @@
         [cfg.current :only [project]]))
 
 (defn header []
-  [:div.navbar
-   [:div.navbar-inner
-    [:a.brand {:href "/"} "Foosball"]
-    [:ul.nav.pull-left
-     [:li (link-to "/report/match"  "Report Match Result")]
-     [:li (link-to "/matches"       "Played Matches")]
-     [:li (link-to "/stats/players" "Player Statistics")]
-     [:li (link-to "/player/log"    "Player Log")]
-     [:li (link-to "/stats/teams"   "Team Statistics")]
-     [:li.divider-vertical]
-     [:li (link-to "/matchup"       "Matchup")]
-     [:li.divider-vertical]
-     [:li (link-to "/about"         "About")]]
-    [:ul.nav.pull-right
-     [:li (link-to "#" (str "Version " (:version project)))]]]])
+  [:div.navbar.navbar-static-top
+   [:a.navbar-brand {:href "/"} "Foosball"]
+   [:ul.nav.navbar-nav.pull-left
+    [:li (link-to "/report/match"  "Report Match Result")]
+    [:li (link-to "/matches"       "Played Matches")]
+    [:li (link-to "/stats/players" "Player Statistics")]
+    [:li (link-to "/player/log"    "Player Log")]
+    [:li (link-to "/stats/teams"   "Team Statistics")]
+    [:li.divider-vertical]
+    [:li (link-to "/matchup"       "Matchup")]
+    [:li.divider-vertical]
+    [:li (link-to "/about"         "About")]]
+   [:ul.nav.navbar-nav.pull-right
+     [:li (link-to "#" (str "Version " (:version project)))]]])
 
 (defn footer []
   [:script "foosball.browser.register_document_ready()"])
@@ -30,9 +29,7 @@
     [:head
      [:title "Foosball"]
      [:link {:rel "icon" :type "image/x-icon" :href "/favicon.ico"}]
-     (include-css
-       "/css/bootstrap.min.css"
-       "/css/bootstrap-responsive.min.css")
+     (include-css "/css/bootstrap.min.css")
      (include-js
        "//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"
        "/js/bootstrap.min.js"

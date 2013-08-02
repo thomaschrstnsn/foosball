@@ -79,11 +79,11 @@
        (map (fn [[k v]] {k ((fnil identity true) v)}))
        (apply merge)))
 
-(defn toggle-error-on-control-group-by-id [id error?]
-  (let [control-group (-> ($ id) (parents-until :.control-group) parent)]
+(defn toggle-error-on-form-group-by-id [id error?]
+  (let [form-group (-> ($ id) (parents-until :.form-group) parent)]
     (if error?
-      (add-class    control-group :error)
-      (remove-class control-group :error))))
+      (add-class    form-group :has-error)
+      (remove-class form-group :has-error))))
 
 (defn live-validation-of-match-report []
   (let [elem-to-chan-and-paths (apply merge
@@ -108,7 +108,7 @@
                                                               validation-map-nil-is-valid
                                                               (filter (fn [[k v]] (not (no-validation-ids k)))))]
                                       (doseq [[id valid?] validation-map]
-                                        (toggle-error-on-control-group-by-id id (not valid?)))))]
+                                        (toggle-error-on-form-group-by-id id (not valid?)))))]
     (update-ui-from-state)
     (go (loop []
           (let [[event _] (alts! chans)]
