@@ -7,7 +7,7 @@
 
 (defn header []
   [:div.navbar.navbar-static-top
-   [:a.navbar-brand {:href "/"} "Foosball"]
+   [:a.navbar-brand {:href "#"} "Foosball"]
    [:ul.nav.navbar-nav.pull-left
     [:li (link-to "/report/match"  "Report Match Result")]
     [:li (link-to "/matches"       "Played Matches")]
@@ -19,7 +19,7 @@
     [:li.divider-vertical]
     [:li (link-to "/about"         "About")]]
    [:ul.nav.navbar-nav.pull-right
-     [:li (link-to "#" (str "Version " (:version project)))]]])
+     [:p.navbar-text "Version " (:version project)]]])
 
 (defn footer []
   [:script "foosball.browser.register_document_ready()"])

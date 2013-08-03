@@ -64,7 +64,7 @@
                                                                      ((fn [x] (when-not (= :invalid-matchdate x) x)))
                                                                      ((fnil identity (java.util.Date.)))))}]]]]
       [:div.form-group.col-lg-12
-       [:div.form-group.col-lg-6.pull-right
+       [:div.form-group.col-lg-5.pull-right
         [:button.btn.btn-primary.btn-large.btn-block
          {:type "submit" :value "Report"} "Report Match Result " [:i.icon-ok.icon-white]]]]])))
 
