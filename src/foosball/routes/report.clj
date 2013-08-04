@@ -26,8 +26,6 @@
   (layout/common (match/table (db/get-matches) (db/get-players))))
 
 (defroutes report-routes
-  (GET "/" [] (redirect "/report/match"))
-
   (GET "/report/match" [] (report-match-page))
   (POST "/report/match" request (report-match request))
 
