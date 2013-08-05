@@ -49,3 +49,10 @@
 
 ** v0.9.10 [1/1]
 *** DONE sort players by name as default
+** v1.0.0 [6/6]
+*** DONE Upgrade to Twitter Bootstrap 3 RC1
+*** DONE Clientside validation of matchreport
+*** DONE Frontpage with leaderboard
+*** DONE Clientside enhancements on player-log and matchup
+*** DONE Fix bug when match date is invalid
+*** DONE Fix issue #4 (matchup with player without matches crashes)
