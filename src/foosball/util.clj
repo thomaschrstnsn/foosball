@@ -4,6 +4,15 @@
             [markdown.core :as md]
             [clojure.edn :as edn]))
 
+(defmacro symbols-as-map
+  "Inverse of descructuring as {:keys [a b c]} -
+  This macro maps the symbols passed to it as keys (keyworded) with the symbols' values as value."
+  [& symbols]
+  (if (empty? symbols)
+    {}
+    (apply assoc {} (interleave (map (fn [s] (keyword (name s))) symbols)
+                                (map (fn [s] s) symbols)))))
+
 (defn link-to-player-log [{:keys [id name active]}]
   [:span
    (link-to (str "/player/log?playerid=" id) name)
