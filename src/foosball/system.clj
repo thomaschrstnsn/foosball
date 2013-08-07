@@ -9,7 +9,7 @@
 (defn system
   "Returns a new instance of the whole application."
   [& {:keys [db-uri handler-wrapper] :or {db-uri uri handler-wrapper identity}}]
-  {:db-uri uri
+  {:db-uri db-uri
    :handler (handler-wrapper handler/war-handler)})
 
 (defn start
