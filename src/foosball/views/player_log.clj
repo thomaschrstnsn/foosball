@@ -22,7 +22,7 @@
      (when inactive
        (map (partial player-option selected) inactive))]))
 
-(defn- render-log [players l]
+(defn- render-log-matchplayed [players l]
   [:tr
    [:td (format-date (:matchdate l))]
    [:td (->> (:team-mate l) (get-player-by-name players) link-to-player-log)]
@@ -31,8 +31,31 @@
              (interpose ", "))]
    [:td (format-value (* 100 (:expected l)) :printer format-percentage :class? (partial not= (double 50)) :checker (partial < 50))]
    [:td (format-value (:win? l) :class? nil :printer {true "Won" false "Lost"} :checker true?)]
+   [:td ""]
    [:td (format-value (:delta l) :printer format-rating)]
    [:td (format-value (:new-rating l) :printer format-rating :class? nil :checker (partial < 1500))]])
+
+(defn- render-log-inactivity [players l]
+  [:tr.danger
+   [:td ""]
+   [:td ""]
+   [:td ""]
+   [:td ""]
+   [:td ""]
+   [:td.text-danger (:inactivity l)]
+   [:td (format-value (:delta l) :printer format-rating)]
+   [:td (format-value (:new-rating l) :printer format-rating :class? nil :checker (partial < 1500))]])
+
+(defn- render-log [players {:keys [log-type] :as l}]
+  (if (= :inactivity  log-type)
+    (render-log-inactivity   players l)
+    (render-log-matchplayed  players l)))
+
+(comment {:log {:log-type   :inactivity
+                :player     player
+                :matchdate  (:matchdate match)
+                :delta      inactivity-penalty
+                :new-rating new-rating}})
 
 (defn player-table [matches players {:keys [name active] :as player}]
   [:table.table.table-hover
@@ -43,13 +66,11 @@
             [:th "Opponents"]
             [:th "Expected"]
             [:th "Actual"]
+            [:th "Inactive" [:br] "Matches"]
             [:th "Diff rating"]
             [:th "New Rating"]]
     [:tbody
-     (->> matches
-          ((partial ratings-with-log (map :name players)))
-          :logs
-          (filter (comp (partial = name) :player))
+     (->> (calculate-reduced-log-for-player name matches)
           reverse
           (map (partial render-log players)))]]])
 

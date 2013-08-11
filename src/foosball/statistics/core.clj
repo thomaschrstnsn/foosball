@@ -11,22 +11,32 @@
          losers] (if (> t1score t2score)
                    [t1 t2]
                    [t2 t1])]
-    (-> match
-        (assoc-in [:winners] winners)
-        (assoc-in [:losers]  losers)
-        (assoc-in [:score-delta] [[t1 t1delta]
-                                  [t2 t2delta]]))))
+    (merge {:winners winners
+            :losers  losers
+            :players (set (concat winners losers))
+            :score-delta [[t1 t1delta] [t2 t2delta]]}
+           match)))
+
+(defn first-matchdate-for-player [player matches]
+  (let [played-matches (filter (fn [{:keys [players]}] (players player)) matches)
+        ordered-matches (sort-by :matchdate played-matches)]
+    (-> ordered-matches
+        first
+        :matchdate)))
 
 (defn players-from-matches [matches]
   (->> matches
-       (map (fn [m] [(:winners m) (:losers m)]))
-       flatten
+       (map (fn [{:keys [players]}] players))
        (apply set/union)))
 
 (defn teams-from-matches [matches]
   (->> matches
        (reduce (fn [acc m] (conj acc (:winners m) (:losers m))) [])
        set))
+
+(defn players-with-matches-by-date [comp-fn date matches]
+  (->> matches (filter (fn [{:keys [matchdate]}] (comp-fn matchdate date)))
+       players-from-matches))
 
 (defn- player-contained? [player col]
   (contains? col player))

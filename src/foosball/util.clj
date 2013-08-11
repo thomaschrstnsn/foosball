@@ -92,3 +92,20 @@
 
 (defn auto-refresh-page []
   [:script (str default-cljs-ns "page_autorefresh(90)")])
+
+;;;; compare helpers
+
+(defn less-than? [x y]
+  (neg? (compare x y)))
+
+(defn equal-to? [x y]
+  (= 0 (compare x y)))
+
+(defn greater-than? [x y]
+  (pos? (compare x y)))
+
+(defn less-than-or-equal? [x y]
+  (or (less-than? x y) (equal-to? x y)))
+
+(defn greater-than-or-equal? [x y]
+  (or (greater-than? x y) (equal-to? x y)))

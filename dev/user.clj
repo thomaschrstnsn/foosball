@@ -8,7 +8,8 @@
             [clojure.tools.namespace.repl :refer (refresh refresh-all set-refresh-dirs)]
             [ring.middleware.stacktrace :as stacktrace]
             [foosball.system :as system]
-            [foosball.models.db :as db]))
+            [foosball.models.db :as db]
+            [dev-data :as d]))
 
 (def system nil)
 
