@@ -31,7 +31,7 @@
      [:link {:rel "icon" :type "image/x-icon" :href "/favicon.ico"}]
      (include-css "/css/bootstrap.min.css")
      (include-js
-       "//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"
+       "/js/jquery.min.js"
        "/js/bootstrap.min.js"
        "/js/foosball.js")]
     [:body content]))
