@@ -20,10 +20,8 @@
         idp1    (str prefix "player" 1)
         idp2    (str prefix "player" 2)
         idscore (str prefix "score")]
-    [:div.col-lg-5.panel
-     [:div.panel-heading
-      [:h3 (str "Team " team-num ":")]]
-
+    [:div.col-lg-5.well.well-lg
+     [:h2 (str "Team " team-num ":")]
      [:div.form-group
       [:label.control-label.col-lg-4 {:for idp1} (str "Player " 1)]
       [:div.controls.col-lg-8 (players-select idp1 players player1)]]

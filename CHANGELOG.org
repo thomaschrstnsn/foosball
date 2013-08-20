@@ -56,3 +56,12 @@
 *** DONE Clientside enhancements on player-log and matchup
 *** DONE Fix bug when match date is invalid
 *** DONE Fix issue #4 (matchup with player without matches crashes)
+** Version 1.1.0 [3/3]
+*** DONE decrease rating for inactive players
+    CLOSED: [2013-08-19 Man 07:16]
+**** TODO rating decrease weighted by rating (most rating pays most penalty)
+**** TODO show inactivity penalties in player-log (accumulated between matches)
+*** DONE player statistics should show last match date/days since last match for each player
+    CLOSED: [2013-08-20 Tir 21:56]
+*** DONE mix sort columns which broke with bootstrap 3 inclusion
+    CLOSED: [2013-08-20 Tir 22:19]
