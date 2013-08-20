@@ -2,7 +2,9 @@
   (:use [hiccup.page :only [html5]])
   (:use [taoensso.timbre :only [trace debug info warn error fatal spy]])
   (:use [foosball.statistics team-player ratings])
-  (:use [foosball.util]))
+  (:use [foosball.util])
+  (:use [clj-time.core   :only [interval in-days]]
+        [clj-time.coerce :only [from-date]]))
 
 (defn- format-match-percentage [p wins?]
   (format-value p
@@ -21,6 +23,7 @@
    [:td (format-match-percentage (:win-perc p)  true)]
    [:td (format-match-percentage (:loss-perc p) false)]
    [:td (format-value (:score-delta p))]
+   [:td (:days-since-latest-match p) "/" (:matches-after-last p)]
    [:td (map #(format-value % :printer {true "W" false "L"} :class? nil :checker true? :container-tag :span) (:form p))]
    [:td (format-value (:rating p) :printer format-rating :class? nil :checker (partial < 1500))]])
 
@@ -66,6 +69,7 @@
    [:table.table.table-hover
     [:caption [:h1 "Player Statistics"]]
     [:thead (common-columns (sortable-column "Player" :player)
+                            [:th "Inactive" [:br] "Days/Matches"]
                             [:th "Form"]
                             (sortable-column "Rating" :rating))
      [:tbody
@@ -73,10 +77,13 @@
             log-and-ratings   (ratings-with-log players matches)
             ratings           (:ratings log-and-ratings)
             logs              (:logs log-and-ratings)
+            today             (from-date (java.util.Date.))
             stats-and-ratings (map (fn [{:keys [player] :as stat}]
                                      (merge stat
                                             {:rating (ratings player)}
-                                            {:form   (calculate-current-form-for-player logs 5 player)}))
+                                            {:form   (calculate-current-form-for-player logs 5 player)}
+                                            {:days-since-latest-match (in-days (interval (from-date (:latest-matchdate stat))
+                                                                                         today))}))
                                    stats)]
         (->> stats-and-ratings
              (sort-by (if (nil? sort) :rating sort))

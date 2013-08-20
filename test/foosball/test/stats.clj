@@ -38,18 +38,13 @@
 
 (def all-players (set ["Anders" "Knud Erik" "Lisse" "Maria" "Thomas"]))
 
-(tabular "about the first-matchdate-for-player"
-         (let [won-example-matches (map determine-winner example-matches)
-               april-11th          #inst "2013-04-11"
-               april-12th          #inst "2013-04-12"]
-         (first-matchdate-for-player ?player won-example-matches) => ?expected)
-         ?player     ?expected
-         "Unknown"   nil
-         "Thomas"    april-11th
-         "Knud Erik" april-11th
-         "Lisse"     april-11th
-         "Anders"    april-11th
-         "Maria"     april-12th)
+(fact "about the last-matchdate"
+      (calculate-player-stats example-matches) => (just [(contains {:player "Thomas"    :latest-matchdate #inst "2013-04-13"})
+                                                         (contains {:player "Anders"    :latest-matchdate #inst "2013-04-15"})
+                                                         (contains {:player "Maria"     :latest-matchdate #inst "2013-04-15"})
+                                                         (contains {:player "Knud Erik" :latest-matchdate #inst "2013-04-15"})
+                                                         (contains {:player "Lisse"     :latest-matchdate #inst "2013-04-15"})]
+                                                        :in-any-order))
 
 (facts "about players-with-matches-by-date"
        (let [won-example-matches (map determine-winner example-matches)]
@@ -62,11 +57,11 @@
 
 (facts "about statistics when applied to example matches"
        (let [players-expected
-             [{:player "Thomas",   :wins 2, :losses 1, :total 3, :win-perc 200/3, :loss-perc 100/3 :score-delta  7}
-              {:player "Lisse",    :wins 2, :losses 2, :total 4, :win-perc 50N,   :loss-perc 50N   :score-delta -7}
-              {:player "Anders",   :wins 1, :losses 3, :total 4, :win-perc 25N,   :loss-perc 75N   :score-delta -9}
-              {:player "Maria",    :wins 1, :losses 2, :total 3, :win-perc 100/3, :loss-perc 200/3 :score-delta 2}
-              {:player "Knud Erik",:wins 2, :losses 0, :total 2, :win-perc 100,   :loss-perc 0     :score-delta 7}]
+             [(contains {:player "Thomas",   :wins 2, :losses 1, :total 3, :win-perc 200/3, :loss-perc 100/3 :score-delta  7})
+              (contains {:player "Lisse",    :wins 2, :losses 2, :total 4, :win-perc 50N,   :loss-perc 50N   :score-delta -7})
+              (contains {:player "Anders",   :wins 1, :losses 3, :total 4, :win-perc 25N,   :loss-perc 75N   :score-delta -9})
+              (contains {:player "Maria",    :wins 1, :losses 2, :total 3, :win-perc 100/3, :loss-perc 200/3 :score-delta 2})
+              (contains {:player "Knud Erik",:wins 2, :losses 0, :total 2, :win-perc 100,   :loss-perc 0     :score-delta 7})]
              teams-expected
              [{:team #{"Lisse" "Knud Erik"}, :wins 1, :losses 0, :total 1, :win-perc 100, :loss-perc 0   :score-delta  3}
               {:team #{"Anders" "Maria"},    :wins 0, :losses 1, :total 1, :win-perc 0,   :loss-perc 100 :score-delta -2}
@@ -77,7 +72,7 @@
               {:team #{"Thomas" "Maria"},    :wins 1, :losses 0, :total 1, :win-perc 100, :loss-perc 0   :score-delta  8}
               {:team #{"Lisse" "Maria"},     :wins 0, :losses 1, :total 1, :win-perc 0,   :loss-perc 100 :score-delta -4}]]
          (fact "it should calculate player statistics as expected"
-               (calculate-player-stats example-matches) => players-expected)
+               (calculate-player-stats example-matches) => (just players-expected))
          (fact "it should calculate team statistics as expected"
                (calculate-team-stats example-matches) => teams-expected)))
 

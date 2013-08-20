@@ -1,4 +1,4 @@
-(defproject foosball "1.0.1-SNAPSHOT"
+(defproject foosball "1.1.0-SNAPSHOT"
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [org.clojure/clojurescript "0.0-1844"]
                  [com.datomic/datomic-free "0.8.3941" :exclusions [com.amazonaws/aws-java-sdk]]
@@ -15,6 +15,7 @@
                                               com.sun.jmx/jmxri]]
                  [hiccup "1.0.4"]
                  [org.clojure/math.combinatorics "0.0.4"]
+                 [clj-time "0.6.0"]
                  [jayq "2.4.0"] ; advanced compiling: https://github.com/ibdknox/jayq#compiling
                  ]
 

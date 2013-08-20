@@ -17,13 +17,6 @@
             :score-delta [[t1 t1delta] [t2 t2delta]]}
            match)))
 
-(defn first-matchdate-for-player [player matches]
-  (let [played-matches (filter (fn [{:keys [players]}] (players player)) matches)
-        ordered-matches (sort-by :matchdate played-matches)]
-    (-> ordered-matches
-        first
-        :matchdate)))
-
 (defn players-from-matches [matches]
   (->> matches
        (map (fn [{:keys [players]}] players))

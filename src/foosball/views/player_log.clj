@@ -51,12 +51,6 @@
     (render-log-inactivity   players l)
     (render-log-matchplayed  players l)))
 
-(comment {:log {:log-type   :inactivity
-                :player     player
-                :matchdate  (:matchdate match)
-                :delta      inactivity-penalty
-                :new-rating new-rating}})
-
 (defn player-table [matches players {:keys [name active] :as player}]
   [:table.table.table-hover
    [:caption [:h2 (str "Played Matches: " name (when-not active " (inactive)")) ]]
