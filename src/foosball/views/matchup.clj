@@ -28,9 +28,9 @@
   [:tr
    [:td [:div.text-right  (render-team players pos-players)]]
    [:td [:div.text-center (format-rating pos-rating-diff)]]
-   [:td [:div.text-center (when (pos? expected-diff) [:i.icon-arrow-left])]]
+   [:td [:div.text-center (when (pos? expected-diff) [:span.glyphicon.glyphicon-arrow-left])]]
    [:td [:div.text-center (format-matchup-percentage (* 100 expected-diff))]]
-   [:td [:div.text-center (when (neg? expected-diff) [:i.icon-arrow-right])]]
+   [:td [:div.text-center (when (neg? expected-diff) [:span.glyphicon.glyphicon-arrow-right])]]
    [:td [:div.text-center (format-rating neg-rating-diff)]]
    [:td (render-team players neg-players)]])
 
@@ -64,7 +64,7 @@
        [:div.col-lg-2
         (players-select sorted-players playerid-set)]]
       [:div.control-group.col-lg-3
-       [:button.btn.btn-primary.btn-large.btn-block (merge  {:type "submit" :value "show"}
+       [:button.btn.btn-primary.btn-lg.btn-block (merge  {:type "submit" :value "show"}
                                                             (when-not enough-players? {:disabled "disabled"}))
         "Show possible matchups"]]]
      (when enough-players?
@@ -76,5 +76,4 @@
           [:tbody
            (->> matchups
                 (sort-by :expected-sortable)
-                (map (partial render-matchup active-players)))]]))))
-)
+                (map (partial render-matchup active-players)))]])))))

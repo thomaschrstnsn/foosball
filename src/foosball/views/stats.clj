@@ -49,8 +49,8 @@
         desc (str "?" sort "&order=desc")
         asc  (str "?" sort "&order=asc")]
     [:th heading
-     [:a {:href desc} [:i.icon-chevron-up]]
-     [:a {:href asc}  [:i.icon-chevron-down]]]))
+     [:a {:href desc} [:span.glyphicon.glyphicon-chevron-up]]
+     [:a {:href asc}  [:span.glyphicon.glyphicon-chevron-down]]]))
 
 (defn- common-columns [first-column & last-columns]
   [:tr

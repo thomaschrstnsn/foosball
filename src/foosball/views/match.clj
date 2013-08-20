@@ -65,8 +65,8 @@
                                                                      ((fnil identity (java.util.Date.)))))}]]]]
       [:div.form-group.col-lg-12
        [:div.form-group.col-lg-5.pull-right
-        [:button.btn.btn-primary.btn-large.btn-block
-         {:type "submit" :value "Report"} "Report Match Result " [:i.icon-ok.icon-white]]]]])))
+        [:button.btn.btn-primary.btn-lg.btn-block
+         {:type "submit" :value "Report"} "Report Match Result " [:span.glyphicon.glyphicon-ok]]]]])))
 
 (defn- render-match [{:keys [matchdate team1 team2 id]} players & {:keys [admin] :or {admin false}}]
   (let [[t1p1 t1p2 t1score] (map team1 [:player1 :player2 :score])

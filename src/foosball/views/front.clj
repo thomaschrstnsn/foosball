@@ -15,7 +15,7 @@
 
 (defn- nav-button [url label]
   [:div.col-lg-6
-      [:a.btn.btn-info.btn-large.btn-block {:href url} label]])
+      [:a.btn.btn-info.btn-lg.btn-block {:href url} label]])
 
 (defn page [players matches]
   (html5

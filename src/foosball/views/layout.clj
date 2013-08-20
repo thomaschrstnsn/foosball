@@ -6,7 +6,7 @@
         [cfg.current :only [project]]))
 
 (defn header []
-  [:div.navbar.navbar-static-top
+  [:div.navbar.navbar-static-top.navbar-default
    [:a.navbar-brand {:href "/"} "Foosball"]
    [:ul.nav.navbar-nav.pull-left
     [:li (link-to "/matchup"       "Matchup")]
