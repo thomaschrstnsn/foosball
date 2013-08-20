@@ -9,10 +9,10 @@
   [:div.navbar.navbar-static-top
    [:a.navbar-brand {:href "/"} "Foosball"]
    [:ul.nav.navbar-nav.pull-left
-    [:li (link-to "/stats/players" "Player Statistics")]
-    [:li (link-to "/stats/teams"   "Team Statistics")]
     [:li (link-to "/matchup"       "Matchup")]
     [:li (link-to "/report/match"  "Report Match Result")]
+    [:li (link-to "/stats/players" "Player Statistics")]
+    [:li (link-to "/stats/teams"   "Team Statistics")]
     [:li (link-to "/matches"       "Played Matches")]
     [:li (link-to "/player/log"    "Player Log")]
     [:li (link-to "/about"         "About")]]
