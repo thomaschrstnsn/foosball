@@ -22,7 +22,19 @@
     [:th [:div.text-center "Expected %"]]
     [:th ""]
     [:th [:div.text-center "Rating ±"]]
-    [:th "Team 2"]]])
+    [:th "Team 2"]
+    [:th ""]]])
+
+(defn- render-match-report-button [players team1 team2]
+  (let [get-player-id-fn (fn [p] (->> p (get-player-by-name players) :id))
+        [t1p1 t1p2]      (map get-player-id-fn team1)
+        [t2p1 t2p2]      (map get-player-id-fn team2)]
+    [:a.btn.btn-default {:href (str "/report/match/with-players"
+                                    "?t1p1=" t1p1
+                                    "&t1p2=" t1p2
+                                    "&t2p1=" t2p1
+                                    "&t2p2=" t2p2)}
+     "Report result"]))
 
 (defn- render-matchup [players {:keys [pos-players neg-players expected-diff pos-rating-diff neg-rating-diff]}]
   [:tr
@@ -32,7 +44,8 @@
    [:td [:div.text-center (format-matchup-percentage (* 100 expected-diff))]]
    [:td [:div.text-center (when (neg? expected-diff) [:span.glyphicon.glyphicon-arrow-right])]]
    [:td [:div.text-center (format-rating neg-rating-diff)]]
-   [:td (render-team players neg-players)]])
+   [:td (render-team players neg-players)]
+   [:td (render-match-report-button players pos-players neg-players)]])
 
 (defn- players-select [players selected]
   (let [number-of-players-to-show (min 16 (count players))]
