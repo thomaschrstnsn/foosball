@@ -7,7 +7,7 @@
             [foosball.models.db :as db]))
 
 (defn admin-page []
-  (layout/common (admin/form (db/get-players) (db/get-matches))))
+  (layout/common "ADMIN" (admin/form (db/get-players) (db/get-matches))))
 
 (defn add-player [name]
   (info {:add-player name})

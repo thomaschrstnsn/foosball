@@ -6,10 +6,10 @@
             [foosball.models.db    :as db]))
 
 (defn front-page []
-  (layout/common (front/page (db/get-players) (db/get-matches))))
+  (layout/common nil (front/page (db/get-players) (db/get-matches))))
 
 (defn about-page []
-  (layout/common (about/page)))
+  (layout/common "About" (about/page)))
 
 (defroutes home-routes
   (GET "/"      [] (front-page))

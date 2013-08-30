@@ -22,10 +22,12 @@
 (defn footer []
   [:script "foosball.browser.register_document_ready()"])
 
-(defhtml base [& content]
+(defhtml base [page-title & content]
   (html5
     [:head
-     [:title "Foosball"]
+     [:title (if page-title
+               (str "Foosball - " page-title)
+               "Foosball")]
      [:link {:rel "icon" :type "image/x-icon" :href "/favicon.ico"}]
      (include-css "/css/bootstrap.min.css")
      (include-js
@@ -34,5 +36,5 @@
        "/js/foosball.js")]
     [:body content]))
 
-(defn common [& content]
-  (base (header) [:div.container content] (footer)))
+(defn common [page-title & content]
+  (base page-title (header) [:div.container content] (footer)))

@@ -8,13 +8,13 @@
             [foosball.models.db :as db]))
 
 (defn stats-players [sort order]
-  (layout/common (stats/player-table (db/get-matches) (db/get-players) :sort (keyword sort) :order (keyword order))))
+  (layout/common "Player Statistics" (stats/player-table (db/get-matches) (db/get-players) :sort (keyword sort) :order (keyword order))))
 
 (defn stats-teams [sort order]
-  (layout/common (stats/team-table (db/get-matches) (db/get-players) :sort (keyword sort) :order (keyword order))))
+  (layout/common "Team Statistics" (stats/team-table (db/get-matches) (db/get-players) :sort (keyword sort) :order (keyword order))))
 
 (defn log-for-player [playerid]
-  (layout/common (player-log/player-log-page (db/get-matches) (db/get-players) playerid)))
+  (layout/common "Player Log" (player-log/player-log-page (db/get-matches) (db/get-players) playerid)))
 
 (defroutes stats-routes
   (GET "/stats/players" [sort order] (stats-players sort order))

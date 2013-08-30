@@ -7,12 +7,14 @@
             [foosball.util :as util]
             [foosball.models.db :as db]))
 
+(def report-match-title "Report Match")
+
 (defn report-match-page
-  ([] (layout/common (match/form (db/get-players))))
+  ([] (layout/common report-match-title (match/form (db/get-players))))
   ([team1player1 team1player2 team2player1 team2player2]
      (let [params (util/symbols-as-map team1player1 team1player2 team2player1 team2player2)
            parsed (match/parse-form params)]
-       (layout/common (match/form (db/get-players) parsed)))))
+       (layout/common report-match-title (match/form (db/get-players) parsed)))))
 
 (defn report-match [{:keys [params]}]
   (info {:report-match-params params})
@@ -24,10 +26,10 @@
         (info {:validated-report validated-report})
         (db/create-match parsed-form)
         (redirect-after-post "/stats/players"))
-      (layout/common (match/form (db/get-players) parsed-form)))))
+      (layout/common report-match-title (match/form (db/get-players) parsed-form)))))
 
 (defn matches-page []
-  (layout/common (match/table (db/get-matches) (db/get-players))))
+  (layout/common "Matches" (match/table (db/get-matches) (db/get-players))))
 
 (defroutes report-routes
   (GET "/report/match" [] (report-match-page))
