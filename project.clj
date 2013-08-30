@@ -26,18 +26,10 @@
                  :build-via  :lein-ring-uberwar
                  :shell ["scp" :build-artifact "webber:/var/lib/tomcat7/webapps/ROOT.war"]}
 
-  :cljsbuild {:builds {
-                       ;; :prod
-                       ;; {:source-paths ["src-cljs"]
-                       ;;  :compiler {:pretty-print false
-                       ;;             :output-to "resources/public/js/foosball.js"
-                       ;;             :optimizations :simple}}
-
-                       :dev {:source-paths ["src-cljs"],
-                             :compiler {:pretty-print true
+  :cljsbuild {:builds {:dev {:source-paths ["src-cljs"],
+                             :compiler {:pretty-print false
                                         :output-to "resources/public/js/foosball.js"
-                                        :optimizations :whitespace}}
-                       }}
+                                        :optimizations :simple}}}}
 
   :ring {:handler foosball.handler/war-handler,
          :init foosball.servlet-lifecycle/init,
