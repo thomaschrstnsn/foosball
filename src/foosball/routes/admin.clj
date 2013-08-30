@@ -14,6 +14,11 @@
   (db/create-player name)
   (redirect-after-post "/admin"))
 
+(defn rename-player [playerid newplayername]
+  (info {:rename-player (util/symbols-as-map playerid newplayername)})
+  (db/rename-player (util/parse-id playerid) newplayername)
+  (redirect-after-post "/admin"))
+
 (defn activate-player [id]
   (info {:remove-player id})
   (db/activate-player (util/parse-id id))
@@ -32,6 +37,7 @@
 (defroutes admin-routes
   (GET "/admin" [] (admin-page))
   (POST "/admin/player/add" [playername] (add-player playername))
+  (POST "/admin/player/rename" [playerid newplayername] (rename-player playerid newplayername))
   (POST "/admin/player/deactivate" [playerid] (deactivate-player playerid))
   (POST "/admin/player/activate" [playerid] (activate-player playerid))
   (POST "/admin/match/remove" [matchid] (remove-match matchid)))

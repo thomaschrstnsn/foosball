@@ -48,6 +48,9 @@
     @(d/transact conn [{:db/id player-id :player/name name}
                        {:db/id player-id :player/active true}])))
 
+(defn rename-player [id newplayername]
+  @(d/transact conn [{:db/id id :player/name newplayername}]))
+
 (defn activate-player [id]
   @(d/transact conn [{:db/id id :player/active true}]))
 
