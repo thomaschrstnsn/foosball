@@ -68,3 +68,9 @@
 ** Version 1.1.1 [1/1]
 *** DONE link from matchup to report-match with the selected players
     CLOSED: [2013-08-21 Ons 16:19]
+** Version 1.1.2 [5/5]
+*** DONE Styling of admin page with Bootstrap 3 styles
+*** DONE Renaming of players via admin page
+*** DONE Page titles to layout
+*** DONE Use local jQuery instead of cdn
+*** DONE Compile ClojureScript with simple-optimizations to reduce size
