@@ -24,12 +24,12 @@
     [:h1 "Foosball"]
     [:h2 "Keeps track of results, ratings and players for foosball matches."]
     [:div.row
-     (nav-button "/stats/players" "See all player's ratings")
+     (nav-button "/stats/players" "See ratings for all players")
      (nav-button "/matchup"       "Matchup players for a match")]
     [:br]
     [:div.row
      (nav-button "/report/match"  "Report the result of a match")
-     (nav-button "/matches"       "See all played matches' results")]]
+     (nav-button "/matches"       "See results of all played  matches")]]
    [:table.table.table-hover.table-condensed
     [:caption [:h1 "Current leaderboard"]]
     [:thead
