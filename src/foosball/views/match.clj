@@ -66,7 +66,7 @@
         [:button.btn.btn-primary.btn-lg.btn-block
          {:type "submit" :value "Report"} "Report Match Result " [:span.glyphicon.glyphicon-ok]]]]])))
 
-(defn- render-match [{:keys [matchdate team1 team2 id]} players & {:keys [admin] :or {admin false}}]
+(defn- render-match [{:keys [matchdate team1 team2 id reported-by]} players & {:keys [admin] :or {admin false}}]
   (let [[t1p1 t1p2 t1score] (map team1 [:player1 :player2 :score])
         [t2p1 t2p2 t2score] (map team2 [:player1 :player2 :score])]
     [:tr
@@ -75,6 +75,7 @@
      [:td [:div.text-center (format-score t1score)]]
      [:td [:div.text-center (render-team players [t2p1 t2p2])]]
      [:td [:div.text-center (format-score t2score)]]
+     [:td [:div.text-center reported-by]]
      (when admin [:td [:button.btn.btn-danger {:type "submit" :name "matchid" :value id} "Remove!"]])]))
 
 (defn match-table-data [matches players & {:keys [admin] :or {admin false}}]
@@ -86,6 +87,7 @@
       [:th [:div.text-center "Score"]]
       [:th [:div.text-center "Team 2"]]
       [:th [:div.text-center "Score"]]
+      [:th [:div.text-center "Reported by"]]
       (when admin
         [:th ""])]]
     [:tbody

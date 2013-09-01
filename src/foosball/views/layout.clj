@@ -3,21 +3,28 @@
         [hiccup.def :only [defhtml]]
         [hiccup.element :only [link-to]]
         [hiccup.page :only [html5 include-js include-css]]
-        [cfg.current :only [project]]))
+        [cfg.current :only [project]])
+  (:require [foosball.auth :as auth]))
 
 (defn header []
   [:div.navbar.navbar-static-top.navbar-default
    [:a.navbar-brand {:href "/"} "Foosball"]
    [:ul.nav.navbar-nav.pull-left
-    [:li (link-to "/matchup"       "Matchup")]
-    [:li (link-to "/report/match"  "Report Match Result")]
+    (when (auth/user?) [:li (link-to "/matchup"       "Matchup")])
+    (when (auth/user?) [:li (link-to "/report/match"  "Report Match Result")])
     [:li (link-to "/stats/players" "Player Statistics")]
     [:li (link-to "/stats/teams"   "Team Statistics")]
     [:li (link-to "/matches"       "Played Matches")]
     [:li (link-to "/player/log"    "Player Log")]
+    (when (auth/admin?) [:li (link-to "/admin" "Admin")])
     [:li (link-to "/about"         "About")]]
    [:ul.nav.navbar-nav.pull-right
-     [:p.navbar-text "Version " (:version project)]]])
+    (let [playername (auth/current-auth :playername)]
+      [:li (if-not (auth/current-auth)
+             (auth/login-form :form-class "navbar-form")
+             (auth/logout-form :extra-class "navbar-form" :text (str "Logout"
+                                                                     (when playername (str " " playername)))))])
+    [:p.navbar-text "Version " (:version project)]]])
 
 (defn footer []
   [:script "foosball.browser.register_document_ready()"])

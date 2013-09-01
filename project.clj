@@ -1,13 +1,13 @@
-(defproject foosball "1.1.3-SNAPSHOT"
+(defproject foosball "1.2.0-SNAPSHOT"
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [org.clojure/clojurescript "0.0-1844"]
                  [com.datomic/datomic-free "0.8.3941" :exclusions [com.amazonaws/aws-java-sdk]]
-                 [lib-noir "0.6.6"]
+                 [lib-noir "0.6.8"]
                  [compojure "1.1.5" :exclusions [org.clojure/tools.macro
                                                  ring/ring-core]]
-                 [ring-server "0.2.8"]
-                 [com.taoensso/timbre "2.4.1"]
-                 [markdown-clj "0.9.28"]
+                 [ring-server "0.3.0"]
+                 [com.cemerick/friend "0.1.5"]
+                 [com.taoensso/timbre "2.6.1"]
                  [prismatic/dommy "0.1.1"]
                  [log4j "1.2.17" :exclusions [javax.mail/mail
                                               javax.jms/jms
@@ -32,7 +32,7 @@
                                         :optimizations :simple}}}}
 
   :ring {:handler foosball.handler/war-handler,
-         :init foosball.servlet-lifecycle/init,
+         :init    foosball.servlet-lifecycle/init,
          :destroy foosball.servlet-lifecycle/destroy
          :open-browser? false
          :auto-reload? false}

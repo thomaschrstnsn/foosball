@@ -22,13 +22,6 @@
 (defn form [players matches]
   (html5
    [:div
-    [:form.form-inline {:action "/admin/player/add" :method "POST"}
-     [:h1 "Add player"]
-     [:div.form-group.col-lg-6
-      [:input.form-control.col-lg-3 {:type "text" :name "playername" :placeholder "New Player"}]]
-     [:div.form-group.col-lg-6
-      [:button.btn.btn-primary {:type "submit" :value "Report"} "Add!"]]]
-
     [:form.form-horizontal {:action "/admin/player/rename" :method "POST"}
      [:h1 "Rename player"]
      [:div.form-group.col-lg-6 (player-select players)]

@@ -19,6 +19,9 @@
    ['ring-server/ring-server
     "Ring"
     "https://github.com/ring-clojure/ring"]
+   ['com.cemerick/friend
+    "Friend"
+    "https://github.com/cemerick/friend"]
    ['compojure/compojure
     "Compojure"
     "https://github.com/weavejester/compojure"]
@@ -31,6 +34,9 @@
    ['prismatic/dommy
     "Dommy"
     "https://github.com/Prismatic/dommy"]
+   ['clj-time/clj-time
+    "clj-time"
+    "https://github.com/clj-time/clj-time"]
    ['com.taoensso/timbre
     "Timbre"
     "https://github.com/ptaoussanis/timbre"]])
@@ -39,7 +45,7 @@
   (html5
    [:div.col-lg-8.jumbotron
     [:h1 "Foosball"]
-    [:p.lead "Copyright &copy; 2013 " [:a {:href "mailto:thomas+foos@chrstnsn.dk"} "Thomas Christensen"]]
+    [:p.lead "Copyright &copy; 2013 " [:a {:href "http://about.me/thomaschrstnsn"} "Thomas Christensen"]]
     [:h2 "Built using"]
     [:div.col-lg-12
      [:table.table.table-hover
@@ -52,4 +58,6 @@
               [:tr
                [:td.text-right [:a {:href url} name]]
                [:td (k (current-versions))]])
-            softwares)]]]]))
+            softwares)]]]
+    [:h2 "Styled using"]
+    [:p.lead [:a {:href "http://getbootstrap.com"} "Bootstrap 3"] " with " [:a {:href "http://glyphicons.com"} "Glyphicons"] "."]]))

@@ -2,7 +2,8 @@
   (:use [taoensso.timbre :only [trace debug info warn error fatal spy]])
   (:use [datomic.api :only [q db] :as d])
   (:use [foosball.models.schema :only [eav-schema]])
-  (:use [clojure.set :only [difference]]))
+  (:use [clojure.set :only [difference]])
+  (:require [foosball.util :as util]))
 
 (def ^:dynamic ^:private conn)
 
@@ -18,9 +19,22 @@
         transaction              (map (fn [id] {:db/id id :player/active true}) players-to-default)]
     @(d/transact conn transaction)))
 
-(def migrations
-  "seq of idempotent migration functions"
-  {"ensure-players-have-active-flags" ensure-players-have-active-flags})
+(defn- ensure-players-users-have-roles []
+  (let [dbc                (db conn)
+        players-with-names (->> (d/q '[:find ?pid :where [?pid :player/name _]] dbc)
+                                (map (fn [[id]] id))
+                                set)
+        players-with-roles (->> (d/q '[:find ?pid :where [?pid :user/role _]] dbc)
+                                (map (fn [[id]] id))
+                                set)
+        players-to-default (difference players-with-names players-with-roles)
+        transaction        (map (fn [id] {:db/id id :user/role :user}) players-to-default)]
+    (info {:ensure-players-users-have-roles transaction})
+    @(d/transact conn transaction)))
+
+(def migrations "seq of idempotent migration functions"
+  {"ensure-players-have-active-flags" ensure-players-have-active-flags
+   "ensure-players-users-have-roles"  ensure-players-users-have-roles})
 
 (defn create-db-and-connect [uri]
   (info "creating database on uri:" uri)
@@ -43,10 +57,13 @@
   (d/delete-database uri)
   (alter-var-root #'conn (constantly nil)))
 
-(defn create-player [name]
-  (let [player-id (d/tempid :db.part/user)]
-    @(d/transact conn [{:db/id player-id :player/name name}
-                       {:db/id player-id :player/active true}])))
+(defn create-player [name openid]
+  (let [playerid (d/tempid :db.part/user)
+        result    @(d/transact conn [{:db/id playerid :player/name name}
+                                     {:db/id playerid :player/active true}
+                                     {:db/id playerid :user/openids openid}
+                                     {:db/id playerid :user/role :user}])]
+    (-> result :tempids first second)))
 
 (defn rename-player [id newplayername]
   @(d/transact conn [{:db/id id :player/name newplayername}]))
@@ -57,14 +74,63 @@
 (defn deactivate-player [id]
   @(d/transact conn [{:db/id id :player/active false}]))
 
+(defn set-players-role [id role]
+  @(d/transact conn [{:db/id id :user/role role}]))
+
 (defn get-players []
-  (->> (d/q '[:find ?pid ?n ?a :where
+  (->> (d/q '[:find ?pid ?n ?a ?role :where
               [?pid :player/name ?n]
-              [?pid :player/active ?a]] (db conn))
-       (map (fn [[id name active]] {:id id :name name :active active}))
+              [?pid :player/active ?a]
+              [?pid :user/role ?role]] (db conn))
+       (map (fn [[id name active role]] (util/symbols-as-map id name active role)))
        (sort-by :name)))
 
-(defn create-match [{:keys [matchdate team1 team2]}]
+;; openid
+
+(defn add-openid-to-player [playerid openid]
+  @(d/transact conn [{:db/id playerid :user/openids openid}]))
+
+(defn remove-openids-from-player [playerid openids]
+  @(d/transact conn (vec (for [openid openids]
+                           [:db/retract playerid :user/openids openid]))))
+
+(defn get-players-openids [id]
+  (->> (d/q '[:find ?openids :in $ ?id :where [?id :user/openids ?openids]] (db conn) id)
+       (mapcat identity)
+       (set)))
+
+(defn remove-players-openids [id]
+  (remove-openids-from-player id (get-players-openids id)))
+
+(defn get-players-with-openids []
+  (->> (d/q '[:find ?pid ?name
+              :where
+              [?pid :player/name ?name]
+              [?pid :user/openids _]]
+            (db conn))
+       (map (fn [[id name]] (util/symbols-as-map id name)))))
+
+(defn get-players-without-openids []
+  (let [playerids-with-openid (->> (get-players-with-openids)
+                                   (map (fn [{:keys [id]}] id))
+                                   (set))]
+    (->> (get-players)
+         (filter (fn [{:keys [id]}] (not (playerids-with-openid id)))))))
+
+(defn get-player-with-given-openid [openid]
+  (->> (d/q '[:find ?pid ?name ?role
+              :in $ ?openid
+              :where
+              [?pid :player/name ?name]
+              [?pid :user/openids ?openid]
+              [?pid :user/role ?role]]
+            (db conn) openid)
+       (map (fn [[playerid playername playerrole]] (util/symbols-as-map playerid playername playerrole)))
+       first))
+
+;; match
+
+(defn create-match [{:keys [matchdate team1 team2 reported-by]}]
   (let [[match-id team1-id team2-id] (repeatedly #(d/tempid :db.part/user))
         [t1p1 t1p2 t1score] (map team1 [:player1 :player2 :score])
         [t2p1 t2p2 t2score] (map team2 [:player1 :player2 :score])
@@ -78,7 +144,8 @@
 
                      {:db/id match-id :match/team1 team1-id}
                      {:db/id match-id :match/team2 team2-id}
-                     {:db/id match-id :match/time matchdate}]]
+                     {:db/id match-id :match/time matchdate}
+                     {:db/id match-id :match/reported-by reported-by}]]
     (d/transact conn transaction)))
 
 (defn delete-match [id]
@@ -105,6 +172,17 @@
                                    :score score}))
           first)))
 
+(defn get-reported-by
+  ([matchid] (get-reported-by matchid (db conn)))
+  ([matchid dbc]
+     (->> (d/q '[:find ?n ?pid
+                 :in $ ?matchid
+                 :where
+                 [?matchid :match/reported-by ?pid]
+                 [?pid     :player/name       ?n]] dbc matchid)
+          (map (fn [[name id]] name))
+          first)))
+
 (defn get-matches []
   (let [dbc (db conn)]
     (->> (d/q '[:find ?m ?mt ?t1 ?t2 ?tx
@@ -122,5 +200,6 @@
          (map (fn [[mid mt t1 t2 tx]]
                 {:id mid :matchdate mt :tx tx
                  :team1 (merge {:id t1} (get-team t1 dbc))
-                 :team2 (merge {:id t2} (get-team t2 dbc))}))
+                 :team2 (merge {:id t2} (get-team t2 dbc))
+                 :reported-by (get-reported-by mid dbc)}))
          (sort-by (juxt :matchdate :tx)))))

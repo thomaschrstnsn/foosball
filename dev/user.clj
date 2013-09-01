@@ -51,3 +51,8 @@
   (stop)
   (set-refresh-dirs "src/" "dev/")
   (refresh :after 'user/go))
+
+(defn delete-database-and-stop []
+  (db/delete-db-and-disconnect (:db-uri system))
+  (stop)
+  :ok)

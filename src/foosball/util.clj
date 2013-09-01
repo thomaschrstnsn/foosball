@@ -1,7 +1,6 @@
 (ns foosball.util
   (:use [hiccup.element :only [link-to]])
   (:require [noir.io :as io]
-            [markdown.core :as md]
             [clojure.edn :as edn]))
 
 (defmacro symbols-as-map

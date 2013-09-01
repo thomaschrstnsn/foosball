@@ -1,5 +1,5 @@
 (ns foosball.routes.home
-  (:use compojure.core hiccup.element ring.util.response)
+  (:use [compojure.core :only [defroutes GET]])
   (:require [foosball.views.layout :as layout]
             [foosball.views.about  :as about]
             [foosball.views.front  :as front]
@@ -11,6 +11,6 @@
 (defn about-page []
   (layout/common "About" (about/page)))
 
-(defroutes home-routes
+(defroutes routes
   (GET "/"      [] (front-page))
   (GET "/about" [] (about-page)))
