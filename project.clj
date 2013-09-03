@@ -48,7 +48,8 @@
                                   [org.clojure/java.classpath "0.2.1"]
                                   [ring-mock "0.1.5"]
                                   [ring/ring-devel "1.2.0"]
-                                  [midje "1.5.1"]]
+                                  [midje "1.5.1"]
+                                  [server-socket "1.0.0"]]
                    :repositories {"sonatype-oss-public"
                                   "https://oss.sonatype.org/content/groups/public/"}}}
 

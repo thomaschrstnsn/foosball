@@ -9,7 +9,9 @@
             [ring.middleware.stacktrace :as stacktrace]
             [foosball.system :as system]
             [foosball.models.db :as db]
-            [dev-data :as d]))
+            [dev-data :as d]
+            [taoensso.timbre :as timbre]
+            [taoensso.timbre.appenders (socket :as socket-appender)]))
 
 (def system nil)
 
@@ -19,9 +21,16 @@
   (alter-var-root #'system
                   (constantly (system/system :handler-wrapper stacktrace/wrap-stacktrace))))
 
+(defn socket-logger []
+  (timbre/set-config! [:appenders :socket] socket-appender/socket-appender)
+  (timbre/set-config! [:shared-appender-config :socket]
+                      {:listen-addr :all
+                       :port 9000}))
+
 (defn start
   "Starts the current development system."
   []
+  (socket-logger)
   (alter-var-root #'system system/start))
 
 (defn stop
