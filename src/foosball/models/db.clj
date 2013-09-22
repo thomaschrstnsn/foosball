@@ -3,38 +3,10 @@
   (:use [datomic.api :only [q db] :as d])
   (:use [foosball.models.schema :only [eav-schema]])
   (:use [clojure.set :only [difference]])
-  (:require [foosball.util :as util]))
+  (:require [foosball.util :as util]
+            [foosball.models.migration :as migration]))
 
 (def ^:dynamic ^:private conn)
-
-(defn- ensure-players-have-active-flags []
-  (let [dbc                      (db conn)
-        players-with-names       (->> (d/q '[:find ?pid :where [?pid :player/name _]] dbc)
-                                      (map (fn [[id]] id))
-                                      set)
-        players-with-active-flag (->> (d/q '[:find ?pid :where [?pid :player/active _]] dbc)
-                                      (map (fn [[id]] id))
-                                      set)
-        players-to-default       (difference players-with-names players-with-active-flag)
-        transaction              (map (fn [id] {:db/id id :player/active true}) players-to-default)]
-    @(d/transact conn transaction)))
-
-(defn- ensure-players-users-have-roles []
-  (let [dbc                (db conn)
-        players-with-names (->> (d/q '[:find ?pid :where [?pid :player/name _]] dbc)
-                                (map (fn [[id]] id))
-                                set)
-        players-with-roles (->> (d/q '[:find ?pid :where [?pid :user/role _]] dbc)
-                                (map (fn [[id]] id))
-                                set)
-        players-to-default (difference players-with-names players-with-roles)
-        transaction        (map (fn [id] {:db/id id :user/role :user}) players-to-default)]
-    (info {:ensure-players-users-have-roles transaction})
-    @(d/transact conn transaction)))
-
-(def migrations "seq of idempotent migration functions"
-  {"ensure-players-have-active-flags" ensure-players-have-active-flags
-   "ensure-players-users-have-roles"  ensure-players-users-have-roles})
 
 (defn create-db-and-connect [uri]
   (info "creating database on uri:" uri)
@@ -46,9 +18,7 @@
   (info "transacting schema")
   @(d/transact conn eav-schema)
 
-  (doseq [[name migration-fn] migrations]
-    (info "running migration:" name)
-    (migration-fn))
+  (migration/migrate-schema-and-data conn)
 
   (info "database initialized")
   conn)
