@@ -6,7 +6,8 @@
                  [compojure "1.1.5" :exclusions [org.clojure/tools.macro
                                                  ring/ring-core]]
                  [ring-server "0.3.0"]
-                 [com.cemerick/friend "0.1.5"]
+                 [com.cemerick/friend "0.1.5" :exclusions [ring/ring-core
+                                                           slingshot]]
                  [com.taoensso/timbre "2.6.1"]
                  [prismatic/dommy "0.1.1"]
                  [log4j "1.2.17" :exclusions [javax.mail/mail
