@@ -75,6 +75,6 @@
      (auto-refresh-page)
      [:h1 (str "Player Log")]
      [:p.lead "Pick a player to see the played matches of this player."]
-     [:form {:action "/player/log" :method "GET"}
+     [:form#log-form {:action "/player/log" :method "GET"}
       [:div.form-group.col-lg-3 (players-select "playerid" players playerid)]]
      (when player (player-table matches players player)))))

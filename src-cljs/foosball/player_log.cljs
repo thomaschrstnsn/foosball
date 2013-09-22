@@ -4,5 +4,5 @@
 
 (defn auto-submit-playerlog []
   (let [input (sel1 [:#playerid])
-        form  (sel1 [:form])]
+        form  (sel1 [:#log-form])]
     (dommy/listen! input :change #(.submit form))))
