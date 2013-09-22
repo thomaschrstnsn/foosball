@@ -16,6 +16,7 @@
                  [hiccup "1.0.4"]
                  [org.clojure/math.combinatorics "0.0.4"]
                  [clj-time "0.6.0"]
+                 [org.clojure/tools.nrepl "0.2.3"]
                  [jayq "2.4.0"] ; advanced compiling: https://github.com/ibdknox/jayq#compiling
                  ]
 
