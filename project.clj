@@ -23,7 +23,7 @@
 
   :lein-release {:deploy-via :shell
                  :build-via  :lein-ring-uberwar
-                 :shell ["scp" :build-artifact "webber:/var/lib/tomcat7/webapps/ROOT.war"]}
+                 :shell ["echo" "built: " :build-artifact]}
 
   :cljsbuild {:builds {:dev {:source-paths ["src-cljs"],
                              :compiler {:pretty-print false
