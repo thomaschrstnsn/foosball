@@ -74,3 +74,6 @@
 *** DONE Page titles to layout
 *** DONE Use local jQuery instead of cdn
 *** DONE Compile ClojureScript with simple-optimizations to reduce size
+** Version 1.2.0 [1/1]
+*** DONE User model - friend and google openid
+    CLOSED: [2013-09-25 Ons 06:48]
