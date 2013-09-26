@@ -31,9 +31,6 @@
    ['hiccup/hiccup
     "Hiccup"
     "https://github.com/weavejester/hiccup"]
-   ['prismatic/dommy
-    "Dommy"
-    "https://github.com/Prismatic/dommy"]
    ['clj-time/clj-time
     "clj-time"
     "https://github.com/clj-time/clj-time"]
