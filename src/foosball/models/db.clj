@@ -7,13 +7,16 @@
             [foosball.models.migration :as migration]))
 
 (def ^:dynamic ^:private conn)
+(def ^:dynamic ^:private *uri*)
 
 (defn create-db-and-connect [uri]
-  (info "creating database on uri:" uri)
-  (d/create-database uri)
+  (alter-var-root #'*uri* (constantly uri))
+  (info "creating database on uri:" *uri*)
+  (d/create-database *uri*)
 
   (info "connecting to database")
-  (alter-var-root #'conn (constantly (d/connect uri)))
+
+  (alter-var-root #'conn (constantly (d/connect *uri*)))
 
   (info "transacting schema")
   @(d/transact conn eav-schema)
@@ -23,9 +26,10 @@
   (info "database initialized")
   conn)
 
-(defn delete-db-and-disconnect [uri]
-  (d/delete-database uri)
-  (alter-var-root #'conn (constantly nil)))
+(defn delete-db-and-disconnect []
+  (d/delete-database *uri*)
+  (alter-var-root #'conn  (constantly nil))
+  (alter-var-root #'*uri* (constantly nil)))
 
 (defn create-player [name openid]
   (let [playerid (d/tempid :db.part/user)
