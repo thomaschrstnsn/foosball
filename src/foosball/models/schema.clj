@@ -11,6 +11,14 @@
     :db.install/_attribute :db.part/db}
 
    {:db/id (d/tempid :db.part/db)
+    :db/ident :league/name
+    :db/valueType :db.type/string
+    :db/cardinality :db.cardinality/one
+    :db/unique :db.unique/identity
+    :db/doc "A league's name"
+    :db.install/_attribute :db.part/db}
+
+   {:db/id (d/tempid :db.part/db)
     :db/ident :user/openids
     :db/valueType :db.type/string
     :db/cardinality :db.cardinality/many
@@ -29,6 +37,13 @@
     :db/valueType :db.type/boolean
     :db/cardinality :db.cardinality/one
     :db/doc "A player's active flag"
+    :db.install/_attribute :db.part/db}
+
+   {:db/id (d/tempid :db.part/db)
+    :db/ident :player/leagues
+    :db/valueType :db.type/ref
+    :db/cardinality :db.cardinality/many
+    :db/doc "A player's leagues"
     :db.install/_attribute :db.part/db}
 
    {:db/id (d/tempid :db.part/db)
@@ -78,4 +93,11 @@
     :db/valueType :db.type/ref
     :db/cardinality :db.cardinality/one
     :db/doc "Which user/player reported the match?"
+    :db.install/_attribute :db.part/db}
+
+   {:db/id (d/tempid :db.part/db)
+    :db/ident :match/league
+    :db/valueType :db.type/ref
+    :db/cardinality :db.cardinality/one
+    :db/doc "The league in which the match took place"
     :db.install/_attribute :db.part/db}])
