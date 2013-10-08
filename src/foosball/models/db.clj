@@ -59,6 +59,35 @@
        (map (fn [[id name active role]] (util/symbols-as-map id name active role)))
        (sort-by :name)))
 
+;; leagues
+
+(defn get-leagues []
+  (->> (d/q '[:find ?lid ?name :where
+              [?lid :league/name ?name]] (db conn))
+       (map (fn [[id name]] (util/symbols-as-map id name)))))
+
+(defn add-league [league-name]
+  @(d/transact conn [{:db/id (d/tempid :db.part/user) :league/name league-name}]))
+
+(defn rename-league [league-id new-name]
+  @(d/transact conn [{:db/id league-id :league/name new-name}]))
+
+;; players and leagues
+
+(defn add-player-to-league [player-id league-id]
+  @(d/transact conn [{:db/id player-id :player/leagues league-id}]))
+
+(defn get-players-in-league [league-id]
+  (->> (d/q '[:find ?pid ?n ?a ?role
+              :in $ ?league-id
+              :where
+              [?pid :player/name ?n]
+              [?pid :player/leagues ?league-id]
+              [?pid :player/active ?a]
+              [?pid :user/role ?role]] (db conn) league-id)
+       (map (fn [[id name active role]] (util/symbols-as-map id name active role)))
+       (sort-by :name)))
+
 ;; openid
 
 (defn add-openid-to-player [playerid openid]
@@ -171,6 +200,28 @@
                 [?t2 :team/player1 _]
                 [?t2 :team/player2 _]
                 [?t2 :team/score   _]] dbc)
+         (map (fn [[mid mt t1 t2 tx]]
+                {:id mid :matchdate mt :tx tx
+                 :team1 (merge {:id t1} (get-team t1 dbc))
+                 :team2 (merge {:id t2} (get-team t2 dbc))
+                 :reported-by (get-reported-by mid dbc)}))
+         (sort-by (juxt :matchdate :tx)))))
+
+(defn get-matches-in-league [league-id]
+  (let [dbc (db conn)]
+    (->> (d/q '[:find ?m ?mt ?t1 ?t2 ?tx
+                :in $ ?league-id
+                :where
+                [?m :match/time  ?mt ?tx]
+                [?m :match/team1 ?t1]
+                [?m :match/team2 ?t2]
+                [?m :match/league ?league-id]
+                [?t1 :team/player1 ?t1p1]
+                [?t1 :team/player2 ?t1p2]
+                [?t1 :team/score   _]
+                [?t2 :team/player1 ?t2p1]
+                [?t2 :team/player2 ?t2p2]
+                [?t2 :team/score   _]] dbc league-id)
          (map (fn [[mid mt t1 t2 tx]]
                 {:id mid :matchdate mt :tx tx
                  :team1 (merge {:id t1} (get-team t1 dbc))
