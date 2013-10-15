@@ -1,8 +1,16 @@
 (ns foosball.report
   (:require [foosball.dom-utils :as u]
-            [foosball.validation.match :as match-validation])
+            [foosball.validation.match :as match-validation]
+            [dommy.core :as dommy])
   (:use [jayq.core :only [$ document-ready add-class remove-class parents-until parent]])
+  (:use-macros [dommy.macros :only [sel1]])
   (:require-macros [cljs.core.async.macros :as m :refer [go alt!]]))
+
+(defn auto-submit-league-select []
+  (let [input (sel1 [:#league-id])
+        form  (sel1 [:#league-form])]
+    (u/log "auto-submit-league-select" input form)
+    (dommy/listen! input :change #(.submit form))))
 
 (defn validation-map-with-ids [validation]
   (->> validation
@@ -39,11 +47,12 @@
         update-ui-from-state  (fn [] (let [no-validation-ids #{:#matchdate}
                                           validation-map (->> (get-state)
                                                               match-validation/validate-report
-                                                              validation-map-with-ids
                                                               validation-map-nil-is-valid
                                                               (filter (fn [[k v]] (not (no-validation-ids k)))))]
                                       (doseq [[id valid?] validation-map]
                                         (toggle-error-on-form-group-by-id id (not valid?)))))]
+    (u/log "live-validation")
+    (auto-submit-league-select)
     (update-ui-from-state)
     (go (loop []
           (let [[event _] (alts! chans)]

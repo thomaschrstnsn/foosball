@@ -46,6 +46,7 @@
                                   [org.clojure/core.async "0.1.0-SNAPSHOT"]
                                   [org.clojure/tools.namespace "0.2.4"]
                                   [org.clojure/java.classpath "0.2.1"]
+                                  [secretary "0.4.0"]
                                   [ring-mock "0.1.5"]
                                   [ring/ring-devel "1.2.0"]
                                   [midje "1.5.1"]

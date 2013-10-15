@@ -13,8 +13,20 @@
 (def report-match-title "Report Match")
 
 (defn report-match-page
-  ([] (layout/common report-match-title (match/form (db/get-players))))
-  ([team1player1 team1player2 team2player1 team2player2]
+  ([] (let [playerid (auth/current-auth :playerid)
+            leagues  (db/get-leagues-for-player playerid)]
+        (report-match-page (->> leagues first :id))))
+
+  ([league-id]
+     (let [playerid (auth/current-auth :playerid)
+           leagues  (db/get-leagues-for-player playerid)
+           league   (->> leagues
+                         (filter (fn [{:keys [id]}] (= id league-id)))
+                         first)]
+       (layout/common report-match-title
+                      (match/form (db/get-players-in-league league-id) leagues league-id))))
+
+  ([league-id team1player1 team1player2 team2player1 team2player2]
      (let [params (util/symbols-as-map team1player1 team1player2 team2player1 team2player2)
            parsed (match/parse-form params)]
        (layout/common report-match-title (match/form (db/get-players) parsed)))))
@@ -37,7 +49,9 @@
 
 (defroutes report-routes
   (GET  "/match" [] (report-match-page))
-  (GET  "/match/with-players" [t1p1 t1p2 t2p1 t2p2] (report-match-page t1p1 t1p2 t2p1 t2p2))
+  (POST "/match/league-select" [league-id] (response/redirect-after-post (str "/report/match/" league-id)))
+  (GET  "/match/:league-id" [league-id] (report-match-page (util/parse-id league-id)))
+  (GET  "/match/:league-id/with-players" [league-id t1p1 t1p2 t2p1 t2p2] (report-match-page t1p1 t1p2 t2p1 t2p2))
   (POST "/match" request (report-match request)))
 
 (defroutes routes

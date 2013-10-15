@@ -39,13 +39,22 @@
 (defn- filter-active-players [players]
   (filter :active players))
 
-(defn form [players & [{:keys [team1 team2 matchdate]}]]
+(defn form [players leagues selected-league-id & [{:keys [team1 team2 matchdate]}]]
   (let [active-players (filter-active-players players)]
     (html5
      [:h1 "Report Match Result"]
      [:p.lead
       "A match winner is the first team to reach ten goals while atleast two goals ahead of the opposing team." [:br]
       "In case of tie-break, report 11-9 or 9-11."]
+
+     [:form#league-form.form-inline {:action "/report/match/league-select" :method "POST"}
+      [:div.form-group
+       [:select.form-control {:id "league-id" :name "league-id"}
+        (map (fn [{:keys [id name]}] [:option (merge {:value id}
+                                                    (when (= id selected-league-id) {:selected "selected"}))
+                                     name])
+             leagues)]]]
+
      [:form.form-horizontal {:action "/report/match" :method "POST"}
       [:div.form-group.col-lg-12
        (team-controls :team1 1 team1 active-players)

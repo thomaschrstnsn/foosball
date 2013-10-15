@@ -77,6 +77,14 @@
 (defn add-player-to-league [player-id league-id]
   @(d/transact conn [{:db/id player-id :player/leagues league-id}]))
 
+(defn get-leagues-for-player [player-id]
+  (->> (d/q '[:find ?lid ?name
+              :in $ ?player-id
+              :where
+              [?player-id :player/leagues ?lid]
+              [?lid :league/name ?name]] (db conn) player-id)
+       (map (fn [[id name]] (util/symbols-as-map id name)))))
+
 (defn get-players-in-league [league-id]
   (->> (d/q '[:find ?pid ?n ?a ?role
               :in $ ?league-id
@@ -133,7 +141,7 @@
 
 ;; match
 
-(defn create-match [{:keys [matchdate team1 team2 reported-by]}]
+(defn create-match [{:keys [matchdate team1 team2 reported-by league-id]}]
   (let [[match-id team1-id team2-id] (repeatedly #(d/tempid :db.part/user))
         [t1p1 t1p2 t1score] (map team1 [:player1 :player2 :score])
         [t2p1 t2p2 t2score] (map team2 [:player1 :player2 :score])
@@ -148,7 +156,8 @@
                      {:db/id match-id :match/team1 team1-id}
                      {:db/id match-id :match/team2 team2-id}
                      {:db/id match-id :match/time matchdate}
-                     {:db/id match-id :match/reported-by reported-by}]]
+                     {:db/id match-id :match/reported-by reported-by}
+                     {:db/id match-id :match/league league-id}]]
     (d/transact conn transaction)))
 
 (defn delete-match [id]
