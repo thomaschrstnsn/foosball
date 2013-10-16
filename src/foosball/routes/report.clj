@@ -15,7 +15,7 @@
 (defn report-match-page
   ([] (let [playerid (auth/current-auth :playerid)
             leagues  (db/get-leagues-for-player playerid)]
-        (report-match-page (->> leagues first :id))))
+        (response/redirect (str "/report/match/" (->> leagues first :id)))))
 
   ([league-id]
      (let [playerid (auth/current-auth :playerid)
@@ -35,9 +35,13 @@
   (info {:report-match-params params})
   (let [parsed-form      (match/parse-form params)
         validated-report (validation/validate-report parsed-form)
+        league-id        (:league-id parsed-form)
+        playerid         (auth/current-auth :playerid)
+        leagues          (db/get-leagues-for-player playerid)
+        valid-league-id? (some (fn [{:keys [id]}] (= id league-id)) leagues)
         valid-report?    (->> validated-report vals ((partial every? identity)))
         reported-by      (auth/current-auth :playerid)]
-    (if valid-report?
+    (if (and valid-report? valid-league-id?)
       (do
         (info (util/symbols-as-map parsed-form reported-by))
         (db/create-match (merge parsed-form (util/symbols-as-map reported-by)))
@@ -52,7 +56,7 @@
   (POST "/match/league-select" [league-id] (response/redirect-after-post (str "/report/match/" league-id)))
   (GET  "/match/:league-id" [league-id] (report-match-page (util/parse-id league-id)))
   (GET  "/match/:league-id/with-players" [league-id t1p1 t1p2 t2p1 t2p2] (report-match-page t1p1 t1p2 t2p1 t2p2))
-  (POST "/match" request (report-match request)))
+  (POST "/match/:league-id" request (report-match request)))
 
 (defroutes routes
   (context "/report" request (friend/wrap-authorize report-routes #{auth/user}))

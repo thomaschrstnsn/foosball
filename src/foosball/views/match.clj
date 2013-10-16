@@ -55,7 +55,7 @@
                                      name])
              leagues)]]]
 
-     [:form.form-horizontal {:action "/report/match" :method "POST"}
+     [:form.form-horizontal {:action (str "/report/match/" selected-league-id) :method "POST"}
       [:div.form-group.col-lg-12
        (team-controls :team1 1 team1 active-players)
        [:div.col-lg-2]
@@ -111,6 +111,7 @@
 
 (defn parse-form [p]
   {:matchdate       (-> p :matchdate   (parse-date :invalid-matchdate))
+   :league-id       (-> p :league-id    parse-id)
    :team1 {:player1 (-> p :team1player1 parse-id)
            :player2 (-> p :team1player2 parse-id)
            :score   (-> p :team1score   parse-id)}

@@ -7,6 +7,12 @@
 (defn log [& items]
   (.log js/console (apply str (interpose ", " items))))
 
+(defn expose [js-object]
+  (.expose goog/debug js-object false))
+
+(defn expose-log [js-object]
+  (-> js-object expose log))
+
 (defn current-path []
   window.location.pathname)
 

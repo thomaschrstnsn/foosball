@@ -24,6 +24,7 @@
 
 (defn toggle-error-on-form-group-by-id [id error?]
   (let [form-group (-> ($ id) (parents-until :.form-group) parent)]
+    (u/log (u/expose form-group))
     (if error?
       (add-class    form-group :has-error)
       (remove-class form-group :has-error))))
@@ -57,4 +58,5 @@
     (go (loop []
           (let [[event _] (alts! chans)]
             (update-ui-from-state)
+            (u/log "live-validation loop")
             (recur))))))
