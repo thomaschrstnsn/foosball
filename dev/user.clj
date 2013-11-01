@@ -52,6 +52,18 @@
   (set-refresh-dirs "src/" "dev/")
   (refresh :after 'user/go))
 
+
+(defn cljs-repl-setup
+  "Setup the app to use a Austin browser hosted cljs-repl"
+  []
+  (def repl-env (reset! cemerick.austin.repls/browser-repl-env
+                        (cemerick.austin/repl-env))))
+
+(defn cljs-repl-connect
+  "Connect to the browser hosted cljs-repl"
+  []
+  (cemerick.austin.repls/cljs-repl repl-env))
+
 (defn delete-database-and-stop []
   (db/delete-db-and-disconnect (:db-uri system))
   (stop)

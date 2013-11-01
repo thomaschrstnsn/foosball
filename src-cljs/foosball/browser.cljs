@@ -22,7 +22,6 @@
   (report/live-validation-of-match-report))
 
 (defn ^:export page-loaded []
-  ;(repl/connect "http://localhost:9000/repl")
   (navbar/set-active-navbar-element!)
   (secretary/dispatch! (u/current-path)))
 

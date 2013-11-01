@@ -36,7 +36,8 @@
          :open-browser? false
          :auto-reload? false}
 
-  :repl-options {:port 1234}
+  :repl-options {:port 1234
+                 :nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
 
   :profiles {:production {:ring {:stacktraces? false}}
 
@@ -52,14 +53,15 @@
                                   [midje "1.5.1"]
                                   [server-socket "1.0.0"]
                                   [prismatic/dommy "0.1.1"]
-                                  [jayq "2.4.0"]]
+                                  [jayq "2.4.0"]
+                                  [com.cemerick/austin "0.1.1"]]
                    :repositories {"sonatype-oss-public"
                                   "https://oss.sonatype.org/content/groups/public/"}}}
 
   :url "https://foosball.chrstnsn.dk/"
 
   :plugins [[lein-ring "0.8.3"]
-            [lein-cljsbuild "0.3.3"]
+            [lein-cljsbuild "0.3.4"]
             [configleaf "0.4.6"]
             [lein-release "1.0.4"]]
 

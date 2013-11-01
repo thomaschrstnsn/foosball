@@ -4,7 +4,8 @@
         [hiccup.element :only [link-to]]
         [hiccup.page :only [html5 include-js include-css]]
         [cfg.current :only [project]])
-  (:require [foosball.auth :as auth]))
+  (:require [foosball.auth :as auth]
+            [cemerick.austin.repls :refer (browser-connected-repl-js)]))
 
 (defn header []
   [:div.navbar.navbar-static-top.navbar-default
@@ -27,7 +28,9 @@
     [:p.navbar-text "Version " (:version project)]]])
 
 (defn footer []
-  [:script "foosball.browser.register_document_ready()"])
+  [:script "foosball.browser.register_document_ready()"]
+  (when @cemerick.austin.repls/browser-repl-env
+    [:script (cemerick.austin.repls/browser-connected-repl-js)]))
 
 (defhtml base [page-title & content]
   (html5
