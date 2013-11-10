@@ -28,9 +28,10 @@
     [:p.navbar-text "Version " (:version project)]]])
 
 (defn footer []
-  [:script "foosball.browser.register_document_ready()"]
-  (when @cemerick.austin.repls/browser-repl-env
-    [:script (cemerick.austin.repls/browser-connected-repl-js)]))
+  [:div
+   [:script "foosball.browser.register_document_ready()"]
+   (when @cemerick.austin.repls/browser-repl-env
+     [:script (cemerick.austin.repls/browser-connected-repl-js)])])
 
 (defhtml base [page-title & content]
   (html5
