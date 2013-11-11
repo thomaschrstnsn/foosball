@@ -5,6 +5,7 @@
         [hiccup.page :only [html5 include-js include-css]]
         [cfg.current :only [project]])
   (:require [foosball.auth :as auth]
+            [foosball.settings :as settings]
             [cemerick.austin.repls :refer (browser-connected-repl-js)]))
 
 (defn header []
@@ -50,10 +51,11 @@
                "Foosball")]
      [:link {:rel "icon" :type "image/x-icon" :href "/favicon.ico"}]
      (include-css "/css/bootstrap.min.css")
+     (when-not settings/cljs-optimized?
+       (include-js "/js/cljs/goog/base.js"))
      (include-js
        "/js/jquery.min.js"
        "/js/bootstrap.min.js"
-       "/js/cljs/goog/base.js"
        "/js/cljs/foosball.js")]
     [:body content]))
 

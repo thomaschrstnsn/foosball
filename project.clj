@@ -25,12 +25,19 @@
                  :build-via  :lein-ring-uberwar
                  :shell ["echo" "built: " :build-artifact]}
 
-  :cljsbuild {:builds {:dev {:source-paths ["src-cljs"],
-                             :compiler {:pretty-print false
-                                        :output-to "resources/public/js/cljs/foosball.js"
-                                        :output-dir "resources/public/js/cljs"
-                                        :optimizations :none ;:simple
-                                        :source-map true}}}}
+  :cljsbuild {:builds
+              [{:id "dev"
+                :source-paths ["src-cljs"],
+                :compiler {:pretty-print false
+                           :output-to "resources/public/js/cljs/foosball.js"
+                           :output-dir "resources/public/js/cljs"
+                           :optimizations :none
+                           :source-map true}}
+               {:id "production"
+                :source-paths ["src-cljs"],
+                :compiler {:pretty-print false
+                           :output-to "resources/public/js/cljs/foosball.js"
+                           :optimizations :advanced}}]}
 
   :ring {:handler foosball.handler/war-handler,
          :init    foosball.servlet-lifecycle/init,

@@ -19,7 +19,9 @@
   "Constructs the current development system."
   []
   (alter-var-root #'system
-                  (constantly (system/system :handler-wrapper stacktrace/wrap-stacktrace))))
+                  (constantly (system/system
+                               :handler-wrapper stacktrace/wrap-stacktrace
+                               :cljs-optimized? false))))
 
 (defn socket-logger []
   (timbre/set-config! [:appenders :socket] socket-appender/socket-appender)
