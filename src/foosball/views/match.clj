@@ -6,7 +6,7 @@
          [hiccup.page :only [html5 include-js include-css]]
          [foosball.util]))
 
-(defn- players-select [id players & [selected]]
+(defn- render-players-select [id players & [selected]]
   [:select.form-control {:id id :name id}
    [:option {:value "nil" :disabled "disabled" :selected "selected"} "Pick a player"]
    (->> players
@@ -15,7 +15,7 @@
                                (when (= id selected) {:selected "selected"}))
                 name])))])
 
-(defn- team-controls [kw team-num {:keys [player1 player2 score]} players]
+(defn- render-team-controls [kw team-num {:keys [player1 player2 score]} players]
   (let [prefix  (name kw)
         idp1    (str prefix "player" 1)
         idp2    (str prefix "player" 2)
@@ -24,11 +24,11 @@
      [:h2 (str "Team " team-num ":")]
      [:div.form-group
       [:label.control-label.col-lg-4 {:for idp1} (str "Player " 1)]
-      [:div.controls.col-lg-8 (players-select idp1 players player1)]]
+      [:div.controls.col-lg-8 (render-players-select idp1 players player1)]]
 
      [:div.form-group
       [:label.control-label.col-lg-4 {:for idp2} (str "Player " 2)]
-      [:div.controls.col-lg-8 (players-select idp2 players player2)]]
+      [:div.controls.col-lg-8 (render-players-select idp2 players player2)]]
 
      [:div.form-group
       [:label.control-label.col-lg-4 {:for idscore} "Score"]
@@ -39,6 +39,29 @@
 (defn- filter-active-players [players]
   (filter :active players))
 
+(defn render-league-select [leagues selected-league-id]
+  [:form#league-form.form-horizontal {:action "/report/match/league-select" :method "POST"}
+   [:div.form-group.col-lg-6
+    [:label.control-label.col-lg-4 {:for "league-id"} "League"]
+    [:div.controls.col-lg-6
+     [:select.form-control {:id "league-id" :name "league-id"}
+      (map (fn [{:keys [id name]}] [:option (merge {:value id}
+                                                  (when (= id selected-league-id) {:selected "selected"}))
+                                   name])
+           leagues)]]]])
+
+(defn render-match-date [matchdate]
+  (let [formated-date (format-date (->> matchdate
+                                        ((fn [x] (when-not (= :invalid-matchdate x) x)))
+                                        ((fnil identity (java.util.Date.)))))]
+    [:div.form-group.col-lg-12
+     [:div.form-group.pull-right.col-lg-6
+      [:label.control-label.col-lg-6 {:for "matchdate"} "Date played"]
+      [:div.controls.col-lg-5
+       [:input.input-medium.form-control {:id "matchdate" :name "matchdate"
+                                          :type "date"
+                                          :value formated-date}]]]]))
+
 (defn form [players leagues selected-league-id & [{:keys [team1 team2 matchdate]}]]
   (let [active-players (filter-active-players players)]
     (html5
@@ -47,29 +70,18 @@
       "A match winner is the first team to reach ten goals while atleast two goals ahead of the opposing team." [:br]
       "In case of tie-break, report 11-9 or 9-11."]
 
-     [:form#league-form.form-inline {:action "/report/match/league-select" :method "POST"}
-      [:div.form-group
-       [:select.form-control {:id "league-id" :name "league-id"}
-        (map (fn [{:keys [id name]}] [:option (merge {:value id}
-                                                    (when (= id selected-league-id) {:selected "selected"}))
-                                     name])
-             leagues)]]]
+     (when (< 1 (count leagues))
+       [:div.row
+        (render-league-select leagues selected-league-id)])
 
      [:form.form-horizontal {:action (str "/report/match/" selected-league-id) :method "POST"}
       [:div.form-group.col-lg-12
-       (team-controls :team1 1 team1 active-players)
+       (render-team-controls :team1 1 team1 active-players)
        [:div.col-lg-2]
-       (team-controls :team2 2 team2 active-players)]
+       (render-team-controls :team2 2 team2 active-players)]
 
-      [:div.form-group.col-lg-12
-       [:div.form-group.pull-right.col-lg-4
-        [:label.control-label.col-lg-6 {:for "matchdate"} "Date played"]
-        [:div.controls.col-lg-6
-         [:input.input-medium.form-control {:id "matchdate" :name "matchdate"
-                                            :type "date"
-                                            :value (format-date (->> matchdate
-                                                                     ((fn [x] (when-not (= :invalid-matchdate x) x)))
-                                                                     ((fnil identity (java.util.Date.)))))}]]]]
+      (render-match-date matchdate)
+
       [:div.form-group.col-lg-12
        [:div.form-group.col-lg-5.pull-right
         [:button.btn.btn-primary.btn-lg.btn-block
