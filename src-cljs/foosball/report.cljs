@@ -9,7 +9,6 @@
 (defn auto-submit-league-select []
   (let [input (sel1 [:#league-id])
         form  (sel1 [:#league-form])]
-    (u/log "auto-submit-league-select" input form)
     (dommy/listen! input :change #(.submit form))))
 
 (defn validation-map-with-ids [validation]
@@ -23,8 +22,10 @@
        (apply merge)))
 
 (defn toggle-error-on-form-group-by-id [id error?]
-  (let [form-group (-> ($ id) (parents-until :.form-group) parent)]
-    (u/log (u/expose form-group))
+  (let [jq-id              ($ id)
+        form-groups-parent (parents-until jq-id :div.form-group)
+        form-group         (parent form-groups-parent)]
+    (when error? (u/log-obj id jq-id form-groups-parent form-group))
     (if error?
       (add-class    form-group :has-error)
       (remove-class form-group :has-error))))
@@ -52,11 +53,9 @@
                                                               (filter (fn [[k v]] (not (no-validation-ids k)))))]
                                       (doseq [[id valid?] validation-map]
                                         (toggle-error-on-form-group-by-id id (not valid?)))))]
-    (u/log "live-validation")
     (auto-submit-league-select)
     (update-ui-from-state)
     (go (loop []
           (let [[event _] (alts! chans)]
             (update-ui-from-state)
-            (u/log "live-validation loop")
             (recur))))))

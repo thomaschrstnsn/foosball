@@ -4,14 +4,17 @@
             [cljs.core.async :as async
              :refer [<! >! chan close! sliding-buffer put! alts!]]))
 
-(defn log [& items]
+(defn log-str [& items]
   (.log js/console (apply str (interpose ", " items))))
+
+(defn log-obj [& items]
+  (.log js/console items))
 
 (defn expose [js-object]
   (.expose goog/debug js-object false))
 
 (defn expose-log [js-object]
-  (-> js-object expose log))
+  (-> js-object expose log-str))
 
 (defn current-path []
   window.location.pathname)
