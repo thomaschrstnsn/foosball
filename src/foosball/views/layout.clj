@@ -28,12 +28,6 @@
                                                                      (when playername (str " " playername)))))])
     [:p.navbar-text "Version " (:version project)]]])
 
-
-(def ^:private default-cljs-ns "foosball.browser.")
-
-(defn auto-refresh-page []
-  )
-
 (defn footer [auto-refresh?]
   (list
    [:script {:type "text/javascript"} "goog.require(\"foosball.browser\");"]
