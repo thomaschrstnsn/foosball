@@ -63,7 +63,7 @@
                                   [prismatic/dommy "0.1.1"]
                                   [secretary "0.4.0" :exclusions [org.clojure/clojurescript]]
                                   [jayq "2.5.0"]
-                                  [com.cemerick/austin "0.1.1"]]
+                                  [com.cemerick/austin "0.1.3"]]
                    :repositories {"sonatype-oss-public"
                                   "https://oss.sonatype.org/content/groups/public/"}}}
 
