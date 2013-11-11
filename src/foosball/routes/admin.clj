@@ -10,7 +10,7 @@
             [cemerick.friend :as friend]))
 
 (defn admin-page []
-  (layout/common "ADMIN" (admin/form (db/get-players) (db/get-matches))))
+  (layout/common :title "ADMIN" :content (admin/form (db/get-players) (db/get-matches))))
 
 (defn rename-player [playerid newplayername]
   (info {:rename-player (util/symbols-as-map playerid newplayername)})

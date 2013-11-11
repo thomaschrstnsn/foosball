@@ -8,21 +8,27 @@
             [foosball.models.db :as db]))
 
 (defn stats-players [sort order]
-  (layout/common "Player Statistics" (stats/player-table (db/get-matches)
-                                                         (db/get-players)
-                                                         :sort (keyword sort)
-                                                         :order (keyword order))))
+  (layout/common :title "Player Statistics"
+                 :auto-refresh? true
+                 :content (stats/player-table (db/get-matches)
+                                              (db/get-players)
+                                              :sort (keyword sort)
+                                              :order (keyword order))))
 
 (defn stats-teams [sort order]
-  (layout/common "Team Statistics" (stats/team-table (db/get-matches)
-                                                     (db/get-players)
-                                                     :sort (keyword sort)
-                                                     :order (keyword order))))
+  (layout/common :title "Team Statistics"
+                 :auto-refresh? true
+                 :content (stats/team-table (db/get-matches)
+                                            (db/get-players)
+                                            :sort (keyword sort)
+                                            :order (keyword order))))
 
 (defn log-for-player [playerid]
-  (layout/common "Player Log" (player-log/player-log-page (db/get-matches)
-                                                          (db/get-players)
-                                                          playerid)))
+  (layout/common :title "Player Log"
+                 :auto-refresh? true
+                 :content (player-log/player-log-page (db/get-matches)
+                                                      (db/get-players)
+                                                      playerid)))
 
 (defroutes routes
   (GET "/stats/players" [sort order] (stats-players sort order))

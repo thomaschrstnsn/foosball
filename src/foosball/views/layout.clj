@@ -27,11 +27,20 @@
                                                                      (when playername (str " " playername)))))])
     [:p.navbar-text "Version " (:version project)]]])
 
-(defn footer []
-  [:div
-   [:script "foosball.browser.register_document_ready()"]
+
+(def ^:private default-cljs-ns "foosball.browser.")
+
+(defn auto-refresh-page []
+  )
+
+(defn footer [auto-refresh?]
+  (list
+   [:script {:type "text/javascript"} "goog.require(\"foosball.browser\");"]
+   [:script {:type "text/javascript"} "foosball.browser.register_document_ready();"]
+   (when auto-refresh?
+     [:script {:type "text/javascript"} "foosball.browser.page_autorefresh(90)"])
    (when @cemerick.austin.repls/browser-repl-env
-     [:script (cemerick.austin.repls/browser-connected-repl-js)])])
+     [:script (cemerick.austin.repls/browser-connected-repl-js)])))
 
 (defhtml base [page-title & content]
   (html5
@@ -44,8 +53,9 @@
      (include-js
        "/js/jquery.min.js"
        "/js/bootstrap.min.js"
-       "/js/foosball.js")]
+       "/js/cljs/goog/base.js"
+       "/js/cljs/foosball.js")]
     [:body content]))
 
-(defn common [page-title & content]
-  (base page-title (header) [:div.container content] (footer)))
+(defn common [& {:keys [title content auto-refresh?] :or {auto-refresh? false}}]
+  (base title (header) [:div.container content] (footer auto-refresh?)))

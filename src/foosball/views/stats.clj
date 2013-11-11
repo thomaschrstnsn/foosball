@@ -65,7 +65,6 @@
 
 (defn player-table [matches players & {:keys [sort order] :or {sort :wins order :desc}}]
   (html5
-   (auto-refresh-page)
    [:table.table.table-hover
     [:caption [:h1 "Player Statistics"]]
     [:thead (common-columns (sortable-column "Player" :player)
@@ -92,7 +91,6 @@
 
 (defn team-table [matches players & {:keys [sort order] :or {sort :wins order :desc}}]
   (html5
-   (auto-refresh-page)
    [:table.table.table-hover
     [:caption [:h1 "Team Statistics"]]
     [:thead (common-columns [:th "Team"])

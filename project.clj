@@ -1,7 +1,7 @@
 (defproject foosball "1.3.0-SNAPSHOT"
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [com.datomic/datomic-free "0.8.4159" :exclusions [com.amazonaws/aws-java-sdk]]
-                 [ring/ring-core "1.2.0"]
+                 [ring/ring-core "1.2.0" :exclusions [org.clojure/tools.reader]]
                  [lib-noir "0.6.8"]
                  [compojure "1.1.5" :exclusions [org.clojure/tools.macro
                                                  org.clojure/core.incubator
@@ -27,8 +27,10 @@
 
   :cljsbuild {:builds {:dev {:source-paths ["src-cljs"],
                              :compiler {:pretty-print false
-                                        :output-to "resources/public/js/foosball.js"
-                                        :optimizations :simple}}}}
+                                        :output-to "resources/public/js/cljs/foosball.js"
+                                        :output-dir "resources/public/js/cljs"
+                                        :optimizations :none ;:simple
+                                        :source-map true}}}}
 
   :ring {:handler foosball.handler/war-handler,
          :init    foosball.servlet-lifecycle/init,
@@ -43,17 +45,17 @@
 
              :dev {:ring {:stacktraces? true}
                    :source-paths ["dev"]
-                   :dependencies [[org.clojure/clojurescript "0.0-1859"]
-                                  [org.clojure/core.async "0.1.0-SNAPSHOT"]
+                   :dependencies [[org.clojure/clojurescript "0.0-2030"]
+                                  [org.clojure/core.async "0.1.256.0-1bf8cf-alpha"]
                                   [org.clojure/tools.namespace "0.2.4"]
                                   [org.clojure/java.classpath "0.2.1"]
-                                  [secretary "0.4.0"]
                                   [ring-mock "0.1.5"]
                                   [ring/ring-devel "1.2.0"]
                                   [midje "1.5.1"]
                                   [server-socket "1.0.0"]
                                   [prismatic/dommy "0.1.1"]
-                                  [jayq "2.4.0"]
+                                  [secretary "0.4.0" :exclusions [org.clojure/clojurescript]]
+                                  [jayq "2.5.0"]
                                   [com.cemerick/austin "0.1.1"]]
                    :repositories {"sonatype-oss-public"
                                   "https://oss.sonatype.org/content/groups/public/"}}}
@@ -61,7 +63,7 @@
   :url "https://foosball.chrstnsn.dk/"
 
   :plugins [[lein-ring "0.8.3"]
-            [lein-cljsbuild "0.3.4"]
+            [lein-cljsbuild "1.0.0-alpha2"]
             [configleaf "0.4.6"]
             [lein-release "1.0.4"]]
 

@@ -106,7 +106,6 @@
 
 (defn table [matches players]
   (html5
-   (auto-refresh-page)
    (match-table-data matches players)))
 
 (defn parse-form [p]

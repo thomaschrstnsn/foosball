@@ -87,11 +87,6 @@
 (defn format-score [s]
   (format-value s :checker (partial < 9) :class? nil))
 
-(def ^:private default-cljs-ns "foosball.browser.")
-
-(defn auto-refresh-page []
-  [:script (str default-cljs-ns "page_autorefresh(90)")])
-
 ;;;; compare helpers
 
 (defn less-than? [x y]

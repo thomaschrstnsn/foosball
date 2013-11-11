@@ -21,7 +21,6 @@
 
 (defn page [players matches]
   (html5
-   (util/auto-refresh-page)
    [:div.jumbotron
     [:h1 "Foosball"]
     [:h2 "Keeps track of results, ratings and players for foosball matches."]

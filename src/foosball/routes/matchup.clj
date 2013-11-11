@@ -10,10 +10,13 @@
 
 (defn matchup-page
   ([]
-     (layout/common "Matchup" (matchup/page (db/get-players) (db/get-matches))))
+     (layout/common :title "Matchup" :content (matchup/page (db/get-players) (db/get-matches))))
   ([{:keys [params]}]
      (let [{:keys [playerids]} params]
-       (layout/common "Matchup" (matchup/page (db/get-players) (db/get-matches) (map util/parse-id playerids))))))
+       (layout/common :title "Matchup"
+                      :content (matchup/page (db/get-players)
+                                             (db/get-matches)
+                                             (map util/parse-id playerids))))))
 
 (defroutes unprotected
   (GET  "/" []      (matchup-page))

@@ -72,7 +72,6 @@
   (let [playerid (parse-id selected-playerid)
         player   (->> players (filter (comp (partial = playerid) :id)) first)]
     (html5
-     (auto-refresh-page)
      [:h1 (str "Player Log")]
      [:p.lead "Pick a player to see the played matches of this player."]
      [:form#log-form {:action "/player/log" :method "GET"}
