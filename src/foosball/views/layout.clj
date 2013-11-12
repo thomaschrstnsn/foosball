@@ -21,14 +21,13 @@
     [:li#nav-player-log (link-to "/player/log" "Player Log")]
     (when (auth/admin?)
       [:li#nav-admin (link-to "/admin" "Admin")])
-    [:li#nav-about (link-to "/about"   "About")]]
+    [:li#nav-about {:title (str "Version " (:version project))} (link-to "/about" "About")]]
    [:ul.nav.navbar-nav.pull-right
     (let [playername (auth/current-auth :playername)]
       [:li (if-not (auth/current-auth)
              (auth/login-form :form-class "navbar-form")
              (auth/logout-form :extra-class "navbar-form" :text (str "Logout"
-                                                                     (when playername (str " " playername)))))])
-    [:p.navbar-text "Version " (:version project)]]])
+                                                                     (when playername (str " " playername)))))])]])
 
 (defn footer [auto-refresh?]
   (list
