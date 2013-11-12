@@ -3,15 +3,7 @@
   (:require [dommy.core :as dommy]
             [foosball.dom-utils :as u]))
 
-(defn current-navbar-element []
-  (when-not (= (u/current-path) "/")
-    (->> (sel [".nav" :li])
-         (filter (fn [e] (-> (dommy/html e)
-                            (.indexOf (u/current-path))
-                            (>= 0))))
-         first)))
-
-(defn set-active-navbar-element! []
-  (let [el (current-navbar-element)]
+(defn set-active-navbar-by-id [id]
+  (let [el (sel1 id)]
     (when el
       (dommy/add-class! el :active))))

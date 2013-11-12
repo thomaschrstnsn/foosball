@@ -12,14 +12,16 @@
   [:div.navbar.navbar-static-top.navbar-default
    [:a.navbar-brand {:href "/"} "Foosball"]
    [:ul.nav.navbar-nav.pull-left
-    (when (auth/user?) [:li (link-to "/matchup"       "Matchup")])
-    (when (auth/user?) [:li (link-to "/report/match"  "Report Match Result")])
-    [:li (link-to "/stats/players" "Player Statistics")]
-    [:li (link-to "/stats/teams"   "Team Statistics")]
-    [:li (link-to "/matches"       "Played Matches")]
-    [:li (link-to "/player/log"    "Player Log")]
-    (when (auth/admin?) [:li (link-to "/admin" "Admin")])
-    [:li (link-to "/about"         "About")]]
+    (when (auth/user?)
+      (list [:li#nav-matchup (link-to "/matchup" "Matchup")]
+            [:li#nav-report  (link-to "/report/match" "Report Match Result")]))
+    [:li#nav-players-stats (link-to "/stats/players" "Player Statistics")]
+    [:li#nav-teams-stats (link-to "/stats/teams" "Team Statistics")]
+    [:li#nav-matches (link-to "/matches" "Played Matches")]
+    [:li#nav-player-log (link-to "/player/log" "Player Log")]
+    (when (auth/admin?)
+      [:li#nav-admin (link-to "/admin" "Admin")])
+    [:li#nav-about (link-to "/about"   "About")]]
    [:ul.nav.navbar-nav.pull-right
     (let [playername (auth/current-auth :playername)]
       [:li (if-not (auth/current-auth)
