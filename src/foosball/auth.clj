@@ -51,6 +51,6 @@
      [:input {:type "hidden" :name "identifier" :value url :id dom-id}]
      [:input.button.btn.btn-info {:class button-class :type "submit" :value button-text}]]))
 
-(defn logout-form [& {:keys [text extra-class] :or {text "Logout"}}]
+(defn logout-form [& {:keys [text extra-class title] :or {text "Logout"}}]
   [:form {:class extra-class :method "GET" :action "/logout"}
-   [:input.button.btn.btn-default {:type "submit" :value text}]])
+   [:input.button.btn.btn-default {:type "submit" :value text :title title}]])
