@@ -22,16 +22,15 @@
 
   (start [this]
     (info "Starting Foosball App")
-    (let [route-fns   [home/routes
-                       stats/routes
+    (let [route-fns   [admin/routes
+                       home/routes
                        matchup/routes
-                       admin/routes]
-          def-routes  [report/routes
+                       report/routes
+                       stats/routes
                        user/routes]
-          app-routes  (->> route-fns
-                           (map (fn [route-fn] (route-fn database)))
-                           (concat def-routes)
-                           (vec))
+          app-routes  (-> (map (fn [route-fn] (route-fn database)) route-fns)
+                          (concat [app-routes])
+                          (vec))
           app-handler (middleware/app-handler app-routes
                                               :middleware [auth/wrap-friend-openid])
           war-handler (middleware/war-handler app-handler)]

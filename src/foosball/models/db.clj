@@ -72,29 +72,11 @@
 (defn add-player-to-league [player-id league-id]
   @(d/transact conn [{:db/id player-id :player/leagues league-id}]))
 
-(defn get-leagues-for-player [player-id]
-  (->> (d/q '[:find ?lid ?name
-              :in $ ?player-id
-              :where
-              [?player-id :player/leagues ?lid]
-              [?lid :league/name ?name]] (db conn) player-id)
-       (map (fn [[id name]] (util/symbols-as-map id name)))))
 
-(defn get-players-in-league [league-id]
-  (->> (d/q '[:find ?pid ?n ?a ?role
-              :in $ ?league-id
-              :where
-              [?pid :player/name ?n]
-              [?pid :player/leagues ?league-id]
-              [?pid :player/active ?a]
-              [?pid :user/role ?role]] (db conn) league-id)
-       (map (fn [[id name active role]] (util/symbols-as-map id name active role)))
-       (sort-by :name)))
+
+
 
 ;; openid
-
-(defn add-openid-to-player [playerid openid]
-  @(d/transact conn [{:db/id playerid :user/openids openid}]))
 
 (defn remove-openids-from-player [playerid openids]
   @(d/transact conn (vec (for [openid openids]
@@ -108,21 +90,6 @@
 (defn remove-players-openids [id]
   (remove-openids-from-player id (get-players-openids id)))
 
-(defn get-players-with-openids []
-  (->> (d/q '[:find ?pid ?name
-              :where
-              [?pid :player/name ?name]
-              [?pid :user/openids _]]
-            (db conn))
-       (map (fn [[id name]] (util/symbols-as-map id name)))))
-
-(defn get-players-without-openids []
-  (let [playerids-with-openid (->> (get-players-with-openids)
-                                   (map (fn [{:keys [id]}] id))
-                                   (set))]
-    (->> (get-players)
-         (filter (fn [{:keys [id]}] (not (playerids-with-openid id)))))))
-
 (defn get-player-with-given-openid [openid]
   (->> (d/q '[:find ?pid ?name ?role
               :in $ ?openid
@@ -135,26 +102,6 @@
        first))
 
 ;; match
-
-(defn create-match [{:keys [matchdate team1 team2 reported-by league-id]}]
-  (let [[match-id team1-id team2-id] (repeatedly #(d/tempid :db.part/user))
-        [t1p1 t1p2 t1score] (map team1 [:player1 :player2 :score])
-        [t2p1 t2p2 t2score] (map team2 [:player1 :player2 :score])
-        transaction [{:db/id team1-id :team/player1 t1p1}
-                     {:db/id team1-id :team/player2 t1p2}
-                     {:db/id team1-id :team/score t1score}
-
-                     {:db/id team2-id :team/player1 t2p1}
-                     {:db/id team2-id :team/player2 t2p2}
-                     {:db/id team2-id :team/score t2score}
-
-                     {:db/id match-id :match/team1 team1-id}
-                     {:db/id match-id :match/team2 team2-id}
-                     {:db/id match-id :match/time matchdate}
-                     {:db/id match-id :match/reported-by reported-by}
-                     {:db/id match-id :match/league league-id}]]
-    (d/transact conn transaction)))
-
 
 
 (defn get-player
@@ -231,12 +178,27 @@
          (sort-by (juxt :matchdate :tx)))))
 
 (defprotocol FoosballDatabase
+  (get-player-db [this id])
   (get-players-db [this])
   (get-matches-db [this])
   (rename-player-db [this id new-name])
+
+  (create-player-db [this name openid])
+
+  (create-match-db [this match])
+
   (activate-player-db [this id])
   (deactivate-player-db [this id])
-  (delete-match-db [this id]))
+
+  (delete-match-db [this id])
+
+  (get-players-with-openids-db [this])
+  (get-players-without-openids-db [this])
+  (get-players-openids-db [this id])
+  (add-openid-to-player-db [this playerid openid])
+
+  (get-leagues-for-player-db [this player-id])
+  (get-players-in-league-db [this league-id]))
 
 (defrecord Database [db-uri connection]
   component/Lifecycle
@@ -252,6 +214,10 @@
     (info "Stopping Database")
     (assoc component :connection nil))
 
+  (get-player-db [this id]
+    (->> (d/q '[:find ?player :in $ ?id :where [?id :player/name ?player]] (db connection) id)
+         ffirst))
+
   (get-players-db [this]
     (->> (d/q '[:find ?pid ?n ?a ?role :where
               [?pid :player/name ?n]
@@ -259,6 +225,34 @@
               [?pid :user/role ?role]] (db connection))
        (map (fn [[id name active role]] (util/symbols-as-map id name active role)))
        (sort-by :name)))
+
+  (create-player-db [this name openid]
+    (let [playerid (d/tempid :db.part/user)
+          result    @(d/transact connection
+                                 [{:db/id playerid :player/name name}
+                                  {:db/id playerid :player/active true}
+                                  {:db/id playerid :user/openids openid}
+                                  {:db/id playerid :user/role :user}])]
+      (-> result :tempids first second)))
+
+  (create-match-db [this {:keys [matchdate team1 team2 reported-by league-id]}]
+    (let [[match-id team1-id team2-id] (repeatedly #(d/tempid :db.part/user))
+          [t1p1 t1p2 t1score] (map team1 [:player1 :player2 :score])
+          [t2p1 t2p2 t2score] (map team2 [:player1 :player2 :score])
+          transaction [{:db/id team1-id :team/player1 t1p1}
+                       {:db/id team1-id :team/player2 t1p2}
+                       {:db/id team1-id :team/score t1score}
+
+                       {:db/id team2-id :team/player1 t2p1}
+                       {:db/id team2-id :team/player2 t2p2}
+                       {:db/id team2-id :team/score t2score}
+
+                       {:db/id match-id :match/team1 team1-id}
+                       {:db/id match-id :match/team2 team2-id}
+                       {:db/id match-id :match/time matchdate}
+                       {:db/id match-id :match/reported-by reported-by}
+                       {:db/id match-id :match/league league-id}]]
+      (d/transact connection transaction)))
 
   (get-matches-db [this]
     (let [dbc (db connection)]
@@ -282,14 +276,56 @@
            (sort-by (juxt :matchdate :tx)))))
 
   (activate-player-db [this id]
-    @(d/transact conn [{:db/id id :player/active true}]))
+    @(d/transact connection [{:db/id id :player/active true}]))
 
   (deactivate-player-db [this id]
-    @(d/transact conn [{:db/id id :player/active false}]))
+    @(d/transact connection [{:db/id id :player/active false}]))
 
   (delete-match-db [this id]
     (let [matchdate (->> (d/q '[:find ?mt :in $ ?id
-                                :where [?id :match/time ?mt]] (db conn) id)
+                                :where [?id :match/time ?mt]] (db connection) id)
                          ffirst)]
-      (d/transact conn [[:db/retract id :match/time matchdate]])))
+      (d/transact connection [[:db/retract id :match/time matchdate]])))
+
+  (get-players-with-openids-db [this]
+    (->> (d/q '[:find ?pid ?name
+                :where
+                [?pid :player/name ?name]
+              [?pid :user/openids _]]
+              (db connection))
+         (map (fn [[id name]] (util/symbols-as-map id name)))))
+
+  (get-players-without-openids-db [this]
+    (let [playerids-with-openid (->> (get-players-with-openids-db this)
+                                     (map (fn [{:keys [id]}] id))
+                                     (set))]
+      (->> (get-players)
+           (filter (fn [{:keys [id]}] (not (playerids-with-openid id)))))))
+
+  (get-players-openids-db [this id]
+    (->> (d/q '[:find ?openids :in $ ?id :where [?id :user/openids ?openids]] (db connection) id)
+         (mapcat identity)
+         (set)))
+
+  (add-openid-to-player-db [this playerid openid]
+    @(d/transact connection [{:db/id playerid :user/openids openid}]))
+
+  (get-leagues-for-player-db [this player-id]
+    (->> (d/q '[:find ?lid ?name
+                :in $ ?player-id
+                :where
+                [?player-id :player/leagues ?lid]
+                [?lid :league/name ?name]] (db connection) player-id)
+         (map (fn [[id name]] (util/symbols-as-map id name)))))
+
+  (get-players-in-league-db [this league-id]
+    (->> (d/q '[:find ?pid ?n ?a ?role
+                :in $ ?league-id
+                :where
+                [?pid :player/name ?n]
+                [?pid :player/leagues ?league-id]
+                [?pid :player/active ?a]
+                [?pid :user/role ?role]] (db connection) league-id)
+         (map (fn [[id name active role]] (util/symbols-as-map id name active role)))
+         (sort-by :name)))
   )

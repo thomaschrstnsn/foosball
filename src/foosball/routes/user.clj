@@ -1,21 +1,22 @@
 (ns foosball.routes.user
-  (:use [compojure.core :only [defroutes GET POST]]
+  (:use [compojure.core :only [GET POST]]
         [hiccup.page :only [html5]])
   (:use [taoensso.timbre :only [trace debug info warn error fatal spy]])
-  (:require [cemerick.friend        :as friend]
-            [foosball.views.layout  :as layout]
+  (:require [foosball.views.layout  :as layout]
             [foosball.models.db     :as db]
             [foosball.util          :as util]
-            [ring.util.response     :as response]
             [foosball.uri-misc      :as uri-misc]
-            [foosball.auth          :as auth]))
+            [foosball.auth          :as auth]
+            [ring.util.response     :as response]
+            [cemerick.friend        :as friend]
+            [compojure.core         :as compojure]))
 
-(defn- assign-player-page []
+(defn- assign-player-page [db]
   (let [current-auth (auth/current-auth)
         {:keys [playerid playername]} current-auth]
     (if (or playername (nil? current-auth))
       (response/redirect "/")
-      (let [unclaimed-players (db/get-players-without-openids)]
+      (let [unclaimed-players (db/get-players-without-openids-db db)]
         (layout/common
          :title "Assign Player"
          :content (html5
@@ -43,8 +44,8 @@
                        [:div.form-group.col-lg-3
                         [:button.btn.btn-primary.btn-lg.btn-block {:type "submit" :value "Report"} "Create!"]]]]]]))))))
 
-(defn- user-page [req]
-  (let [unclaimed-players (db/get-players-without-openids)]
+(defn- user-page [db req]
+  (let [unclaimed-players (db/get-players-without-openids-db db)]
     (layout/common
      :title "User"
      :content (html5
@@ -83,13 +84,13 @@
                 [:h3 (str "current identity:" (auth/current-auth :identity))]
                 [:h3 (str "current playername: " (auth/current-auth :playername))]]))))
 
-(defn claim-player [id]
+(defn claim-player [db id]
   (let [current-auth       (auth/current-auth)
         openid             (:identity current-auth)
         current-playername (:playername current-auth)
         id                 (util/parse-id id)
-        player             (db/get-player id)
-        players-openids    (db/get-players-openids id)]
+        player             (db/get-player-db db id)
+        players-openids    (db/get-players-openids-db db id)]
     (if (and (not (auth/user?))
              openid
              (nil? current-playername)
@@ -97,13 +98,13 @@
              (empty? players-openids))
       (do
         (info {:claiming-player player :for-openid openid :user-auth current-auth})
-        (db/add-openid-to-player id openid)
+        (db/add-openid-to-player-db db id openid)
         (friend/logout* (response/redirect (str "/user/created/" id))))
       (do
         (error ["cannot claim player" (util/symbols-as-map openid id current-playername players-openids)])
         (response/status (response/response "cannot claim player") 405)))))
 
-(defn create-player [playername]
+(defn create-player [db playername]
   (let [current-auth       (auth/current-auth)
         openid             (:identity current-auth)
         current-playername (:playername current-auth)]
@@ -112,14 +113,14 @@
              (nil? current-playername))
       (do
         (info {:create-player playername :for-openid openid :user-auth current-auth})
-        (let [id (db/create-player playername openid)]
+        (let [id (db/create-player-db db playername openid)]
           (friend/logout* (response/redirect (str "/user/created/" id)))))
       (do
         (error ["cannot create player" (util/symbols-as-map openid playername current-playername)])
         (response/status (response/response "cannot create player") 405)))))
 
-(defn created-page [id]
-  (let [player (db/get-player (util/parse-id id))]
+(defn created-page [db id]
+  (let [player (db/get-player-db db (util/parse-id id))]
     (layout/common
      :title "Player Created"
      :content (html5
@@ -127,10 +128,23 @@
                [:p.lead "You have been logged out, please login again to continue using the system."]
                (auth/login-form)))))
 
-(defroutes routes
-  (GET "/user" req (user-page req))
-  (GET "/user/assign-player" req (assign-player-page))
-  (POST "/user/claim-player" [playerid] (claim-player playerid))
-  (POST "/user/create-player" [playername] (create-player playername))
-  (GET "/user/created/:id" [id] (created-page id))
-  (GET "/logout" req (friend/logout* (response/redirect (str (:context req) "/")))))
+(defn routes [db]
+  (compojure/routes
+   (GET  "/user"
+         req
+         (user-page db req))
+   (GET  "/user/assign-player"
+         req
+         (assign-player-page db))
+   (POST "/user/claim-player"
+         [playerid]
+         (claim-player db playerid))
+   (POST "/user/create-player"
+         [playername]
+         (create-player db playername))
+   (GET  "/user/created/:id"
+         [id]
+         (created-page db id))
+   (GET  "/logout"
+         req
+         (friend/logout* (response/redirect (str (:context req) "/"))))))
