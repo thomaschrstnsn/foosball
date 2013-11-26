@@ -3,6 +3,7 @@
   (:use [taoensso.timbre :only [trace debug info warn error fatal spy]])
   (:require [noir.util.middleware    :as middleware]
             [compojure.route         :as route]
+            [com.stuartsierra.component :as component]
             [foosball.util           :as util]
             [foosball.routes.home    :as home]
             [foosball.routes.report  :as report]
@@ -16,13 +17,26 @@
   (route/resources "/")
   (route/not-found "Not Found"))
 
-(def app (middleware/app-handler [home/routes
-                                  report/routes
-                                  stats/routes
-                                  matchup/routes
-                                  admin/routes
-                                  user/routes
-                                  app-routes]
-                                 :middleware [auth/wrap-friend-openid]))
+(defrecord App [app-handler war-handler database]
+  component/Lifecycle
 
-(def war-handler (middleware/war-handler app))
+  (start [this]
+    (info "Starting Foosball App")
+    (let [route-fns   [home/routes
+                       stats/routes
+                       matchup/routes
+                       admin/routes]
+          def-routes  [report/routes
+                       user/routes]
+          app-routes  (->> route-fns
+                           (map (fn [route-fn] (route-fn database)))
+                           (concat def-routes)
+                           (vec))
+          app-handler (middleware/app-handler app-routes
+                                              :middleware [auth/wrap-friend-openid])
+          war-handler (middleware/war-handler app-handler)]
+      (merge this {:app-handler app-handler :war-handler war-handler})))
+
+  (stop [this]
+    (info "Stopping Foosball App")
+    (merge this {:app-handler nil :war-handler nil})))

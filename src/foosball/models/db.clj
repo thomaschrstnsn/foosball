@@ -4,7 +4,8 @@
   (:use [foosball.models.schema :only [eav-schema]])
   (:use [clojure.set :only [difference]])
   (:require [foosball.util :as util]
-            [foosball.models.migration :as migration]))
+            [foosball.models.migration :as migration]
+            [com.stuartsierra.component :as component]))
 
 (def ^:dynamic ^:private conn)
 (def ^:dynamic ^:private *uri*)
@@ -41,12 +42,6 @@
 
 (defn rename-player [id newplayername]
   @(d/transact conn [{:db/id id :player/name newplayername}]))
-
-(defn activate-player [id]
-  @(d/transact conn [{:db/id id :player/active true}]))
-
-(defn deactivate-player [id]
-  @(d/transact conn [{:db/id id :player/active false}]))
 
 (defn set-players-role [id role]
   @(d/transact conn [{:db/id id :user/role role}]))
@@ -160,10 +155,7 @@
                      {:db/id match-id :match/league league-id}]]
     (d/transact conn transaction)))
 
-(defn delete-match [id]
-  (let [matchdate (->> (d/q '[:find ?mt :in $ ?id :where [?id :match/time ?mt]] (db conn) id)
-                       ffirst)]
-    (d/transact conn [[:db/retract id :match/time matchdate]])))
+
 
 (defn get-player
   ([id] (get-player id (db conn)))
@@ -237,3 +229,67 @@
                  :team2 (merge {:id t2} (get-team t2 dbc))
                  :reported-by (get-reported-by mid dbc)}))
          (sort-by (juxt :matchdate :tx)))))
+
+(defprotocol FoosballDatabase
+  (get-players-db [this])
+  (get-matches-db [this])
+  (rename-player-db [this id new-name])
+  (activate-player-db [this id])
+  (deactivate-player-db [this id])
+  (delete-match-db [this id]))
+
+(defrecord Database [db-uri connection]
+  component/Lifecycle
+  FoosballDatabase
+
+  (start [component]
+    (info "Starting Database")
+    (let [conn (create-db-and-connect db-uri)]
+      (info "Connected to database on uri: " db-uri)
+      (assoc component :connection conn)))
+
+  (stop [component]
+    (info "Stopping Database")
+    (assoc component :connection nil))
+
+  (get-players-db [this]
+    (->> (d/q '[:find ?pid ?n ?a ?role :where
+              [?pid :player/name ?n]
+              [?pid :player/active ?a]
+              [?pid :user/role ?role]] (db connection))
+       (map (fn [[id name active role]] (util/symbols-as-map id name active role)))
+       (sort-by :name)))
+
+  (get-matches-db [this]
+    (let [dbc (db connection)]
+      (->> (d/q '[:find ?m ?mt ?t1 ?t2 ?tx
+                  :in $
+                  :where
+                  [?m :match/time  ?mt ?tx]
+                  [?m :match/team1 ?t1]
+                  [?m :match/team2 ?t2]
+                  [?t1 :team/player1 _]
+                  [?t1 :team/player2 _]
+                  [?t1 :team/score   _]
+                  [?t2 :team/player1 _]
+                  [?t2 :team/player2 _]
+                  [?t2 :team/score   _]] dbc)
+           (map (fn [[mid mt t1 t2 tx]]
+                  {:id mid :matchdate mt :tx tx
+                   :team1 (merge {:id t1} (get-team t1 dbc))
+                   :team2 (merge {:id t2} (get-team t2 dbc))
+                   :reported-by (get-reported-by mid dbc)}))
+           (sort-by (juxt :matchdate :tx)))))
+
+  (activate-player-db [this id]
+    @(d/transact conn [{:db/id id :player/active true}]))
+
+  (deactivate-player-db [this id]
+    @(d/transact conn [{:db/id id :player/active false}]))
+
+  (delete-match-db [this id]
+    (let [matchdate (->> (d/q '[:find ?mt :in $ ?id
+                                :where [?id :match/time ?mt]] (db conn) id)
+                         ffirst)]
+      (d/transact conn [[:db/retract id :match/time matchdate]])))
+  )

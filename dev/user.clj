@@ -11,17 +11,18 @@
             [foosball.models.db :as db]
             [dev-data :as d]
             [taoensso.timbre :as timbre]
-            [taoensso.timbre.appenders (socket :as socket-appender)]))
+            [taoensso.timbre.appenders (socket :as socket-appender)]
+            [com.stuartsierra.component :as component]))
 
 (def system nil)
 
+(comment
+                                 :handler-wrapper stacktrace/wrap-stacktrace
+                                 :cljs-optimized? false)
 (defn init
   "Constructs the current development system."
   []
-  (alter-var-root #'system
-                  (constantly (system/system
-                               :handler-wrapper stacktrace/wrap-stacktrace
-                               :cljs-optimized? false))))
+  (alter-var-root #'system (constantly (system/foosball-system))))
 
 (defn socket-logger []
   (timbre/set-config! [:appenders :socket] socket-appender/socket-appender)
@@ -33,13 +34,13 @@
   "Starts the current development system."
   []
   (socket-logger)
-  (alter-var-root #'system system/start))
+  (alter-var-root #'system component/start))
 
 (defn stop
   "Shuts down and destroys the current development system."
   []
   (alter-var-root #'system
-                  (fn [s] (when s (system/stop s))))
+                  (fn [s] (when s (component/stop s))))
   :ok)
 
 (defn go

@@ -9,9 +9,10 @@
    put any initialization code here"
   []
   (info "instantiating system")
-  (def ^:private system-inst
-    (-> (system/system :handler-wrapper (constantly nil)) ;; override war handler - we are running inside a servlet, it will run it
-        (system/start)))
+  (comment
+    (def ^:private system-inst
+      (-> (system/system :handler-wrapper (constantly nil)) ;; override war handler - we are running inside a servlet, it will run it
+          (system/start))))
   (info "foosball started successfully"))
 
 (defn destroy
@@ -19,5 +20,6 @@
    shuts down, put any clean up code here"
   []
   (info "foosball shutting down...")
-  (system/stop system-inst)
+  (comment
+    (system/stop system-inst))
   (info "shut down ok"))

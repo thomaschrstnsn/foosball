@@ -1,27 +1,26 @@
 (ns foosball.routes.matchup
-  (:use [compojure.core :only [defroutes context GET POST]])
   (:use [taoensso.timbre :only [trace debug info warn error fatal spy]])
   (:require [foosball.views.layout :as layout]
             [foosball.views.matchup :as matchup]
             [foosball.util :as util]
             [foosball.models.db :as db]
+            [foosball.auth :as auth]
             [cemerick.friend :as friend]
-            [foosball.auth :as auth]))
+            [compojure.core :as compojure]))
 
 (defn matchup-page
-  ([]
-     (layout/common :title "Matchup" :content (matchup/page (db/get-players) (db/get-matches))))
-  ([{:keys [params]}]
+  ([database]
+     (layout/common :title "Matchup" :content (matchup/page (db/get-players-db database)
+                                                            (db/get-matches-db database))))
+  ([database {:keys [params]}]
      (let [{:keys [playerids]} params]
        (layout/common :title "Matchup"
-                      :content (matchup/page (db/get-players)
-                                             (db/get-matches)
+                      :content (matchup/page (db/get-players-db database)
+                                             (db/get-matches-db database)
                                              (map util/parse-id playerids))))))
-
-(defroutes unprotected
-  (GET  "/" []      (matchup-page))
-  (POST "/" request (matchup-page request)))
-
-(defroutes routes
-  (context "/matchup" request
-           (friend/wrap-authorize unprotected #{auth/user})))
+(defn routes [database]
+  (let [matchup-routes (compojure/routes
+                        (compojure/GET  "/" []      (matchup-page database))
+                        (compojure/POST "/" request (matchup-page database request)))]
+    (compojure/context "/matchup" request
+                       (friend/wrap-authorize matchup-routes #{auth/user}))))

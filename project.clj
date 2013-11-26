@@ -16,6 +16,7 @@
                  [hiccup "1.0.4"]
                  [org.clojure/math.combinatorics "0.0.4"]
                  [clj-time "0.6.0"]
+                 [com.stuartsierra/component "0.2.0"]
                  [org.clojure/tools.nrepl "0.2.3"]]
 
   :hooks [configleaf.hooks]
