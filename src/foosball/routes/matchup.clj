@@ -1,5 +1,6 @@
 (ns foosball.routes.matchup
-  (:use [taoensso.timbre :only [trace debug info warn error fatal spy]])
+  (:use [taoensso.timbre :only [trace debug info warn error fatal spy]]
+        [compojure.core :only [GET POST]])
   (:require [foosball.views.layout :as layout]
             [foosball.views.matchup :as matchup]
             [foosball.util :as util]
@@ -23,7 +24,7 @@
 
 (defn routes [deps]
   (let [matchup-routes (compojure/routes
-                        (compojure/GET  "/" []      (matchup-page deps))
-                        (compojure/POST "/" request (matchup-page deps request)))]
+                        (GET  "/" []      (matchup-page deps))
+                        (POST "/" request (matchup-page deps request)))]
     (compojure/context "/matchup" request
                        (friend/wrap-authorize matchup-routes #{auth/user}))))

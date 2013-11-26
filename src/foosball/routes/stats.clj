@@ -1,5 +1,6 @@
 (ns foosball.routes.stats
-  (:use [taoensso.timbre :only [trace debug info warn error fatal spy]])
+  (:use [taoensso.timbre :only [trace debug info warn error fatal spy]]
+        [compojure.core :only [GET POST]])
   (:require [foosball.views.layout :as layout]
             [foosball.views.stats  :as stats]
             [foosball.views.player-log :as player-log]
@@ -35,6 +36,6 @@
 
 (defn routes [deps]
   (compojure/routes
-   (compojure/GET "/stats/players" [sort order] (stats-players  deps sort order))
-   (compojure/GET "/stats/teams"   [sort order] (stats-teams    deps sort order))
-   (compojure/GET "/player/log"    [playerid]   (log-for-player deps playerid))))
+   (GET "/stats/players" [sort order] (stats-players  deps sort order))
+   (GET "/stats/teams"   [sort order] (stats-teams    deps sort order))
+   (GET "/player/log"    [playerid]   (log-for-player deps playerid))))

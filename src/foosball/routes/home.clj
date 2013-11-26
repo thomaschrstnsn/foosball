@@ -1,4 +1,5 @@
 (ns foosball.routes.home
+  (:use [compojure.core :only [GET]])
   (:require [foosball.views.layout :as layout]
             [foosball.views.about  :as about]
             [foosball.views.front  :as front]
@@ -17,5 +18,5 @@
 
 (defn routes [deps]
   (compojure/routes
-   (compojure/GET "/"      [] (front-page deps))
-   (compojure/GET "/about" [] (about-page deps))))
+   (GET "/"      [] (front-page deps))
+   (GET "/about" [] (about-page deps))))
