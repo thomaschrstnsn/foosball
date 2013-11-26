@@ -1,4 +1,4 @@
-(ns foosball.handler
+(ns foosball.app
   (:use [compojure.core :only [defroutes]])
   (:use [taoensso.timbre :only [trace debug info warn error fatal spy]])
   (:require [noir.util.middleware    :as middleware]

@@ -1,7 +1,7 @@
 (ns foosball.system
   (:use [taoensso.timbre :only [trace debug info warn error fatal spy]])
   (:require [foosball.util      :as util]
-            [foosball.handler   :as handler]
+            [foosball.app   :as app]
             [foosball.settings  :as settings]
             [foosball.models.db :as db]
             [ring.adapter.jetty :as jetty]
@@ -57,7 +57,7 @@
     :db   (db/map->Database {:db-uri settings/default-datomic-uri})
     :repl (map->HostedRepl  {:port 4321})
     :app  (component/using
-           (handler/map->App {})
+           (app/map->App {})
            {:database :db})
     :web-server (component/using
                  (map->WebServer {:port 8080})
