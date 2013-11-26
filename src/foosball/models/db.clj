@@ -200,19 +200,19 @@
   (get-leagues-for-player-db [this player-id])
   (get-players-in-league-db [this league-id]))
 
-(defrecord Database [db-uri connection]
+(defrecord Database [uri connection]
   component/Lifecycle
   FoosballDatabase
 
-  (start [component]
+  (start [this]
     (info "Starting Database")
-    (let [conn (create-db-and-connect db-uri)]
-      (info "Connected to database on uri: " db-uri)
-      (assoc component :connection conn)))
+    (let [conn (create-db-and-connect uri)]
+      (info "Connected to database on uri:" uri)
+      (assoc this :connection conn)))
 
-  (stop [component]
+  (stop [this]
     (info "Stopping Database")
-    (assoc component :connection nil))
+    (assoc this :connection nil))
 
   (get-player-db [this id]
     (->> (d/q '[:find ?player :in $ ?id :where [?id :player/name ?player]] (db connection) id)

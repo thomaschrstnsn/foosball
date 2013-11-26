@@ -40,14 +40,15 @@
       (.stop server))
     (assoc component :server nil)))
 
-(def dev-system-components [:db :repl :web-server :app])
+(def dev-system-components  [:db :app :web-server])
+(def prod-system-components [:db :repl :app])
 
-(defrecord FoosballSystem [config-options db repl web-server app]
+(defrecord Foosball [components config-options db repl web-server app]
   component/Lifecycle
   (start [this]
-    (component/start-system this dev-system-components))
+    (component/start-system this components))
   (stop [this]
-    (component/stop-system this dev-system-components)))
+    (component/stop-system this components)))
 
 (def default-config-options
   {:db-uri          "datomic:free://localhost:4334/foosball"
@@ -56,11 +57,12 @@
    :web-port        8080
    :handler-wrapper identity})
 
-(defn foosball-system [& {:as config-overrides}]
+(defn system [components & {:as config-overrides}]
   (let [config-options (merge default-config-options config-overrides)]
-    (map->FoosballSystem
-     {:config-options config-options
-      :db             (db/map->Database {:db-uri (:db-uri config-options)})
+    (map->Foosball
+     {:components     components
+      :config-options config-options
+      :db             (db/map->Database {:uri (:db-uri config-options)})
       :repl           (map->HostedRepl  {:port (:repl-port config-options)})
       :app            (component/using (app/map->App {})
                                        {:database       :db

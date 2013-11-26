@@ -1,6 +1,11 @@
 (ns foosball.servlet-lifecycle
   (:use [taoensso.timbre :only [trace debug info warn error fatal spy]])
-  (:require [foosball.system :as system]))
+  (:require [foosball.system :as system]
+            [com.stuartsierra.component :as component]))
+
+(def ^:private system nil)
+
+(def handler nil)
 
 (defn init
   "init will be called once when
@@ -9,10 +14,9 @@
    put any initialization code here"
   []
   (info "instantiating system")
-  (comment
-    (def ^:private system-inst
-      (-> (system/system :handler-wrapper (constantly nil)) ;; override war handler - we are running inside a servlet, it will run it
-          (system/start))))
+  (alter-var-root #'system  (constantly (-> (system/system system/prod-system-components)
+                                            component/start)))
+  (alter-var-root #'handler (constantly (:war-handler system)))
   (info "foosball started successfully"))
 
 (defn destroy
@@ -20,6 +24,5 @@
    shuts down, put any clean up code here"
   []
   (info "foosball shutting down...")
-  (comment
-    (system/stop system-inst))
+  (alter-var-root #'system (fn [s] (when s (component/stop s))))
   (info "shut down ok"))

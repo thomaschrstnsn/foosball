@@ -40,7 +40,7 @@
                            :output-to "resources/public/js/cljs/foosball.js"
                            :optimizations :advanced}}]}
 
-  :ring {:handler foosball.handler/war-handler,
+  :ring {:handler foosball.servlet-lifecycle/handler,
          :init    foosball.servlet-lifecycle/init,
          :destroy foosball.servlet-lifecycle/destroy
          :open-browser? false

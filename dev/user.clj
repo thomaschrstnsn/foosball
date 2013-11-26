@@ -19,7 +19,7 @@
 (defn init
   "Constructs the current development system."
   []
-  (alter-var-root #'system (constantly (system/foosball-system
+  (alter-var-root #'system (constantly (system/system system/dev-system-components
                                         :handler-wrapper stacktrace/wrap-stacktrace
                                         :cljs-optimized? false))))
 
