@@ -7,31 +7,34 @@
             [foosball.models.db :as db]
             [compojure.core :as compojure]))
 
-(defn stats-players [database sort order]
-  (layout/common :title "Player Statistics"
+(defn stats-players [{:keys [config-options db]} sort order]
+  (layout/common config-options
+                 :title "Player Statistics"
                  :auto-refresh? true
-                 :content (stats/player-table (db/get-matches-db database)
-                                              (db/get-players-db database)
+                 :content (stats/player-table (db/get-matches-db db)
+                                              (db/get-players-db db)
                                               :sort (keyword sort)
                                               :order (keyword order))))
 
-(defn stats-teams [database sort order]
-  (layout/common :title "Team Statistics"
+(defn stats-teams [{:keys [db config-options]} sort order]
+  (layout/common config-options
+                 :title "Team Statistics"
                  :auto-refresh? true
-                 :content (stats/team-table (db/get-matches-db database)
-                                            (db/get-players-db database)
+                 :content (stats/team-table (db/get-matches-db db)
+                                            (db/get-players-db db)
                                             :sort (keyword sort)
                                             :order (keyword order))))
 
-(defn log-for-player [database playerid]
-  (layout/common :title "Player Log"
+(defn log-for-player [{:keys [config-options db]} playerid]
+  (layout/common config-options
+                 :title "Player Log"
                  :auto-refresh? true
-                 :content (player-log/player-log-page (db/get-matches-db database)
-                                                      (db/get-players-db database)
+                 :content (player-log/player-log-page (db/get-matches-db db)
+                                                      (db/get-players-db db)
                                                       playerid)))
 
-(defn routes [database]
+(defn routes [deps]
   (compojure/routes
-   (compojure/GET "/stats/players" [sort order] (stats-players  database sort order))
-   (compojure/GET "/stats/teams"   [sort order] (stats-teams    database sort order))
-   (compojure/GET "/player/log"    [playerid]   (log-for-player database playerid))))
+   (compojure/GET "/stats/players" [sort order] (stats-players  deps sort order))
+   (compojure/GET "/stats/teams"   [sort order] (stats-teams    deps sort order))
+   (compojure/GET "/player/log"    [playerid]   (log-for-player deps playerid))))

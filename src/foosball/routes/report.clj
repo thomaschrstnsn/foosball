@@ -14,28 +14,31 @@
 (def report-match-title "Report Match")
 
 (defn report-match-page
-  ([db] (let [playerid (auth/current-auth :playerid)
-              leagues  (db/get-leagues-for-player-db db playerid)]
-          (response/redirect (str "/report/match/" (->> leagues first :id)))))
+  ([{:keys [db]}]
+     (let [playerid (auth/current-auth :playerid)
+           leagues  (db/get-leagues-for-player-db db playerid)]
+       (response/redirect (str "/report/match/" (->> leagues first :id)))))
 
-  ([db league-id]
+  ([{:keys [config-options db]} league-id]
      (let [playerid (auth/current-auth :playerid)
            leagues  (db/get-leagues-for-player-db db playerid)
            league   (->> leagues
                          (filter (fn [{:keys [id]}] (= id league-id)))
                          first)]
-       (layout/common :title report-match-title
+       (layout/common config-options
+                      :title report-match-title
                       :content (match/form (db/get-players-in-league-db db league-id)
                                            leagues
                                            league-id))))
 
-  ([db league-id team1player1 team1player2 team2player1 team2player2]
+  ([{:keys [config-options db]} league-id team1player1 team1player2 team2player1 team2player2]
      (let [params (util/symbols-as-map team1player1 team1player2 team2player1 team2player2)
            parsed (match/parse-form params)]
-       (layout/common :title report-match-title
+       (layout/common config-options
+                      :title report-match-title
                       :content (match/form (db/get-players-db db) parsed)))))
 
-(defn report-match [db {:keys [params]}]
+(defn report-match [{:keys [config-options db]} {:keys [params]}]
   (info {:report-match-params params})
   (let [parsed-form      (match/parse-form params)
         validated-report (validation/validate-report parsed-form)
@@ -50,34 +53,36 @@
         (info (util/symbols-as-map parsed-form reported-by))
         (db/create-match-db db (merge parsed-form (util/symbols-as-map reported-by)))
         (response/redirect-after-post "/stats/players"))
-      (layout/common :title report-match-title
+      (layout/common config-options
+                     :title report-match-title
                      :content (match/form (db/get-players-db db) parsed-form)))))
 
-(defn matches-page [db]
-  (layout/common :title "Matches"
+(defn matches-page [{:keys [config-options db]}]
+  (layout/common config-options
+                 :title "Matches"
                  :auto-refresh? true
                  :content (match/table (db/get-matches-db db)
                                        (db/get-players-db db))))
 
-(defn routes [db]
+(defn routes [deps]
   (let [report-routes (compojure/routes
                        (GET  "/match"
                              []
-                             (report-match-page db))
+                             (report-match-page deps))
                        (POST "/match/league-select"
                              [league-id]
                              (response/redirect-after-post (str "/report/match/" league-id)))
                        (GET  "/match/:league-id"
                              [league-id]
-                             (report-match-page db (util/parse-id league-id)))
+                             (report-match-page deps (util/parse-id league-id)))
                        (GET  "/match/:league-id/with-players"
                              [league-id t1p1 t1p2 t2p1 t2p2]
-                             (report-match-page db t1p1 t1p2 t2p1 t2p2))
+                             (report-match-page deps t1p1 t1p2 t2p1 t2p2))
                        (POST "/match/:league-id"
                              request
-                             (report-match db request)))]
+                             (report-match deps request)))]
     (compojure/routes
      (compojure/context "/report" request (friend/wrap-authorize report-routes #{auth/user}))
      (GET "/matches"
           []
-          (matches-page db)))))
+          (matches-page deps)))))

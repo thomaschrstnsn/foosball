@@ -10,41 +10,42 @@
             [cemerick.friend :as friend]
             [compojure.core :as compojure]))
 
-(defn admin-page [database]
-  (layout/common :title "ADMIN" :content (admin/form (db/get-players-db database)
-                                                     (db/get-matches-db database))))
+(defn admin-page [{:keys [db config-options]}]
+  (layout/common config-options
+                 :title "ADMIN" :content (admin/form (db/get-players-db db)
+                                                     (db/get-matches-db db))))
 
-(defn rename-player [db playerid newplayername]
+(defn rename-player [{:keys [db]} playerid newplayername]
   (info {:rename-player (util/symbols-as-map playerid newplayername)})
   (db/rename-player-db db (util/parse-id playerid) newplayername)
   (response/redirect-after-post "/admin"))
 
-(defn activate-player [db id]
+(defn activate-player [{:keys [db]} id]
   (info {:activate-player id})
   (db/activate-player-db db (util/parse-id id))
   (response/redirect-after-post "/admin"))
 
-(defn deactivate-player [db id]
+(defn deactivate-player [{:keys [db]} id]
   (info {:deactivate-player id})
   (db/deactivate-player-db db (util/parse-id id))
   (response/redirect-after-post "/admin"))
 
-(defn remove-match [db id]
+(defn remove-match [{:keys [db]} id]
   (info {:remove-match id})
   (db/delete-match-db db (util/parse-id id))
   (response/redirect-after-post "/admin"))
 
-(defn routes [db]
+(defn routes [deps]
   (let [admin-routes (compojure/routes
                       (GET  "/" []
-                            (admin-page db))
+                            (admin-page deps))
                       (POST "/player/rename" [playerid newplayername]
-                            (rename-player db playerid newplayername))
+                            (rename-player deps playerid newplayername))
                       (POST "/player/deactivate" [playerid]
-                            (deactivate-player db playerid))
+                            (deactivate-player deps playerid))
                       (POST "/player/activate" [playerid]
-                            (activate-player db playerid))
+                            (activate-player deps playerid))
                       (POST "/match/remove" [matchid]
-                            (remove-match db matchid)))]
+                            (remove-match deps matchid)))]
     (compojure/context "/admin" request
-             (friend/wrap-authorize admin-routes #{auth/admin}))))
+                       (friend/wrap-authorize admin-routes #{auth/admin}))))

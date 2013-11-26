@@ -11,13 +11,14 @@
             [cemerick.friend        :as friend]
             [compojure.core         :as compojure]))
 
-(defn- assign-player-page [db]
+(defn- assign-player-page [{:keys [db config-options]}]
   (let [current-auth (auth/current-auth)
         {:keys [playerid playername]} current-auth]
     (if (or playername (nil? current-auth))
       (response/redirect "/")
       (let [unclaimed-players (db/get-players-without-openids-db db)]
         (layout/common
+         config-options
          :title "Assign Player"
          :content (html5
                    [:div
@@ -44,9 +45,10 @@
                        [:div.form-group.col-lg-3
                         [:button.btn.btn-primary.btn-lg.btn-block {:type "submit" :value "Report"} "Create!"]]]]]]))))))
 
-(defn- user-page [db req]
+(defn- user-page [{:keys [db config-options]} req]
   (let [unclaimed-players (db/get-players-without-openids-db db)]
     (layout/common
+     config-options
      :title "User"
      :content (html5
                [:div
@@ -84,7 +86,7 @@
                 [:h3 (str "current identity:" (auth/current-auth :identity))]
                 [:h3 (str "current playername: " (auth/current-auth :playername))]]))))
 
-(defn claim-player [db id]
+(defn claim-player [{:keys [db]} id]
   (let [current-auth       (auth/current-auth)
         openid             (:identity current-auth)
         current-playername (:playername current-auth)
@@ -104,7 +106,7 @@
         (error ["cannot claim player" (util/symbols-as-map openid id current-playername players-openids)])
         (response/status (response/response "cannot claim player") 405)))))
 
-(defn create-player [db playername]
+(defn create-player [{:keys [db]} playername]
   (let [current-auth       (auth/current-auth)
         openid             (:identity current-auth)
         current-playername (:playername current-auth)]
@@ -119,32 +121,32 @@
         (error ["cannot create player" (util/symbols-as-map openid playername current-playername)])
         (response/status (response/response "cannot create player") 405)))))
 
-(defn created-page [db id]
+(defn created-page [{:keys [config-options db]} id]
   (let [player (db/get-player-db db (util/parse-id id))]
-    (layout/common
+    (layout/common config-options
      :title "Player Created"
      :content (html5
                [:h1 (str "Successfully created player " player)]
                [:p.lead "You have been logged out, please login again to continue using the system."]
                (auth/login-form)))))
 
-(defn routes [db]
+(defn routes [deps]
   (compojure/routes
    (GET  "/user"
          req
-         (user-page db req))
+         (user-page deps req))
    (GET  "/user/assign-player"
          req
-         (assign-player-page db))
+         (assign-player-page deps))
    (POST "/user/claim-player"
          [playerid]
-         (claim-player db playerid))
+         (claim-player deps playerid))
    (POST "/user/create-player"
          [playername]
-         (create-player db playername))
+         (create-player deps playername))
    (GET  "/user/created/:id"
          [id]
-         (created-page db id))
+         (created-page deps id))
    (GET  "/logout"
          req
          (friend/logout* (response/redirect (str (:context req) "/"))))))

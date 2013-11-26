@@ -16,19 +16,17 @@
 
 (def system nil)
 
-(comment
-                                 :handler-wrapper stacktrace/wrap-stacktrace
-                                 :cljs-optimized? false)
 (defn init
   "Constructs the current development system."
   []
-  (alter-var-root #'system (constantly (system/foosball-system))))
+  (alter-var-root #'system (constantly (system/foosball-system
+                                        :handler-wrapper stacktrace/wrap-stacktrace
+                                        :cljs-optimized? false))))
 
 (defn socket-logger []
   (timbre/set-config! [:appenders :socket] socket-appender/socket-appender)
   (timbre/set-config! [:shared-appender-config :socket]
-                      {:listen-addr :all
-                       :port 9000}))
+                      {:listen-addr :all :port 9000}))
 
 (defn start
   "Starts the current development system."

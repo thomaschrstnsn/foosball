@@ -17,7 +17,7 @@
   (route/resources "/")
   (route/not-found "Not Found"))
 
-(defrecord App [app-handler war-handler database]
+(defrecord App [app-handler war-handler database config-options]
   component/Lifecycle
 
   (start [this]
@@ -28,7 +28,9 @@
                        report/routes
                        stats/routes
                        user/routes]
-          app-routes  (-> (map (fn [route-fn] (route-fn database)) route-fns)
+          app-routes  (-> (map (fn [route-fn] (route-fn {:db database
+                                                        :config-options config-options}))
+                               route-fns)
                           (concat [app-routes])
                           (vec))
           app-handler (middleware/app-handler app-routes

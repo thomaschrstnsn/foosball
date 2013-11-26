@@ -1,11 +1,9 @@
 (ns foosball.views.layout
   (:use hiccup.form
-        [hiccup.def :only [defhtml]]
         [hiccup.element :only [link-to]]
         [hiccup.page :only [html5 include-js include-css]]
         [cfg.current :only [project]])
   (:require [foosball.auth :as auth]
-            [foosball.settings :as settings]
             [cemerick.austin.repls :refer (browser-connected-repl-js)]))
 
 (defn header []
@@ -51,7 +49,7 @@
    (when @cemerick.austin.repls/browser-repl-env
      [:script (cemerick.austin.repls/browser-connected-repl-js)])))
 
-(defhtml base [page-title & content]
+(defn base [{:keys [cljs-optimized?]} page-title & content]
   (html5
     [:head
      [:title (if page-title
@@ -59,7 +57,7 @@
                "Foosball")]
      [:link {:rel "icon" :type "image/x-icon" :href "/favicon.ico"}]
      (include-css "/css/bootstrap.min.css")
-     (when-not settings/cljs-optimized?
+     (when-not cljs-optimized?
        (include-js "/js/cljs/goog/base.js"))
      (include-js
        "/js/jquery.min.js"
@@ -67,5 +65,5 @@
        "/js/cljs/foosball.js")]
     [:body content]))
 
-(defn common [& {:keys [title content auto-refresh?] :or {auto-refresh? false}}]
-  (base title (header) [:div.container content] (footer auto-refresh?)))
+(defn common [config-options & {:keys [title content auto-refresh?] :or {auto-refresh? false}}]
+  (base config-options title (header) [:div.container content] (footer auto-refresh?)))

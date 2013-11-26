@@ -5,14 +5,17 @@
             [foosball.models.db    :as db]
             [compojure.core :as compojure]))
 
-(defn front-page [db]
-  (layout/common :content (front/page (db/get-players-db db) (db/get-matches-db db))
+(defn front-page [{:keys [db config-options]}]
+  (layout/common config-options
+                 :content (front/page (db/get-players-db db)
+                                      (db/get-matches-db db))
                  :auto-refresh? true))
 
-(defn about-page []
-  (layout/common :title "About" :content (about/page)))
+(defn about-page [{:keys [config-options]}]
+  (layout/common config-options
+                 :title "About" :content (about/page)))
 
-(defn routes [database]
+(defn routes [deps]
   (compojure/routes
-   (compojure/GET "/"      [] (front-page database))
-   (compojure/GET "/about" [] (about-page))))
+   (compojure/GET "/"      [] (front-page deps))
+   (compojure/GET "/about" [] (about-page deps))))
