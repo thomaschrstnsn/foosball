@@ -1,8 +1,8 @@
 (ns foosball.auth
-  (:require [cemerick.friend        :as friend]
-            [cemerick.friend.openid :as openid]
-            [foosball.models.db     :as db]
-            [foosball.util          :as util]))
+  (:require [foosball.models.domains :as d]
+            [foosball.util           :as util]
+            [cemerick.friend         :as friend]
+            [cemerick.friend.openid  :as openid]))
 
 (defn has-role? [role]
   (friend/authorized? #{role} friend/*identity*))
@@ -22,19 +22,21 @@
   ([]  (friend/current-authentication friend/*identity*))
   ([k] (k (current-auth))))
 
-(defn credential-fn [{:keys [identity] :as credentials}]
-  (if-let [{:keys [playername playerid playerrole] :as player} (db/get-player-with-given-openid identity)]
+(defn credential-fn [db {:keys [identity] :as credentials}]
+  (if-let [{:keys [playername playerid playerrole] :as player}
+           (d/get-player-with-given-openid db identity)]
     (merge credentials
            {:roles [({:admin ::admin
                       :user  ::user} playerrole)]}
            (util/symbols-as-map playername playerid))
     credentials))
 
-(defn wrap-friend-openid [handler]
-  (friend/authenticate handler {:allow-anon? true
-                                :default-landing-uri "/user/assign-player"
-                                :workflows [(openid/workflow :openid-uri "/login"
-                                                             :credential-fn credential-fn)]}))
+(defn wrap-friend-openid [db handler]
+  (friend/authenticate handler
+                       {:allow-anon? true
+                        :default-landing-uri "/user/assign-player"
+                        :workflows [(openid/workflow :openid-uri "/login"
+                                                     :credential-fn (partial credential-fn db))]}))
 
 (comment  {:name "Yahoo" :url "http://me.yahoo.com/"}
           {:name "AOL" :url "http://openid.aol.com/"}

@@ -4,7 +4,7 @@
   (:require [foosball.views.layout :as layout]
             [foosball.views.matchup :as matchup]
             [foosball.util :as util]
-            [foosball.models.db :as db]
+            [foosball.models.domains :as d]
             [foosball.auth :as auth]
             [cemerick.friend :as friend]
             [compojure.core :as compojure]))
@@ -12,14 +12,14 @@
 (defn matchup-page
   ([{:keys [config-options db]}]
      (layout/common config-options
-                    :title "Matchup" :content (matchup/page (db/get-players-db db)
-                                                            (db/get-matches-db db))))
+                    :title "Matchup" :content (matchup/page (d/get-players db)
+                                                            (d/get-matches db))))
   ([{:keys [config-options db]} {:keys [params]}]
      (let [{:keys [playerids]} params]
        (layout/common config-options
                       :title "Matchup"
-                      :content (matchup/page (db/get-players-db db)
-                                             (db/get-matches-db db)
+                      :content (matchup/page (d/get-players db)
+                                             (d/get-matches db)
                                              (map util/parse-id playerids))))))
 
 (defn routes [deps]

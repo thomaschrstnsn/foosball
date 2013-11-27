@@ -6,33 +6,33 @@
             [foosball.views.admin  :as admin]
             [foosball.auth :as auth]
             [foosball.util :as util]
-            [foosball.models.db :as db]
+            [foosball.models.domains :as d]
             [cemerick.friend :as friend]
             [compojure.core :as compojure]))
 
 (defn admin-page [{:keys [db config-options]}]
   (layout/common config-options
-                 :title "ADMIN" :content (admin/form (db/get-players-db db)
-                                                     (db/get-matches-db db))))
+                 :title "ADMIN" :content (admin/form (d/get-players db)
+                                                     (d/get-matches db))))
 
 (defn rename-player [{:keys [db]} playerid newplayername]
   (info {:rename-player (util/symbols-as-map playerid newplayername)})
-  (db/rename-player-db db (util/parse-id playerid) newplayername)
+  (d/rename-player! db (util/parse-id playerid) newplayername)
   (response/redirect-after-post "/admin"))
 
 (defn activate-player [{:keys [db]} id]
   (info {:activate-player id})
-  (db/activate-player-db db (util/parse-id id))
+  (d/activate-player! db (util/parse-id id))
   (response/redirect-after-post "/admin"))
 
 (defn deactivate-player [{:keys [db]} id]
   (info {:deactivate-player id})
-  (db/deactivate-player-db db (util/parse-id id))
+  (d/deactivate-player! db (util/parse-id id))
   (response/redirect-after-post "/admin"))
 
 (defn remove-match [{:keys [db]} id]
   (info {:remove-match id})
-  (db/delete-match-db db (util/parse-id id))
+  (d/delete-match! db (util/parse-id id))
   (response/redirect-after-post "/admin"))
 
 (defn routes [deps]

@@ -33,8 +33,9 @@
                                 route-fns)
                            (concat [app-routes])
                            (vec))
+          auth-wrapper (partial auth/wrap-friend-openid database)
           ring-handler (middleware/app-handler app-routes
-                                               :middleware [auth/wrap-friend-openid])]
+                                               :middleware [auth-wrapper])]
       (assoc this :ring-handler ring-handler)))
 
   (stop [this]

@@ -2,21 +2,21 @@
   (:use [compojure.core :only [GET POST]]
         [hiccup.page :only [html5]])
   (:use [taoensso.timbre :only [trace debug info warn error fatal spy]])
-  (:require [foosball.views.layout  :as layout]
-            [foosball.models.db     :as db]
-            [foosball.util          :as util]
-            [foosball.uri-misc      :as uri-misc]
-            [foosball.auth          :as auth]
-            [ring.util.response     :as response]
-            [cemerick.friend        :as friend]
-            [compojure.core         :as compojure]))
+  (:require [foosball.views.layout   :as layout]
+            [foosball.models.domains :as d]
+            [foosball.util           :as util]
+            [foosball.uri-misc       :as uri-misc]
+            [foosball.auth           :as auth]
+            [ring.util.response      :as response]
+            [cemerick.friend         :as friend]
+            [compojure.core          :as compojure]))
 
 (defn- assign-player-page [{:keys [db config-options]}]
   (let [current-auth (auth/current-auth)
         {:keys [playerid playername]} current-auth]
     (if (or playername (nil? current-auth))
       (response/redirect "/")
-      (let [unclaimed-players (db/get-players-without-openids-db db)]
+      (let [unclaimed-players (d/get-players-without-openids db)]
         (layout/common
          config-options
          :title "Assign Player"
@@ -46,7 +46,7 @@
                         [:button.btn.btn-primary.btn-lg.btn-block {:type "submit" :value "Report"} "Create!"]]]]]]))))))
 
 (defn- user-page [{:keys [db config-options]} req]
-  (let [unclaimed-players (db/get-players-without-openids-db db)]
+  (let [unclaimed-players (d/get-players-without-openids db)]
     (layout/common
      config-options
      :title "User"
@@ -91,8 +91,8 @@
         openid             (:identity current-auth)
         current-playername (:playername current-auth)
         id                 (util/parse-id id)
-        player             (db/get-player-db db id)
-        players-openids    (db/get-players-openids-db db id)]
+        player             (d/get-player db id)
+        players-openids    (d/get-player-openids db id)]
     (if (and (not (auth/user?))
              openid
              (nil? current-playername)
@@ -100,7 +100,7 @@
              (empty? players-openids))
       (do
         (info {:claiming-player player :for-openid openid :user-auth current-auth})
-        (db/add-openid-to-player-db db id openid)
+        (d/add-openid-to-player! db id openid)
         (friend/logout* (response/redirect (str "/user/created/" id))))
       (do
         (error ["cannot claim player" (util/symbols-as-map openid id current-playername players-openids)])
@@ -115,14 +115,14 @@
              (nil? current-playername))
       (do
         (info {:create-player playername :for-openid openid :user-auth current-auth})
-        (let [id (db/create-player-db db playername openid)]
+        (let [id (d/create-player! db playername openid)]
           (friend/logout* (response/redirect (str "/user/created/" id)))))
       (do
         (error ["cannot create player" (util/symbols-as-map openid playername current-playername)])
         (response/status (response/response "cannot create player") 405)))))
 
 (defn created-page [{:keys [config-options db]} id]
-  (let [player (db/get-player-db db (util/parse-id id))]
+  (let [player (d/get-player db (util/parse-id id))]
     (layout/common config-options
      :title "Player Created"
      :content (html5

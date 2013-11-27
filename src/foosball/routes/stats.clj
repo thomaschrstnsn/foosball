@@ -5,15 +5,15 @@
             [foosball.views.stats  :as stats]
             [foosball.views.player-log :as player-log]
             [foosball.util :as util]
-            [foosball.models.db :as db]
+            [foosball.models.domains :as d]
             [compojure.core :as compojure]))
 
 (defn stats-players [{:keys [config-options db]} sort order]
   (layout/common config-options
                  :title "Player Statistics"
                  :auto-refresh? true
-                 :content (stats/player-table (db/get-matches-db db)
-                                              (db/get-players-db db)
+                 :content (stats/player-table (d/get-matches db)
+                                              (d/get-players db)
                                               :sort (keyword sort)
                                               :order (keyword order))))
 
@@ -21,8 +21,8 @@
   (layout/common config-options
                  :title "Team Statistics"
                  :auto-refresh? true
-                 :content (stats/team-table (db/get-matches-db db)
-                                            (db/get-players-db db)
+                 :content (stats/team-table (d/get-matches db)
+                                            (d/get-players db)
                                             :sort (keyword sort)
                                             :order (keyword order))))
 
@@ -30,8 +30,8 @@
   (layout/common config-options
                  :title "Player Log"
                  :auto-refresh? true
-                 :content (player-log/player-log-page (db/get-matches-db db)
-                                                      (db/get-players-db db)
+                 :content (player-log/player-log-page (d/get-matches db)
+                                                      (d/get-players db)
                                                       playerid)))
 
 (defn routes [deps]
