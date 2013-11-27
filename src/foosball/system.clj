@@ -1,7 +1,7 @@
 (ns foosball.system
   (:use [taoensso.timbre :only [trace debug info warn error fatal spy]])
   (:require [foosball.util      :as util]
-            [foosball.app   :as app]
+            [foosball.app       :as app]
             [foosball.models.db :as db]
             [ring.adapter.jetty :as jetty]
             [com.stuartsierra.component :as component]
@@ -28,7 +28,7 @@
 
   (start [component]
     (info "Starting Web-server")
-    (let [handler (:war-handler app)
+    (let [handler (:ring-handler app)
           wrapped (handler-wrapper handler)
           server  (jetty/run-jetty wrapped {:port port :join? false})]
       (info "Web-server running on port:" port)
@@ -40,7 +40,7 @@
       (.stop server))
     (assoc component :server nil)))
 
-(def dev-system-components  [:db :app :web-server])
+(def dev-system-components  [:db :repl :app :web-server])
 (def prod-system-components [:db :repl :app])
 
 (defrecord Foosball [components config-options db repl web-server app]

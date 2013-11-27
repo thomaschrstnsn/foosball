@@ -1,6 +1,7 @@
 (ns foosball.servlet-lifecycle
   (:use [taoensso.timbre :only [trace debug info warn error fatal spy]])
-  (:require [foosball.system :as system]
+  (:require [foosball.system            :as system]
+            [noir.util.middleware       :as middleware]
             [com.stuartsierra.component :as component]))
 
 (def ^:private system nil)
@@ -16,7 +17,7 @@
   (info "instantiating system")
   (alter-var-root #'system  (constantly (-> (system/system system/prod-system-components)
                                             component/start)))
-  (alter-var-root #'handler (constantly (:war-handler system)))
+  (alter-var-root #'handler (constantly (middleware/war-handler (get-in system [:app :ring-handler]))))
   (info "foosball started successfully"))
 
 (defn destroy
