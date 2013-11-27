@@ -1,44 +1,11 @@
 (ns foosball.system
   (:use [taoensso.timbre :only [trace debug info warn error fatal spy]])
-  (:require [foosball.util      :as util]
-            [foosball.app       :as app]
-            [foosball.models.db :as db]
-            [ring.adapter.jetty :as jetty]
-            [com.stuartsierra.component :as component]
-            [clojure.tools.nrepl.server :as nrepl]))
-
-
-(defrecord HostedRepl [port server]
-  component/Lifecycle
-
-  (start [component]
-    (info "Starting Hosted REPL")
-    (let [repl-server (nrepl/start-server :port port)]
-      (info "REPL running on port" port)
-      (assoc component :server repl-server)))
-
-  (stop [component]
-    (info "Stopping Hosted REPL")
-    (when server
-      (nrepl/stop-server server))
-    (assoc component :server nil)))
-
-(defrecord WebServer [port server app handler-wrapper]
-  component/Lifecycle
-
-  (start [component]
-    (info "Starting Web-server")
-    (let [handler (:ring-handler app)
-          wrapped (handler-wrapper handler)
-          server  (jetty/run-jetty wrapped {:port port :join? false})]
-      (info "Web-server running on port:" port)
-      (assoc component :server server)))
-
-  (stop [component]
-    (info "Stopping Web-server")
-    (when server
-      (.stop server))
-    (assoc component :server nil)))
+  (:require [foosball.util       :as util]
+            [foosball.app        :as app]
+            [foosball.models.db  :as db]
+            [foosball.repl       :as repl]
+            [foosball.web-server :as web]
+            [com.stuartsierra.component :as component]))
 
 (def dev-system-components  [:db :repl :app :web-server])
 (def prod-system-components [:db :repl :app])
@@ -62,12 +29,16 @@
     (map->Foosball
      {:components     components
       :config-options config-options
-      :db             (db/map->Database {:uri (:db-uri config-options)})
-      :repl           (map->HostedRepl  {:port (:repl-port config-options)})
-      :app            (component/using (app/map->App {})
-                                       {:database       :db
-                                        :config-options :config-options})
-      :web-server     (component/using (map->WebServer
-                                        {:port            (:web-port config-options)
-                                         :handler-wrapper (:handler-wrapper config-options)})
-                                       {:app :app})})))
+      :db             (db/map->Database
+                       {:uri (:db-uri config-options)})
+      :repl           (repl/map->HostedRepl
+                       {:port (:repl-port config-options)})
+      :app            (component/using
+                       (app/map->App {})
+                       {:database       :db
+                        :config-options :config-options})
+      :web-server     (component/using
+                       (web/map->WebServer
+                        {:port            (:web-port config-options)
+                         :handler-wrapper (:handler-wrapper config-options)})
+                       {:app :app})})))
