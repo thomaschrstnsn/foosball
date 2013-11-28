@@ -67,6 +67,6 @@
   (cemerick.austin.repls/cljs-repl repl-env))
 
 (defn delete-database-and-stop []
-  (db/delete-db-and-disconnect (:db-uri system))
+  (db/delete! (:db system))
   (stop)
   :ok)

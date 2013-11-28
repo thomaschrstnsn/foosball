@@ -13,22 +13,19 @@
             [com.stuartsierra.component :as component]))
 
 (defn- create-db-and-connect [uri]
-  (info "creating database on uri:" uri)
+  (info "Creating database on uri:" uri)
   (d/create-database uri)
 
-  (info "connecting to database")
+  (info "Connecting to database")
 
   (let [connection (d/connect uri)]
-    (info "transacting schema")
+    (info "Transacting schema")
     @(d/transact connection eav-schema)
-
     (migration/migrate-schema-and-data connection)
-
-    (info "database initialized")
     connection))
 
-(defn delete-db-and-disconnect [uri]
-  (d/delete-database uri))
+(defprotocol Deletable
+  (delete! [this]))
 
 (defrecord Database [uri connection]
   component/Lifecycle
@@ -42,6 +39,11 @@
     (info "Stopping Database")
     (when connection (d/release connection))
     (assoc this :connection nil))
+
+  Deletable
+  (delete! [this]
+    (info "Deleting database:" uri)
+    (d/delete-database uri))
 
   ==>/Players
   (get-player [this id]
