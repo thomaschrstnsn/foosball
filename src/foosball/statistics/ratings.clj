@@ -1,10 +1,9 @@
 (ns foosball.statistics.ratings
-  (:use [foosball.statistics.core]
-        [foosball.statistics.elo]
-        [foosball.util :only [symbols-as-map less-than-or-equal?]]
-        [taoensso.timbre :only [trace debug info warn error fatal spy]])
   (:require [clojure.math.combinatorics :as combo]
-            [clojure.set :as set]))
+            [clojure.set :as set]
+            [foosball.statistics.core :refer :all]
+            [foosball.statistics.elo :refer :all]
+            [foosball.util :refer [less-than-or-equal?]]))
 
 (defn- expected-sum-for-teams [ratings heroes opponents]
   (let [rate-team (fn [players] (->> players

@@ -1,8 +1,8 @@
 (ns foosball.models.migration
-  (:use [datomic.api :only [q db] :as d])
-  (:use [clojure.set :only [difference]])
-  (:use [taoensso.timbre :only [trace debug info warn error fatal spy]])
-  (:require [foosball.util :as util]))
+  (:require [clojure.set :refer [difference]]
+            [datomic.api :as d :refer [db]]
+            [foosball.util :as util]
+            [taoensso.timbre :refer [info]]))
 
 (defn- ensure-players-users-have-roles
   "Ensure every player has the default role"

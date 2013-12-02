@@ -1,14 +1,13 @@
 (ns foosball.routes.admin
-  (:use [compojure.core :only [GET POST]])
-  (:use [taoensso.timbre :only [trace debug info warn error fatal spy]])
-  (:require [ring.util.response :as response]
-            [foosball.views.layout :as layout]
-            [foosball.views.admin  :as admin]
+  (:require [cemerick.friend :as friend]
+            [compojure.core :as compojure :refer [GET POST]]
             [foosball.auth :as auth]
-            [foosball.util :as util]
             [foosball.models.domains :as d]
-            [cemerick.friend :as friend]
-            [compojure.core :as compojure]))
+            [foosball.util :as util]
+            [foosball.views.admin :as admin]
+            [foosball.views.layout :as layout]
+            [ring.util.response :as response]
+            [taoensso.timbre :refer [info]]))
 
 (defn admin-page [{:keys [db config-options]}]
   (layout/common config-options

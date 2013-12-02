@@ -1,15 +1,14 @@
 (ns foosball.routes.report
-  (:use [compojure.core :only [GET POST]])
-  (:use [taoensso.timbre :only [trace debug info warn error fatal spy]])
-  (:require [foosball.views.layout :as layout]
-            [foosball.views.match  :as match]
-            [foosball.validation.match :as validation]
+  (:require [cemerick.friend :as friend]
+            [compojure.core :as compojure :refer [GET POST]]
             [foosball.auth :as auth]
-            [foosball.util :as util]
             [foosball.models.domains :as d]
+            [foosball.util :as util]
+            [foosball.validation.match :as validation]
+            [foosball.views.layout :as layout]
+            [foosball.views.match :as match]
             [ring.util.response :as response]
-            [cemerick.friend :as friend]
-            [compojure.core :as compojure]))
+            [taoensso.timbre :refer [info]]))
 
 (def report-match-title "Report Match")
 

@@ -1,7 +1,7 @@
 (ns foosball.repl
-  (:use [taoensso.timbre :only [trace debug info warn error fatal spy]])
-  (:require [com.stuartsierra.component :as component]
-            [clojure.tools.nrepl.server :as nrepl]))
+  (:require [clojure.tools.nrepl.server :as nrepl]
+            [com.stuartsierra.component :as component]
+            [taoensso.timbre :refer [info]]))
 
 (defrecord HostedRepl [port server]
   component/Lifecycle

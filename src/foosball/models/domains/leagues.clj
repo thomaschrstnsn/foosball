@@ -1,6 +1,6 @@
 (ns foosball.models.domains.leagues
-  (:use [datomic.api :only [q db] :as d])
-  (:require [foosball.util :as util]))
+  (:require [datomic.api :as d]
+            [foosball.util :as util]))
 
 (defn get-leagues-for-player [dbc playerid]
   (->> (d/q '[:find ?lid ?name

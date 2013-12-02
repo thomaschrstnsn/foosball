@@ -1,7 +1,6 @@
 (ns foosball.util
-  (:use [hiccup.element :only [link-to]])
-  (:require [noir.io :as io]
-            [clojure.edn :as edn]))
+  (:require [clojure.edn :as edn]
+            [hiccup.element :refer [link-to]]))
 
 (defmacro symbols-as-map
   "Inverse of descructuring as {:keys [a b c]} -

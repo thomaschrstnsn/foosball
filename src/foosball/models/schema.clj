@@ -1,5 +1,5 @@
 (ns foosball.models.schema
-  (:use [datomic.api :only [db] :as d]))
+  (:require [datomic.api :as d]))
 
 (def eav-schema
   [{:db/id (d/tempid :db.part/db)

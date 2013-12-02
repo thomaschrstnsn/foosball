@@ -1,15 +1,13 @@
 (ns foosball.routes.user
-  (:use [compojure.core :only [GET POST]]
-        [hiccup.page :only [html5]])
-  (:use [taoensso.timbre :only [trace debug info warn error fatal spy]])
-  (:require [foosball.views.layout   :as layout]
+  (:require [cemerick.friend :as friend]
+            [compojure.core :as compojure :refer [GET POST]]
+            [foosball.auth :as auth]
             [foosball.models.domains :as d]
-            [foosball.util           :as util]
-            [foosball.uri-misc       :as uri-misc]
-            [foosball.auth           :as auth]
-            [ring.util.response      :as response]
-            [cemerick.friend         :as friend]
-            [compojure.core          :as compojure]))
+            [foosball.util :as util]
+            [foosball.views.layout :as layout]
+            [hiccup.page :refer [html5]]
+            [ring.util.response :as response]
+            [taoensso.timbre :refer [error info]]))
 
 (defn- assign-player-page [{:keys [db config-options]}]
   (let [current-auth (auth/current-auth)

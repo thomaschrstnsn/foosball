@@ -1,6 +1,6 @@
 (ns foosball.models.domains.players
-  (:use [datomic.api :only [q db] :as d])
-  (:require [foosball.util :as util]))
+  (:require [datomic.api :as d]
+            [foosball.util :as util]))
 
 (defn get-by-id [dbc id]
   (->> (d/q '[:find ?player :in $ ?id :where [?id :player/name ?player]] dbc id)

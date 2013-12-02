@@ -1,10 +1,9 @@
 (ns foosball.routes.home
-  (:use [compojure.core :only [GET]])
-  (:require [foosball.views.layout   :as layout]
-            [foosball.views.about    :as about]
-            [foosball.views.front    :as front]
+  (:require [compojure.core :as compojure :refer [GET]]
             [foosball.models.domains :as d]
-            [compojure.core :as compojure]))
+            [foosball.views.about :as about]
+            [foosball.views.front :as front]
+            [foosball.views.layout :as layout]))
 
 (defn front-page [{:keys [db config-options]}]
   (layout/common config-options

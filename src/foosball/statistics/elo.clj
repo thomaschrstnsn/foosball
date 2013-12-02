@@ -1,5 +1,4 @@
-(ns foosball.statistics.elo
-  (:use [taoensso.timbre :only [trace debug info warn error fatal spy]]))
+(ns foosball.statistics.elo)
 
 (def ^:private ^:const
   ten-times-winning-increase-rating

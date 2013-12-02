@@ -1,10 +1,9 @@
 (ns foosball.views.layout
-  (:use hiccup.form
-        [hiccup.element :only [link-to]]
-        [hiccup.page :only [html5 include-js include-css]]
-        [cfg.current :only [project]])
-  (:require [foosball.auth :as auth]
-            [cemerick.austin.repls :refer (browser-connected-repl-js)]))
+  (:require [cemerick.austin.repls :as austin]
+            [cfg.current :refer [project]]
+            [foosball.auth :as auth]
+            [hiccup.element :refer [link-to]]
+            [hiccup.page :refer [html5 include-css include-js]]))
 
 (defn header []
   (let [a-matchup        (link-to "/matchup"       "Matchup")
@@ -46,8 +45,8 @@
    [:script {:type "text/javascript"} "foosball.browser.register_document_ready();"]
    (when auto-refresh?
      [:script {:type "text/javascript"} "foosball.browser.page_autorefresh(90)"])
-   (when @cemerick.austin.repls/browser-repl-env
-     [:script (cemerick.austin.repls/browser-connected-repl-js)])))
+   (when @austin/browser-repl-env
+     [:script (austin/browser-connected-repl-js)])))
 
 (defn base [{:keys [cljs-optimized?]} page-title & content]
   (html5

@@ -1,12 +1,9 @@
 (ns foosball.views.front
-  (:use [hiccup.element :only [link-to]]
-        [hiccup.page :only [html5]]
-        [taoensso.timbre :only [trace debug info warn error fatal spy]])
-  (:require [cemerick.friend :as friend]
-            [foosball.util :as util]
+  (:require [foosball.auth :as auth]
             [foosball.statistics.ratings :as ratings]
             [foosball.statistics.team-player :as player]
-            [foosball.auth :as auth]))
+            [foosball.util :as util]
+            [hiccup.page :refer [html5]]))
 
 (defn- render-player [players index p]
   [:tr

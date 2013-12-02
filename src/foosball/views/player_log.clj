@@ -1,9 +1,7 @@
 (ns foosball.views.player-log
-  (:use [hiccup.page :only [html5]])
-  (:use [taoensso.timbre :only [trace debug info warn error fatal spy]])
-  (:use [foosball.statistics.team-player])
-  (:use [foosball.statistics.ratings])
-  (:use [foosball.util]))
+  (:require [foosball.statistics.ratings :refer :all]
+            [foosball.util :refer :all]
+            [hiccup.page :refer [html5]]))
 
 (defn- player-option [selected {:keys [id name]}]
   [:option (merge {:value id}

@@ -1,7 +1,7 @@
 (ns foosball.web-server
-  (:use [taoensso.timbre :only [trace debug info warn error fatal spy]])
-  (:require [ring.adapter.jetty :as jetty]
-            [com.stuartsierra.component :as component]))
+  (:require [com.stuartsierra.component :as component]
+            [ring.adapter.jetty :as jetty]
+            [taoensso.timbre :refer [info]]))
 
 (defrecord WebServer [port server app handler-wrapper]
   component/Lifecycle

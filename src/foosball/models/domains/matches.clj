@@ -1,6 +1,5 @@
 (ns foosball.models.domains.matches
-  (:use [datomic.api :only [q db] :as d])
-  (:require [foosball.util :as util]))
+  (:require [datomic.api :as d :refer [db]]))
 
 (defn create! [conn {:keys [matchdate team1 team2 reported-by league-id]}]
   (let [[match-id team1-id team2-id] (repeatedly #(d/tempid :db.part/user))

@@ -1,5 +1,5 @@
 (ns foosball.uri-misc
-  (:import java.net.URI))
+  (:import (java.net URI)))
 
 (defn resolve-uri [context uri]
   (let [context (if (instance? URI context) context (URI. context))]

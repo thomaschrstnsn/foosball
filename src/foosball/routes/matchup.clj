@@ -1,13 +1,11 @@
 (ns foosball.routes.matchup
-  (:use [taoensso.timbre :only [trace debug info warn error fatal spy]]
-        [compojure.core :only [GET POST]])
-  (:require [foosball.views.layout :as layout]
-            [foosball.views.matchup :as matchup]
-            [foosball.util :as util]
-            [foosball.models.domains :as d]
+  (:require [cemerick.friend :as friend]
+            [compojure.core :as compojure :refer [GET POST]]
             [foosball.auth :as auth]
-            [cemerick.friend :as friend]
-            [compojure.core :as compojure]))
+            [foosball.models.domains :as d]
+            [foosball.util :as util]
+            [foosball.views.layout :as layout]
+            [foosball.views.matchup :as matchup]))
 
 (defn matchup-page
   ([{:keys [config-options db]}]

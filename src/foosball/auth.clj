@@ -1,8 +1,8 @@
 (ns foosball.auth
-  (:require [foosball.models.domains :as d]
-            [foosball.util           :as util]
-            [cemerick.friend         :as friend]
-            [cemerick.friend.openid  :as openid]))
+  (:require [cemerick.friend :as friend]
+            [cemerick.friend.openid :as openid]
+            [foosball.models.domains :as d]
+            [foosball.util :as util]))
 
 (defn has-role? [role]
   (friend/authorized? #{role} friend/*identity*))

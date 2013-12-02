@@ -1,10 +1,6 @@
 (ns foosball.views.admin
-  (:use hiccup.form
-        [foosball.views.match :only [match-table-data]]
-        [hiccup.def :only [defhtml]]
-        [hiccup.element :only [link-to]]
-        [hiccup.page :only [html5 include-js include-css]]
-        [taoensso.timbre :only [trace debug info warn error fatal spy]]))
+  (:require [foosball.views.match :refer [match-table-data]]
+            [hiccup.page :refer [html5]]))
 
 (defn- player-select [players]
   [:select.form-control {:name "playerid"}

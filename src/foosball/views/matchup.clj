@@ -1,12 +1,8 @@
 (ns foosball.views.matchup
-  (:use  hiccup.form ring.util.response
-        [hiccup.def :only [defhtml]]
-        [hiccup.element :only [link-to]]
-        [hiccup.page :only [html5 include-js include-css]]
-        [foosball.util])
   (:require [foosball.statistics.ratings :as ratings]
-            [foosball.statistics.team-player :as stats])
-  (:use [taoensso.timbre :only [trace debug info warn error fatal spy]]))
+            [foosball.statistics.team-player :as stats]
+            [foosball.util :refer :all]
+            [hiccup.page :refer [html5]]))
 
 (defn- format-matchup-percentage [p]
   (format-value p

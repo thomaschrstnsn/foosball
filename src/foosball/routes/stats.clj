@@ -1,12 +1,9 @@
 (ns foosball.routes.stats
-  (:use [taoensso.timbre :only [trace debug info warn error fatal spy]]
-        [compojure.core :only [GET POST]])
-  (:require [foosball.views.layout :as layout]
-            [foosball.views.stats  :as stats]
-            [foosball.views.player-log :as player-log]
-            [foosball.util :as util]
+  (:require [compojure.core :as compojure :refer [GET]]
             [foosball.models.domains :as d]
-            [compojure.core :as compojure]))
+            [foosball.views.layout :as layout]
+            [foosball.views.player-log :as player-log]
+            [foosball.views.stats :as stats]))
 
 (defn stats-players [{:keys [config-options db]} sort order]
   (layout/common config-options

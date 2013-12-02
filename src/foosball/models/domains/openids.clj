@@ -1,7 +1,7 @@
 (ns foosball.models.domains.openids
-  (:use [datomic.api :only [q db] :as d])
-  (:require [foosball.util :as util]
-            [foosball.models.domains.players :as players]))
+  (:require [datomic.api :as d :refer [db]]
+            [foosball.models.domains.players :as players]
+            [foosball.util :as util]))
 
 (defn get-all-with-openid [dbc]
   (->> (d/q '[:find ?pid ?name

@@ -1,10 +1,6 @@
 (ns foosball.views.match
-  (:use [taoensso.timbre :only [trace debug info warn error fatal spy]])
-  (:use  hiccup.form ring.util.response
-         [hiccup.def :only [defhtml]]
-         [hiccup.element :only [link-to]]
-         [hiccup.page :only [html5 include-js include-css]]
-         [foosball.util]))
+  (:require [foosball.util :refer :all]
+            [hiccup.page :refer [html5]]))
 
 (defn- render-players-select [id players & [selected]]
   [:select.form-control {:id id :name id}

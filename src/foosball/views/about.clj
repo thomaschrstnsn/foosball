@@ -1,10 +1,6 @@
 (ns foosball.views.about
-  (:use hiccup.form
-        [hiccup.def :only [defhtml]]
-        [hiccup.element :only [link-to]]
-        [hiccup.page :only [html5 include-js include-css]]
-        [cfg.current :only [project]]
-        [taoensso.timbre :only [trace debug info warn error fatal spy]]))
+  (:require [cfg.current :refer [project]]
+            [hiccup.page :refer [html5]]))
 
 (defn- current-versions []
   (->>  (:dependencies project) (map (partial take 2)) flatten (apply assoc {})))

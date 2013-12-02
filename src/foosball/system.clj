@@ -1,11 +1,9 @@
 (ns foosball.system
-  (:use [taoensso.timbre :only [trace debug info warn error fatal spy]])
-  (:require [foosball.util       :as util]
-            [foosball.app        :as app]
-            [foosball.models.db  :as db]
-            [foosball.repl       :as repl]
-            [foosball.web-server :as web]
-            [com.stuartsierra.component :as component]))
+  (:require [com.stuartsierra.component :as component]
+            [foosball.app :as app]
+            [foosball.models.db :as db]
+            [foosball.repl :as repl]
+            [foosball.web-server :as web]))
 
 (def dev-system-components  [:db :repl :app :web-server])
 (def prod-system-components [:db :repl :app])

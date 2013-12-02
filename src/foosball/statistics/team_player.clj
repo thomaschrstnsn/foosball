@@ -1,6 +1,6 @@
 (ns foosball.statistics.team-player
-  (:use [foosball.statistics.core]
-        [foosball.util]))
+  (:require [foosball.statistics.core :refer :all]
+            [foosball.util :refer :all]))
 
 (defn- player-stats [matches player]
   (let [games-won          (filter (partial player-is-winner? player) matches)

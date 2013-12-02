@@ -1,16 +1,14 @@
 (ns foosball.models.db
-  (:use [taoensso.timbre :only [trace debug info warn error fatal spy]])
-  (:use [datomic.api :only [q db] :as d])
-  (:use [foosball.models.schema :only [eav-schema]])
-  (:use [clojure.set :only [difference]])
-  (:require [foosball.util :as util]
-            [foosball.models.migration :as migration]
+  (:require [com.stuartsierra.component :as component]
+            [datomic.api :as d :refer [db]]
             [foosball.models.domains :as ==>]
-            [foosball.models.domains.players :as players]
+            [foosball.models.domains.leagues :as leagues]
             [foosball.models.domains.matches :as matches]
             [foosball.models.domains.openids :as openids]
-            [foosball.models.domains.leagues :as leagues]
-            [com.stuartsierra.component :as component]))
+            [foosball.models.domains.players :as players]
+            [foosball.models.migration :as migration]
+            [foosball.models.schema :refer [eav-schema]]
+            [taoensso.timbre :refer [info]]))
 
 (defn- create-db-and-connect [uri]
   (info "Creating database on uri:" uri)

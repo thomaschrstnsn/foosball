@@ -1,8 +1,8 @@
 (ns foosball.servlet-lifecycle
-  (:use [taoensso.timbre :only [trace debug info warn error fatal spy]])
-  (:require [foosball.system            :as system]
-            [noir.util.middleware       :as middleware]
-            [com.stuartsierra.component :as component]))
+  (:require [com.stuartsierra.component :as component]
+            [foosball.system :as system]
+            [noir.util.middleware :as middleware]
+            [taoensso.timbre :refer [info]]))
 
 (def ^:private system nil)
 

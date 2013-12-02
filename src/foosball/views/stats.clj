@@ -1,10 +1,10 @@
 (ns foosball.views.stats
-  (:use [hiccup.page :only [html5]])
-  (:use [taoensso.timbre :only [trace debug info warn error fatal spy]])
-  (:use [foosball.statistics team-player ratings])
-  (:use [foosball.util])
-  (:use [clj-time.core   :only [interval in-days]]
-        [clj-time.coerce :only [from-date]]))
+  (:require [clj-time.coerce :refer [from-date]]
+            [clj-time.core :refer [in-days interval]]
+            [foosball.statistics.ratings :refer :all]
+            [foosball.statistics.team-player :refer :all]
+            [foosball.util :refer :all]
+            [hiccup.page :refer [html5]]))
 
 (defn- format-match-percentage [p wins?]
   (format-value p
