@@ -21,7 +21,7 @@
          :content (html5
                    [:div
                     [:h1 "Assign a player to your login"]
-                    (when (and (nil? playerid) (not (empty? unclaimed-players)))
+                    (when (and (nil? playerid) (seq unclaimed-players))
                       [:div.panel.panel-success
                        [:div.panel-heading
                         [:h3 "Do you have an existing player?"]]
@@ -57,8 +57,8 @@
                      [:p "Some information from openid:"
                       [:ul (for [[k v] auth]
                              [:li [:strong (str (name k) ":  ")] v])]]
-                     [:h2 (str "nil? playerid " (nil? playerid) " not empty? " (not (empty? unclaimed-players)))]
-                     (when (and (nil? playerid) (not (empty? unclaimed-players)))
+                     [:h2 (str "nil? playerid " (nil? playerid) " not empty? " (seq unclaimed-players))]
+                     (when (and (nil? playerid) (seq unclaimed-players))
                        [:div
                         [:h2 "Unclaimed players"]
                         [:table
