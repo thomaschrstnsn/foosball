@@ -30,15 +30,16 @@
               [{:id "dev"
                 :source-paths ["src-cljs"],
                 :compiler {:pretty-print false
-                           :output-to "resources/public/js/cljs/foosball.js"
-                           :output-dir "resources/public/js/cljs"
+                           :output-to "resources/public/js/dev/foosball.js"
+                           :output-dir "resources/public/js/dev"
                            :optimizations :none
                            :source-map true}}
                {:id "production"
                 :source-paths ["src-cljs"],
                 :compiler {:pretty-print false
-                           :output-to "resources/public/js/cljs/foosball.js"
-                           :optimizations :advanced}}]}
+                           :output-to "resources/public/js/foosball.js"
+                           :optimizations :advanced
+                           :externs ["externs/jquery-1.9.js"]}}]}
 
   :ring {:handler foosball.servlet-lifecycle/handler,
          :init    foosball.servlet-lifecycle/init,

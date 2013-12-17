@@ -38,29 +38,30 @@
                                  :text (str "Logout")
                                  :title playername))])]]))
 
-(defn footer [{:keys [cljs-repl-script-fn]} auto-refresh?]
+(defn footer [{:keys [cljs-repl-script-fn cljs-optimized?]} auto-refresh?]
   (list
-   [:script {:type "text/javascript"} "goog.require(\"foosball.browser\");"]
+   (let [cljs-path (if cljs-optimized? "/js/" "/js/dev/")
+         scripts   (filter identity ["/js/jquery.min.js"
+                                     "/js/bootstrap.min.js"
+                                     (when-not cljs-optimized? (str cljs-path "goog/base.js"))
+                                     (str cljs-path "foosball.js")])]
+     (apply include-js scripts))
+   (when-not cljs-optimized?
+     [:script {:type "text/javascript"} "goog.require(\"foosball.browser\");"])
    [:script {:type "text/javascript"} "foosball.browser.register_document_ready();"]
    (when auto-refresh?
      [:script {:type "text/javascript"} "foosball.browser.page_autorefresh(90)"])
    (cljs-repl-script-fn)))
 
-(defn base [{:keys [cljs-optimized?]} page-title & content]
+(defn base [config-options page-title & content]
   (html5
-    [:head
-     [:title (if page-title
-               (str "Foosball - " page-title)
-               "Foosball")]
-     [:link {:rel "icon" :type "image/x-icon" :href "/favicon.ico"}]
-     (include-css "/css/bootstrap.min.css")
-     (when-not cljs-optimized?
-       (include-js "/js/cljs/goog/base.js"))
-     (include-js
-       "/js/jquery.min.js"
-       "/js/bootstrap.min.js"
-       "/js/cljs/foosball.js")]
-    [:body content]))
+   [:head
+    [:title (if page-title
+              (str "Foosball - " page-title)
+              "Foosball")]
+    [:link {:rel "icon" :type "image/x-icon" :href "/favicon.ico"}]
+    (include-css "/css/bootstrap.min.css")]
+   [:body content]))
 
 (defn common [config-options & {:keys [title content auto-refresh?] :or {auto-refresh? false}}]
   (base config-options title (header) [:div.container content] (footer config-options auto-refresh?)))

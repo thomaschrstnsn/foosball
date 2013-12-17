@@ -12,7 +12,8 @@ resources/public/site.db.trace.db
 .DS_Store
 src/cfg/
 dev/cfg/
-resources/public/js/cljs
+resources/public/js/dev
+resources/public/js/foosball.js
 out/
 repl/
 .nrepl-port
