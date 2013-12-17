@@ -9,6 +9,7 @@
             [ring.middleware.stacktrace :as stacktrace]
             [foosball.system :as system]
             [foosball.models.db :as db]
+            [foosball.models.domains.openids :as openid]
             [dev-data :as d]
             [taoensso.timbre :as timbre]
             [taoensso.timbre.appenders (socket :as socket-appender)]
@@ -66,7 +67,14 @@
   []
   (cemerick.austin.repls/cljs-repl repl-env))
 
-(defn delete-database-and-stop []
+(defn delete-database-and-stop! []
   (db/delete! (:db system))
   (stop)
   :ok)
+
+
+(defn conn []
+  (get-in system [:db :connection]))
+
+(defn db []
+  (datomic.api/db (conn)))
