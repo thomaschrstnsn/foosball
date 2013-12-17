@@ -6,11 +6,6 @@
   (:use-macros [dommy.macros :only [sel1]])
   (:require-macros [cljs.core.async.macros :as m :refer [go alt!]]))
 
-(defn auto-submit-league-select []
-  (let [input (sel1 [:#league-id])
-        form  (sel1 [:#league-form])]
-    (dommy/listen! input :change #(.submit form))))
-
 (defn validation-map-with-ids [validation]
   (->> validation
        (map (fn [[k v]] {(->> k name (str "#") keyword) v}))
@@ -53,7 +48,6 @@
                                                               (filter (fn [[k v]] (not (no-validation-ids k)))))]
                                       (doseq [[id valid?] validation-map]
                                         (toggle-error-on-form-group-by-id id (not valid?)))))]
-    (auto-submit-league-select)
     (update-ui-from-state)
     (go (loop []
           (let [[event _] (alts! chans)]

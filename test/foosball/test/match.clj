@@ -12,13 +12,13 @@
                    pick-players)
 
 (facts "about the form"
-       (fact "it works with just players, leagues and selected league arguments"
-             (form ...players... ...leagues... ....selected...) => truthy)
+       (fact "it works with just players arguments"
+             (form ...players... ) => truthy)
        (let [team1  {:player1 ...t1p1... :player2 ...t1p2... :score ...t1score...}
              team2  {:player1 ...t2p1... :player2 ...t2p2... :score ...t2score...}
              report {:team1 team1 :team2 team2}]
          (fact "it works with a report structure"
-               (form ...players... ...leagues... ...selected... report) => truthy
+               (form ...players...  report) => truthy
                (provided
                 (util/format-date anything) => ...datestring...
                 (#'foosball.views.match/render-team-controls :team1 1 team1 ...active-players...) => ...team1controls...

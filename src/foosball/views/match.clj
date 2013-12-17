@@ -35,17 +35,6 @@
 (defn- filter-active-players [players]
   (filter :active players))
 
-(defn render-league-select [leagues selected-league-id]
-  [:form#league-form.form-horizontal {:action "/report/match/league-select" :method "POST"}
-   [:div.form-group.col-lg-6
-    [:label.control-label.col-lg-4 {:for "league-id"} "League"]
-    [:div.controls.col-lg-6
-     [:select.form-control {:id "league-id" :name "league-id"}
-      (map (fn [{:keys [id name]}] [:option (merge {:value id}
-                                                  (when (= id selected-league-id) {:selected "selected"}))
-                                   name])
-           leagues)]]]])
-
 (defn render-match-date [matchdate]
   (let [formated-date (format-date (->> matchdate
                                         ((fn [x] (when-not (= :invalid-matchdate x) x)))
@@ -58,7 +47,7 @@
                                           :type "date"
                                           :value formated-date}]]]]))
 
-(defn form [players leagues selected-league-id & [{:keys [team1 team2 matchdate]}]]
+(defn form [players & [{:keys [team1 team2 matchdate]}]]
   (let [active-players (filter-active-players players)]
     (html5
      [:h1 "Report Match Result"]
@@ -66,11 +55,7 @@
       "A match winner is the first team to reach ten goals while atleast two goals ahead of the opposing team." [:br]
       "In case of tie-break, report 11-9 or 9-11."]
 
-     (when (< 1 (count leagues))
-       [:div.row
-        (render-league-select leagues selected-league-id)])
-
-     [:form.form-horizontal {:action (str "/report/match/" selected-league-id) :method "POST"}
+     [:form.form-horizontal {:action "/report/match" :method "POST"}
       [:div.form-group.col-lg-12
        (render-team-controls :team1 1 team1 active-players)
        [:div.col-lg-2]
@@ -118,7 +103,6 @@
 
 (defn parse-form [p]
   {:matchdate       (-> p :matchdate   (parse-date :invalid-matchdate))
-   :league-id       (-> p :league-id    parse-id)
    :team1 {:player1 (-> p :team1player1 parse-id)
            :player2 (-> p :team1player2 parse-id)
            :score   (-> p :team1score   parse-id)}

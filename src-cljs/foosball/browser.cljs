@@ -20,9 +20,6 @@
 (defroute "/report/match" {}
   (report-match-action))
 
-(defroute "/report/match/:league-id" {:as params}
-  (report-match-action))
-
 (defroute "/stats/players" {}
   (navbar/set-active-navbar-by-id "#nav-players-stats"))
 

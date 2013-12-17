@@ -1,7 +1,7 @@
 (ns foosball.models.domains.matches
   (:require [datomic.api :as d :refer [db]]))
 
-(defn create! [conn {:keys [matchdate team1 team2 reported-by league-id]}]
+(defn create! [conn {:keys [matchdate team1 team2 reported-by]}]
   (let [[match-id team1-id team2-id] (repeatedly #(d/tempid :db.part/user))
         [t1p1 t1p2 t1score] (map team1 [:player1 :player2 :score])
         [t2p1 t2p2 t2score] (map team2 [:player1 :player2 :score])
@@ -16,8 +16,7 @@
                      {:db/id match-id :match/team1 team1-id}
                      {:db/id match-id :match/team2 team2-id}
                      {:db/id match-id :match/time matchdate}
-                     {:db/id match-id :match/reported-by reported-by}
-                     {:db/id match-id :match/league league-id}]]
+                     {:db/id match-id :match/reported-by reported-by}]]
     (d/transact conn transaction)))
 
 (defn- get-player [dbc id]

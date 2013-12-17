@@ -21,7 +21,3 @@
   (get-player-openids [this id])
   (add-openid-to-player! [this playerid openid])
   (get-player-with-given-openid [this openid]))
-
-(defprotocol Leagues
-  (get-leagues-for-player [this player-id])
-  (get-players-in-league [this league-id]))

@@ -2,7 +2,6 @@
   (:require [com.stuartsierra.component :as component]
             [datomic.api :as d :refer [db]]
             [foosball.models.domains :as ==>]
-            [foosball.models.domains.leagues :as leagues]
             [foosball.models.domains.matches :as matches]
             [foosball.models.domains.openids :as openids]
             [foosball.models.domains.players :as players]
@@ -62,7 +61,7 @@
   ==>/Matches
   (get-matches [this]
     (matches/get-all (db connection)))
-  (create-match! [this {:keys [matchdate team1 team2 reported-by league-id] :as match}]
+  (create-match! [this {:keys [matchdate team1 team2 reported-by] :as match}]
     (matches/create! connection match))
   (delete-match! [this id]
     (matches/delete! connection id))
@@ -77,11 +76,4 @@
   (add-openid-to-player! [this playerid openid]
     (openids/add-openid-to-player! connection playerid openid))
   (get-player-with-given-openid [this openid]
-    (openids/get-player-with-given-openid (db connection) openid))
-
-  ==>/Leagues
-  (get-leagues-for-player [this playerid]
-    (leagues/get-leagues-for-player (db connection) playerid))
-
-  (get-players-in-league [this leagueid]
-    (leagues/get-players-in-league (db connection) leagueid)))
+    (openids/get-player-with-given-openid (db connection) openid)))
