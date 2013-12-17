@@ -16,11 +16,12 @@
     (component/stop-system this components)))
 
 (def default-config-options
-  {:db-uri          "datomic:free://localhost:4334/foosball"
-   :cljs-optimized? true
-   :repl-port       4321
-   :web-port        8080
-   :handler-wrapper identity})
+  {:db-uri              "datomic:free://localhost:4334/foosball"
+   :cljs-optimized?     true
+   :repl-port           4321
+   :web-port            8080
+   :handler-wrapper     identity
+   :cljs-repl-script-fn (constantly nil)})
 
 (defn system [components & {:as config-overrides}]
   (let [config-options (merge default-config-options config-overrides)]

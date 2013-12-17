@@ -1,6 +1,5 @@
 (ns foosball.views.layout
-  (:require [cemerick.austin.repls :as austin]
-            [cfg.current :refer [project]]
+  (:require [cfg.current :refer [project]]
             [foosball.auth :as auth]
             [hiccup.element :refer [link-to]]
             [hiccup.page :refer [html5 include-css include-js]]))
@@ -39,14 +38,13 @@
                                  :text (str "Logout")
                                  :title playername))])]]))
 
-(defn footer [auto-refresh?]
+(defn footer [{:keys [cljs-repl-script-fn]} auto-refresh?]
   (list
    [:script {:type "text/javascript"} "goog.require(\"foosball.browser\");"]
    [:script {:type "text/javascript"} "foosball.browser.register_document_ready();"]
    (when auto-refresh?
      [:script {:type "text/javascript"} "foosball.browser.page_autorefresh(90)"])
-   (when @austin/browser-repl-env
-     [:script (austin/browser-connected-repl-js)])))
+   (cljs-repl-script-fn)))
 
 (defn base [{:keys [cljs-optimized?]} page-title & content]
   (html5
@@ -65,4 +63,4 @@
     [:body content]))
 
 (defn common [config-options & {:keys [title content auto-refresh?] :or {auto-refresh? false}}]
-  (base config-options title (header) [:div.container content] (footer auto-refresh?)))
+  (base config-options title (header) [:div.container content] (footer config-options auto-refresh?)))

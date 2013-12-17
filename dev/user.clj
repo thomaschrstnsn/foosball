@@ -10,6 +10,7 @@
             [foosball.system :as system]
             [foosball.models.db :as db]
             [foosball.models.domains.openids :as openid]
+            [dev-cljs-repl :as cljs-repl]
             [dev-data :as d]
             [taoensso.timbre :as timbre]
             [taoensso.timbre.appenders (socket :as socket-appender)]
@@ -22,7 +23,8 @@
   []
   (alter-var-root #'system (constantly (system/system system/dev-system-components
                                         :handler-wrapper stacktrace/wrap-stacktrace
-                                        :cljs-optimized? false))))
+                                        :cljs-optimized? false
+                                        :cljs-repl-script-fn cljs-repl/script-tag-fn))))
 
 (defn socket-logger []
   (timbre/set-config! [:appenders :socket] socket-appender/socket-appender)
@@ -54,24 +56,10 @@
   (set-refresh-dirs "src/" "dev/")
   (refresh :after 'user/go))
 
-(defn cljs-repl-set! [repl]
-  (def repl-env (reset! cemerick.austin.repls/browser-repl-env repl)))
-
-(defn cljs-repl-setup
-  "Setup the app to use a Austin browser hosted cljs-repl"
-  []
-  (cljs-repl-set! (cemerick.austin/repl-env)))
-
-(defn cljs-repl-connect
-  "Connect to the browser hosted cljs-repl"
-  []
-  (cemerick.austin.repls/cljs-repl repl-env))
-
 (defn delete-database-and-stop! []
   (db/delete! (:db system))
   (stop)
   :ok)
-
 
 (defn conn []
   (get-in system [:db :connection]))
