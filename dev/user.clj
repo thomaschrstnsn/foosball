@@ -24,6 +24,7 @@
   (alter-var-root #'system (constantly (system/system system/dev-system-components
                                         :handler-wrapper stacktrace/wrap-stacktrace
                                         :cljs-optimized? false
+                                        :repl-port 12345
                                         :cljs-repl-script-fn cljs-repl/script-tag-fn))))
 
 (defn socket-logger []
