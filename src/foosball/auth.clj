@@ -1,6 +1,7 @@
 (ns foosball.auth
   (:require [cemerick.friend :as friend]
             [cemerick.friend.openid :as openid]
+            [ring.util.response :as response]
             [foosball.models.domains :as d]
             [foosball.util :as util]))
 
@@ -36,7 +37,8 @@
                        {:allow-anon? true
                         :default-landing-uri "/user/assign-player"
                         :workflows [(openid/workflow :openid-uri "/login"
-                                                     :credential-fn (partial credential-fn db))]}))
+                                                     :credential-fn (partial credential-fn db)
+                                                     :login-failure-handler (constantly (response/redirect "/")))]}))
 
 (comment  {:name "Yahoo" :url "http://me.yahoo.com/"}
           {:name "AOL" :url "http://openid.aol.com/"}
