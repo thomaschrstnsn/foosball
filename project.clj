@@ -1,4 +1,4 @@
-(defproject foosball "1.3.0-SNAPSHOT"
+(defproject foosball "1.3.0-SNAPSHOT2"
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [com.datomic/datomic-free "0.8.4159" :exclusions [com.amazonaws/aws-java-sdk]]
                  [ring/ring-core "1.2.0" :exclusions [org.clojure/tools.reader]]
@@ -7,7 +7,7 @@
                                                  org.clojure/core.incubator
                                                  ring/ring-core]]
                  [ring-server "0.3.0" :exclusions [org.clojure/core.incubator]]
-                 [com.cemerick/friend "0.1.5" :exclusions [ring/ring-core]]
+                 [com.cemerick/friend "0.2.0"]
                  [com.taoensso/timbre "2.6.1"]
                  [log4j "1.2.17" :exclusions [javax.mail/mail
                                               javax.jms/jms
