@@ -2,6 +2,8 @@
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [com.datomic/datomic-free "0.8.4159" :exclusions [com.amazonaws/aws-java-sdk]]
                  [ring/ring-core "1.2.0" :exclusions [org.clojure/tools.reader]]
+                 [org.clojure/data.json "0.2.3"]
+                 [liberator "0.10.0" :exlusions [org.clojure/data.json]]
                  [lib-noir "0.6.8"]
                  [compojure "1.1.5" :exclusions [org.clojure/tools.macro
                                                  org.clojure/core.incubator

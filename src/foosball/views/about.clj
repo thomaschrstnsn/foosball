@@ -32,7 +32,10 @@
     "https://github.com/clj-time/clj-time"]
    ['com.taoensso/timbre
     "Timbre"
-    "https://github.com/ptaoussanis/timbre"]])
+    "https://github.com/ptaoussanis/timbre"]
+   ['liberator/liberator
+    "Liberator"
+    "http://clojure-liberator.github.io/liberator/"]])
 
 (defn page []
   (html5

@@ -2,6 +2,7 @@
   (:use [compojure.core :only [defroutes]])
   (:use [taoensso.timbre :only [trace debug info warn error fatal spy]])
   (:require [foosball.util              :as util]
+            [foosball.routes.api        :as api]
             [foosball.routes.home       :as home]
             [foosball.routes.report     :as report]
             [foosball.routes.stats      :as stats]
@@ -23,6 +24,7 @@
   (start [this]
     (info "Starting Foosball App")
     (let [route-fns    [admin/routes
+                        api/routes
                         home/routes
                         matchup/routes
                         report/routes
