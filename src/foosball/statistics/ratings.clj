@@ -128,14 +128,14 @@
                                                :inactivity inactivities})))
                               logs)]))))))
 
-(defn calculate-current-form-for-player [logs number-of-matches player]
-  (->> logs
-       (filter (comp (partial = :played-match) :log-type))
-       (filter (comp (partial = player)        :player))
-       reverse
-       (take number-of-matches)
-       reverse
-       (map :win?)))
+(defn calculate-current-forms-for-players [logs number-of-matches]
+  (let [played-matches (filter (comp (partial = :played-match) :log-type) logs)
+        by-player      (group-by :player played-matches)]
+    (->> by-player
+         (map (fn [[player logs]] {player (->> logs
+                                            (take-last number-of-matches)
+                                            (map :win?))}))
+         (apply merge))))
 
 (defn teams-from-players [players]
   (let [ps (set players)]
