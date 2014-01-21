@@ -10,7 +10,7 @@
                                                  ring/ring-core]]
                  [ring-server "0.3.0" :exclusions [org.clojure/core.incubator]]
                  [com.cemerick/friend "0.2.0"]
-                 [com.taoensso/timbre "2.6.1"]
+                 [com.taoensso/timbre "2.7.1"]
                  [log4j "1.2.17" :exclusions [javax.mail/mail
                                               javax.jms/jms
                                               com.sun.jdmk/jmxtools
