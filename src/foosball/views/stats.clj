@@ -75,19 +75,19 @@
       (let [stats             (calculate-player-stats matches)
             log-and-ratings   (ratings-with-log players matches)
             ratings           (:ratings log-and-ratings)
-            logs              (:logs log-and-ratings)
+            won-matches       (:won-matches log-and-ratings)
             today             (from-date (java.util.Date.))
+            forms-by-player   (calculate-form-from-matches won-matches 5)
             stats-and-ratings (map (fn [{:keys [player] :as stat}]
                                      (merge stat
-                                            {:rating (ratings player)}
-                                            {:form   (calculate-current-form-for-player logs 5 player)}
-                                            {:days-since-latest-match (in-days (interval (from-date (:latest-matchdate stat))
+                                            {:rating                  (ratings player)
+                                             :form                    (forms-by-player player)
+                                             :days-since-latest-match (in-days (interval (from-date (:latest-matchdate stat))
                                                                                          today))}))
-                                   stats)]
-        (->> stats-and-ratings
-             (sort-by (if (nil? sort) :rating sort))
-             (order-by (if (nil? order) :desc order))
-             (map (partial render-player players))))]]]))
+                                   stats)
+            sorted-stats      (sort-by (if (nil? sort) :rating sort) stats-and-ratings)
+            ordered-stats     (order-by (if (nil? order) :desc order) sorted-stats)]
+        (map (partial render-player players) ordered-stats))]]]))
 
 (defn team-table [matches players & {:keys [sort order] :or {sort :wins order :desc}}]
   (html5

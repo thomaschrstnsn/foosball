@@ -2,7 +2,7 @@
   (:require [foosball.statistics.core :refer :all]
             [foosball.util :refer :all]))
 
-(defn- player-stats [matches player]
+(defn player-stats [matches player]
   (let [games-won          (filter (partial player-is-winner? player) matches)
         games-lost         (filter (partial player-is-loser?  player) matches)
         games-played       (concat games-won games-lost)
@@ -19,20 +19,24 @@
         total              (+ wins losses)
         win-perc           (* (/ wins total) 100)
         loss-perc          (* (/ losses total) 100)
-        score-delta        (->>  (map :score-delta matches) (reduce concat)
-                                 (filter (fn [[t s]] (contains? t player))) (map (fn [[t s]] s))
-                                 (reduce + 0))]
+        score-delta        (->> matches
+                                (mapcat :score-delta)
+                                (filter (fn [[t s]] (contains? t player)))
+                                (map (fn [[t s]] s))
+                                (reduce + 0))]
     (symbols-as-map player wins losses total win-perc loss-perc score-delta latest-matchdate matches-after-last)))
 
-(defn- team-stats [matches team]
-  (let [wins      (->> (map :winners matches) (filter (partial = team)) count)
-        losses    (->> (map :losers  matches) (filter (partial = team)) count)
-        total     (+ wins losses)
-        win-perc  (* (/ wins total) 100)
-        loss-perc (* (/ losses total) 100)
-        score-delta (->>  (map :score-delta matches) (reduce concat)
-                          (filter (fn [[t s]] (= team t))) (map (fn [[t s]] s))
-                          (reduce + 0))]
+(defn team-stats [matches team]
+  (let [wins        (->> (map :winners matches) (filter (partial = team)) count)
+        losses      (->> (map :losers  matches) (filter (partial = team)) count)
+        total       (+ wins losses)
+        win-perc    (* (/ wins total) 100)
+        loss-perc   (* (/ losses total) 100)
+        score-delta (->> matches
+                         (mapcat :score-delta)
+                         (filter (fn [[t s]] (= team t)))
+                         (map (fn [[t s]] s))
+                         (reduce + 0))]
     {:team team :wins wins :losses losses :total total :win-perc win-perc :loss-perc loss-perc :score-delta score-delta}))
 
 (defn calculate-player-stats [matches]

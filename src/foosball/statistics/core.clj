@@ -18,9 +18,7 @@
            match)))
 
 (defn players-from-matches [matches]
-  (->> matches
-       (map (fn [{:keys [players]}] players))
-       (apply set/union)))
+  (reduce (fn [acc next] (set/union acc (:players next))) #{} matches))
 
 (defn teams-from-matches [matches]
   (->> matches

@@ -64,20 +64,21 @@
       {:active-player-bonus 0 :inactive-ratings {}}
       (let [penalty-per-player  (/ bonus-total (count inactive))
             update-fn           (partial updated-rating-and-log-for-inactive-player ratings match penalty-per-player)
-            inactive-ratings-and-logs (map update-fn inactive)
+            inactive-ratings-and-logs   (map update-fn inactive)
             inactive-ratings    (->> inactive-ratings-and-logs
                                      (map :rating)
                                      (apply merge))]
         {:active-player-bonus active-player-bonus
-         :inactive-ratings inactive-ratings
-         :inactive-logs    (map :log inactive-ratings-and-logs)}))))
+         :inactive-ratings    inactive-ratings
+         :inactive-logs       (map :log inactive-ratings-and-logs)}))))
 
 (defn update-ratings-from-match [all-players
                                  won-matches
+                                 active-players-by-matchid
                                  {:keys [ratings logs players]}
-                                 {:keys [winners losers players matchdate] :as match}]
+                                 {:keys [winners losers players matchdate id] :as match}]
   (let [match-players        players
-        inactive-players     (players-with-matches-by-date less-than-or-equal? matchdate won-matches)
+        inactive-players     (active-players-by-matchid id)
         {:keys
          [active-player-bonus
           inactive-ratings
@@ -90,15 +91,28 @@
 
 (def ^:private initial-rating 1500)
 
+(defn calc-accum-active-players-by-match-id
+  "Builds the accumulated set of active players as a map from match-id to set of player names.
+   The input is assumed to be sorted matches by time played (earliest first)"
+  [won-matches]
+  (let [accum-sets (drop 1 (reductions (fn [accum {:keys [players]}] (set/union players accum))
+                                       #{}
+                                       won-matches))
+        seperate-maps (map (fn [{:keys [id]} accum] {id accum}) won-matches accum-sets)]
+    (apply merge seperate-maps)))
+
 (defn ratings-with-log [players matches]
-  (let [won-matches      (map determine-winner matches)
-        all-players      (set/union (players-from-matches won-matches) (set players))
-        initial          (->> all-players
-                              (map (fn [p] {p initial-rating}))
-                              (apply merge))]
-    (reduce (partial update-ratings-from-match all-players won-matches)
-            {:ratings initial :logs []}
-            won-matches)))
+  (let [won-matches    (map determine-winner matches)
+        all-players    (set/union (players-from-matches won-matches) (set players))
+        active-players (calc-accum-active-players-by-match-id won-matches)
+        initial        (->> all-players
+                            (map (fn [p] {p initial-rating}))
+                            (apply merge))]
+    (merge
+     (reduce (partial update-ratings-from-match all-players won-matches active-players)
+             {:ratings initial :logs []}
+             won-matches)
+     {:won-matches won-matches})))
 
 (defn calculate-ratings [players matches]
   (-> (ratings-with-log players matches)
@@ -128,14 +142,25 @@
                                                :inactivity inactivities})))
                               logs)]))))))
 
-(defn calculate-current-forms-for-players [logs number-of-matches]
-  (let [played-matches (filter (comp (partial = :played-match) :log-type) logs)
-        by-player      (group-by :player played-matches)]
-    (->> by-player
-         (map (fn [[player logs]] {player (->> logs
-                                            (take-last number-of-matches)
-                                            (map :win?))}))
-         (apply merge))))
+(defn group-by-many
+  "Like group-by but assumes that f returns a collection of keys,
+   the current value is stored on each key in that collection."
+  [f coll]
+  (persistent!
+   (reduce
+    (fn [ret x]
+      (reduce (fn [acc k] (assoc! acc k (conj (get acc k []) x)))
+              ret (f x)))
+    (transient {}) coll)))
+
+(defn calculate-form-from-matches [won-matches form-length]
+  (let [matches-by-player      (group-by-many :players won-matches)
+        form-matches-by-player (map (fn [[player matches]] [player (take-last form-length matches)]) matches-by-player)
+        winner?-fn             (fn [player {:keys [winners]}] (contains? winners player))
+        form-by-player         (map (fn [[player matches]]
+                                      {player (map (partial winner?-fn player) matches)})
+                                    form-matches-by-player)]
+    (apply merge form-by-player)))
 
 (defn teams-from-players [players]
   (let [ps (set players)]

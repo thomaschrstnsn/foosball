@@ -46,10 +46,12 @@
             log-and-ratings   (ratings/ratings-with-log players matches)
             ratings           (:ratings log-and-ratings)
             logs              (:logs log-and-ratings)
+            won-matches       (:won-matches log-and-ratings)
+            form-by-player    (ratings/calculate-form-from-matches won-matches 5)
             stats-and-ratings (map (fn [{:keys [player] :as stat}]
                                      (merge stat
                                             {:rating (ratings player)}
-                                            {:form   (ratings/calculate-current-form-for-player logs 5 player)}))
+                                            {:form   (form-by-player player)}))
                                    stats)]
         (->> stats-and-ratings
              (sort-by :rating)
