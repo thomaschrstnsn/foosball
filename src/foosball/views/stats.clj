@@ -16,6 +16,7 @@
 
 (defn- render-player [players p]
   [:tr
+   [:td (:position p)]
    [:td (->> p :player (get-player-by-name players) link-to-player-log)]
    [:td (:wins p)]
    [:td (:losses p)]
@@ -52,25 +53,23 @@
      [:a {:href desc} [:span.glyphicon.glyphicon-chevron-up]]
      [:a {:href asc}  [:span.glyphicon.glyphicon-chevron-down]]]))
 
-(defn- common-columns [first-column & last-columns]
-  [:tr
-   first-column
-   (sortable-column "Wins" :wins)
-   (sortable-column "Losses" :losses)
-   (sortable-column "Played" :total)
-   (sortable-column "Wins %" :win-perc)
-   (sortable-column "Losses %" :loss-perc)
-   (sortable-column "Score diff." :score-delta)
-   last-columns])
+(def common-columns [(sortable-column "Wins" :wins)
+                     (sortable-column "Losses" :losses)
+                     (sortable-column "Played" :total)
+                     (sortable-column "Wins %" :win-perc)
+                     (sortable-column "Losses %" :loss-perc)
+                     (sortable-column "Score diff." :score-delta)])
 
 (defn player-table [matches players & {:keys [sort order] :or {sort :wins order :desc}}]
   (html5
    [:table.table.table-hover
     [:caption [:h1 "Player Statistics"]]
-    [:thead (common-columns (sortable-column "Player" :player)
-                            [:th "Inactive" [:br] "Days/Matches"]
-                            [:th "Form"]
-                            (sortable-column "Rating" :rating))
+    [:thead [:tr (concat [(sortable-column "Position" :position)
+                          (sortable-column "Player"   :player)]
+                         common-columns
+                         [[:th "Inactive" [:br] "Days/Matches"]
+                          [:th "Form"]
+                          (sortable-column "Rating" :rating)])]
      [:tbody
       (let [stats             (calculate-player-stats matches)
             log-and-ratings   (ratings-with-log players matches)
@@ -85,7 +84,10 @@
                                              :days-since-latest-match (in-days (interval (from-date (:latest-matchdate stat))
                                                                                          today))}))
                                    stats)
-            sorted-stats      (sort-by (if (nil? sort) :rating sort) stats-and-ratings)
+            with-position     (map (fn [s n] (merge s {:position (inc n)}))
+                                   (reverse (sort-by :rating stats-and-ratings))
+                                   (range))
+            sorted-stats      (sort-by (if (nil? sort) :rating sort) with-position)
             ordered-stats     (order-by (if (nil? order) :desc order) sorted-stats)]
         (map (partial render-player players) ordered-stats))]]]))
 
@@ -93,7 +95,8 @@
   (html5
    [:table.table.table-hover
     [:caption [:h1 "Team Statistics"]]
-    [:thead (common-columns [:th "Team"])
+    [:thead [:tr (concat [[:th "Team"]]
+                         common-columns)]
     [:tbody
      (->> matches
           calculate-team-stats
