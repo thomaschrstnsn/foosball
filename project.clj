@@ -1,4 +1,4 @@
-(defproject foosball "1.3.0"
+(defproject foosball "1.3.1-SNAPSHOT"
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [com.datomic/datomic-free "0.8.4159" :exclusions [com.amazonaws/aws-java-sdk]]
                  [ring/ring-core "1.2.0" :exclusions [org.clojure/tools.reader]]
