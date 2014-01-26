@@ -77,3 +77,8 @@
 ** Version 1.2.0 [1/1]
 *** DONE User model - friend and google openid
     CLOSED: [2013-09-25 Ons 06:48]
+** Version 1.3.0 [4/4]
+*** DONE lots of behind the scenes upgrades and refactorings
+*** DONE show numeric ordering on player ratings (ie. 1, 2, 3)
+*** DONE upgrade to [[https://github.com/cemerick/friend/blob/master/CHANGES.md][friend 0.2.0]]
+*** DONE Performance improvements on player, team ratings and front page
