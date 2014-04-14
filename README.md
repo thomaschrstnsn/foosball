@@ -1,19 +1,30 @@
 # foosball
 
-FIXME
+Web application for tracking foosball match results and statistics.
 
-## Prerequisites
+But most of all, a playground for  learning web development with 
+[Clojure](http://clojure.org), [ClojureScript](https://github.com/clojure/clojurescript) and 
+[Datomic](http://www.datomic.com).
 
-You will need [Leiningen][1] 2.0 or above installed.
+Most of the concepts discovered/used/copied here have been crystalized into the 
+[gyag](https://github.com/thomaschrstnsn/gyag-template) Leiningen template.
 
-[1]: https://github.com/technomancy/leiningen
+# Status
 
-## Running
+Running in [production](http://foosball.chrstnsn.dk) since april 2013. 
+If you can use this as a basis for your own site, go ahead.  
+This codebase has no intensions of becoming the *all singing, all dancing, generic foosball site*, 
+pull requests will considered in this light.
 
-To start a web server for the application, run:
+# Running a development environment
 
-    lein ring server
+1. You need an instance of Datomic running. 
+I can recommend the wrapper [cldwalker/datomic-free](https://github.com/cldwalker/datomic-free).
+
+2. See the [gyag template README](https://github.com/thomaschrstnsn/gyag-template).
 
 ## License
 
-Copyright © 2013 FIXME
+Copyright © 2014 Thomas Christensen
+
+Distributed under the Eclipse Public License either version 1.0 or (at your option) any later version.
