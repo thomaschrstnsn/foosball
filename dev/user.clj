@@ -14,6 +14,8 @@
             [dev-data :as d]
             [taoensso.timbre :as timbre]
             [taoensso.timbre.appenders (socket :as socket-appender)]
+            [midje.repl :refer [autotest]]
+            [midje.config :as midje.config]
             [com.stuartsierra.component :as component]))
 
 (def system nil)
@@ -50,11 +52,12 @@
   []
   (init)
   (start)
+  (autotest)
   :ok)
 
 (defn reset []
   (stop)
-  (set-refresh-dirs "src/" "dev/")
+  (set-refresh-dirs "src/" "dev/" "test/")
   (refresh :after 'user/go))
 
 (defn delete-database-and-stop! []
