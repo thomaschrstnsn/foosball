@@ -124,15 +124,17 @@
                              :inactivity 2}))))
 
 (facts "about player form when applied to example matches"
-       (let [{:keys [logs]} (ratings-with-log [] example-matches)]
+       (let [{:keys [won-matches]} (ratings-with-log [] example-matches)
+             calculate-form-helper (fn [num-matches player]
+                                                 (get (calculate-form-from-matches won-matches num-matches) player))]
          (fact "it should calculate as expected"
-               (calculate-current-form-for-player logs 5 "Thomas")     => [false true true]
-               (calculate-current-form-for-player logs 2 "Thomas")     => [true true]
-               (calculate-current-form-for-player logs 1 "Thomas")     => [true]
-               (calculate-current-form-for-player logs 5 "Anders")     => [false false false true]
-               (calculate-current-form-for-player logs 5 "Lisse")      => [true false true false]
-               (calculate-current-form-for-player logs 5 "Knud Erik")  => [true true]
-               (calculate-current-form-for-player logs 5 "Maria")      => [true false false])))
+               (calculate-form-helper 5 "Thomas")    => [false true true]
+               (calculate-form-helper 2 "Thomas")    => [true true]
+               (calculate-form-helper 1 "Thomas")    => [true]
+               (calculate-form-helper 5 "Anders")    => [false false false true]
+               (calculate-form-helper 5 "Lisse")     => [true false true false]
+               (calculate-form-helper 5 "Knud Erik") => [true true]
+               (calculate-form-helper 5 "Maria")     => [true false false])))
 
 (facts "about possible-matchups"
        (fact "the number of results is bound to the size of the input"
