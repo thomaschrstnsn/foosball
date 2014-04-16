@@ -17,7 +17,7 @@
   (info "instantiating system")
   (alter-var-root #'system  (constantly (-> (system/system system/prod-system-components)
                                             component/start)))
-  (alter-var-root #'handler (constantly (middleware/war-handler (get-in system [:app :ring-handler]))))
+  (alter-var-root #'handler (constantly (get-in system [:app :ring-handler])))
   (info "foosball started successfully"))
 
 (defn destroy

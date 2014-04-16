@@ -4,12 +4,12 @@
                  [ring/ring-core "1.2.0" :exclusions [org.clojure/tools.reader]]
                  [org.clojure/data.json "0.2.4"]
                  [liberator "0.11.0" :exlusions [org.clojure/data.json]]
-                 [lib-noir "0.6.8"]
+                 [lib-noir "0.8.2"]
                  [compojure "1.1.6" :exclusions [org.clojure/tools.macro
                                                  org.clojure/core.incubator
                                                  ring/ring-core]]
                  [ring-server "0.3.0" :exclusions [org.clojure/core.incubator]]
-                 [com.cemerick/friend "0.2.0"]
+                 [com.cemerick/friend "0.2.0" :exclusions [org.clojure/core.cache]]
                  [com.taoensso/timbre "3.1.6"]
                  [log4j "1.2.17" :exclusions [javax.mail/mail
                                               javax.jms/jms
