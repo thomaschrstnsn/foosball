@@ -42,7 +42,7 @@
    [:div.col-lg-8.jumbotron
     [:h1 "Foosball"]
     [:p.lead (str "Version " (:version project)) ]
-    [:p.lead "Copyright &copy; 2013 " [:a {:href "http://about.me/thomaschrstnsn"} "Thomas Christensen"]]
+    [:p.lead "Copyright &copy; 2014 " [:a {:href "http://about.me/thomaschrstnsn"} "Thomas Christensen"]]
     [:h2 "Built using"]
     [:div.col-lg-12
      [:table.table.table-hover
