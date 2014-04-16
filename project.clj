@@ -63,7 +63,9 @@
                                   [org.clojure/java.classpath "0.2.2"]
                                   [ring-mock "0.1.5"]
                                   [ring/ring-devel "1.2.0"]
-                                  [midje "1.5.1" :exclusions [org.codehaus.plexus/plexus-utils slingshot]]
+                                  [midje "1.6.3" :exclusions [org.codehaus.plexus/plexus-utils
+                                                              slingshot
+                                                              commons-codec]]
                                   [server-socket "1.0.0"]
                                   [prismatic/dommy "0.1.2"]
                                   [secretary "1.1.0" :exclusions [org.clojure/clojurescript]]
