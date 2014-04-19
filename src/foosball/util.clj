@@ -2,6 +2,12 @@
   (:require [clojure.edn :as edn]
             [hiccup.element :refer [link-to]]))
 
+(defn random-uuid []
+  (java.util.UUID/randomUUID))
+
+(defn uuid-from-string [s]
+  (java.util.UUID/fromString s))
+
 (defmacro symbols-as-map
   "Inverse of descructuring as {:keys [a b c]} -
   This macro maps the symbols passed to it as keys (keyworded) with the symbols' values as value."

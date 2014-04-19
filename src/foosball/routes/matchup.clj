@@ -18,7 +18,7 @@
                       :title "Matchup"
                       :content (matchup/page (d/get-players db)
                                              (d/get-matches db)
-                                             (map util/parse-id playerids))))))
+                                             (map util/uuid-from-string playerids))))))
 
 (defn routes [deps]
   (let [matchup-routes (compojure/routes

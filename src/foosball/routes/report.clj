@@ -32,7 +32,6 @@
   (info {:report-match-params params})
   (let [parsed-form      (match/parse-form params)
         validated-report (validation/validate-report parsed-form)
-        playerid         (auth/current-auth :playerid)
         valid-report?    (->> validated-report vals ((partial every? identity)))
         reported-by      (auth/current-auth :playerid)]
     (if valid-report?

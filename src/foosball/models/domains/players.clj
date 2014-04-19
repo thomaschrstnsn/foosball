@@ -8,29 +8,38 @@
 
 (defn get-all [dbc]
   (->> (d/q '[:find ?pid ?n ?a ?role :where
-              [?pid :player/name ?n]
-              [?pid :player/active ?a]
-              [?pid :user/role ?role]] dbc)
+              [?pe :player/id ?pid]
+              [?pe :player/name ?n]
+              [?pe :player/active ?a]
+              [?pe :user/role ?role]] dbc)
        (map (fn [[id name active role]] (util/symbols-as-map id name active role)))
        (sort-by :name)))
 
-(defn create! [conn name openid]
-  (let [playerid (d/tempid :db.part/user)
-        result   @(d/transact conn
-                              [{:db/id playerid :player/name name}
-                               {:db/id playerid :player/active true}
-                               {:db/id playerid :user/openids openid}
-                               {:db/id playerid :user/role :user}])]
-      (-> result :tempids first second)))
+(defn create! [conn uuid name openid]
+  (let [eid (d/tempid :db.part/user)]
+    @(d/transact conn
+                 [{:db/id eid :player/id uuid}
+                  {:db/id eid :player/name name}
+                  {:db/id eid :player/active true}
+                  {:db/id eid :user/openids openid}
+                  {:db/id eid :user/role :user}])))
+
+(defn entity-id-from-id [dbc uuid]
+  (->> (d/q '[:find ?eid :in $ ?id :where [?eid :player/id ?id]] dbc uuid)
+       ffirst))
 
 (defn rename! [conn id newplayername]
-  @(d/transact conn [{:db/id id :player/name newplayername}]))
+  (let [eid (entity-id-from-id (d/db conn) id)]
+    @(d/transact conn [{:db/id eid :player/name newplayername}])))
 
 (defn activate! [conn id]
-  @(d/transact conn [{:db/id id :player/active true}]))
+  (let [eid (entity-id-from-id (d/db conn) id)]
+    @(d/transact conn [{:db/id eid :player/active true}])))
 
 (defn deactivate! [conn id]
-  @(d/transact conn [{:db/id id :player/active false}]))
+  (let [eid (entity-id-from-id (d/db conn) id)]
+    @(d/transact conn [{:db/id eid :player/active false}])))
 
-(defn set-player-role! [dbc id role]
-  @(d/transact dbc [{:db/id id :user/role role}]))
+(defn set-player-role! [conn id role]
+  (let [eid (entity-id-from-id (d/db conn) id)]
+    @(d/transact conn [{:db/id eid :user/role role}])))

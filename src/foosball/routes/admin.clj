@@ -16,22 +16,22 @@
 
 (defn rename-player [{:keys [db]} playerid newplayername]
   (info {:rename-player (util/symbols-as-map playerid newplayername)})
-  (d/rename-player! db (util/parse-id playerid) newplayername)
+  (d/rename-player! db (util/uuid-from-string playerid) newplayername)
   (response/redirect-after-post "/admin"))
 
 (defn activate-player [{:keys [db]} id]
   (info {:activate-player id})
-  (d/activate-player! db (util/parse-id id))
+  (d/activate-player! db (util/uuid-from-string id))
   (response/redirect-after-post "/admin"))
 
 (defn deactivate-player [{:keys [db]} id]
   (info {:deactivate-player id})
-  (d/deactivate-player! db (util/parse-id id))
+  (d/deactivate-player! db (util/uuid-from-string id))
   (response/redirect-after-post "/admin"))
 
 (defn remove-match [{:keys [db]} id]
   (info {:remove-match id})
-  (d/delete-match! db (util/parse-id id))
+  (d/delete-match! db (util/uuid-from-string id))
   (response/redirect-after-post "/admin"))
 
 (defn routes [deps]

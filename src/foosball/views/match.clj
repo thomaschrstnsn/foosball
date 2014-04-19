@@ -1,5 +1,5 @@
 (ns foosball.views.match
-  (:require [foosball.util :refer :all]
+  (:require [foosball.util :as util]
             [hiccup.page :refer [html5]]))
 
 (defn- render-players-select [id players & [selected]]
@@ -36,9 +36,9 @@
   (filter :active players))
 
 (defn render-match-date [matchdate]
-  (let [formated-date (format-date (->> matchdate
-                                        ((fn [x] (when-not (= :invalid-matchdate x) x)))
-                                        ((fnil identity (java.util.Date.)))))]
+  (let [formated-date (util/format-date (->> matchdate
+                                             ((fn [x] (when-not (= :invalid-matchdate x) x)))
+                                             ((fnil identity (java.util.Date.)))))]
     [:div.form-group.col-lg-12
      [:div.form-group.pull-right.col-lg-6
       [:label.control-label.col-lg-6 {:for "matchdate"} "Date played"]
@@ -68,17 +68,22 @@
         [:button.btn.btn-primary.btn-lg.btn-block
          {:type "submit" :value "Report"} "Report Match Result " [:span.glyphicon.glyphicon-ok]]]]])))
 
-(defn- render-match [{:keys [matchdate team1 team2 id reported-by]} players & {:keys [admin] :or {admin false}}]
+(defn- render-match [{:keys [matchdate team1 team2 reported-by] :as match}
+                     players
+                     & {:keys [admin] :or {admin false}}]
   (let [[t1p1 t1p2 t1score] (map team1 [:player1 :player2 :score])
         [t2p1 t2p2 t2score] (map team2 [:player1 :player2 :score])]
     [:tr
-     [:td [:div.text-center (format-date matchdate)]]
-     [:td [:div.text-center (render-team players [t1p1 t1p2])]]
-     [:td [:div.text-center (format-score t1score)]]
-     [:td [:div.text-center (render-team players [t2p1 t2p2])]]
-     [:td [:div.text-center (format-score t2score)]]
+     [:td [:div.text-center (util/format-date matchdate)]]
+     [:td [:div.text-center (util/render-team players [t1p1 t1p2])]]
+     [:td [:div.text-center (util/format-score t1score)]]
+     [:td [:div.text-center (util/render-team players [t2p1 t2p2])]]
+     [:td [:div.text-center (util/format-score t2score)]]
      [:td [:div.text-center reported-by]]
-     (when admin [:td [:button.btn.btn-danger {:type "submit" :name "matchid" :value id} "Remove!"]])]))
+     (when admin [:td [:button.btn.btn-danger {:type "submit"
+                                               :name "matchid"
+                                               :value (str (:match/id match))}
+                       "Remove!"]])]))
 
 (defn match-table-data [matches players & {:keys [admin] :or {admin false}}]
   [:table.table.table-hover.table-condensed [:caption [:h1 "Played Matches"]]
@@ -102,10 +107,10 @@
    (match-table-data matches players)))
 
 (defn parse-form [p]
-  {:matchdate       (-> p :matchdate   (parse-date :invalid-matchdate))
-   :team1 {:player1 (-> p :team1player1 parse-id)
-           :player2 (-> p :team1player2 parse-id)
-           :score   (-> p :team1score   parse-id)}
-   :team2 {:player1 (-> p :team2player1 parse-id)
-           :player2 (-> p :team2player2 parse-id)
-           :score   (-> p :team2score   parse-id)}})
+  {:matchdate       (-> p :matchdate   (util/parse-date :invalid-matchdate))
+   :team1 {:player1 (-> p :team1player1 util/uuid-from-string)
+           :player2 (-> p :team1player2 util/uuid-from-string)
+           :score   (-> p :team1score   util/parse-id)}
+   :team2 {:player1 (-> p :team2player1 util/uuid-from-string)
+           :player2 (-> p :team2player2 util/uuid-from-string)
+           :score   (-> p :team2score   util/parse-id)}})

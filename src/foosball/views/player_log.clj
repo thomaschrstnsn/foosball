@@ -1,6 +1,6 @@
 (ns foosball.views.player-log
   (:require [foosball.statistics.ratings :refer :all]
-            [foosball.util :refer :all]
+            [foosball.util :as util]
             [hiccup.page :refer [html5]]))
 
 (defn- player-option [selected {:keys [id name]}]
@@ -22,16 +22,25 @@
 
 (defn- render-log-matchplayed [players l]
   [:tr
-   [:td (format-date (:matchdate l))]
-   [:td (->> (:team-mate l) (get-player-by-name players) link-to-player-log)]
+   [:td (util/format-date (:matchdate l))]
+   [:td (->> (:team-mate l) (util/get-player-by-name players) util/link-to-player-log)]
    [:td (->> (:opponents l)
-             (map #(->> % (get-player-by-name players) link-to-player-log))
+             (map #(->> % (util/get-player-by-name players) util/link-to-player-log))
              (interpose ", "))]
-   [:td (format-value (* 100 (:expected l)) :printer format-percentage :class? (partial not= (double 50)) :checker (partial < 50))]
-   [:td (format-value (:win? l) :class? nil :printer {true "Won" false "Lost"} :checker true?)]
+   [:td (util/format-value (* 100 (:expected l))
+                           :printer util/format-percentage
+                           :class? (partial not= (double 50))
+                           :checker (partial < 50))]
+   [:td (util/format-value (:win? l)
+                           :class? nil
+                           :printer {true "Won" false "Lost"}
+                           :checker true?)]
    [:td ""]
-   [:td (format-value (:delta l) :printer format-rating)]
-   [:td (format-value (:new-rating l) :printer format-rating :class? nil :checker (partial < 1500))]])
+   [:td (util/format-value (:delta l) :printer util/format-rating)]
+   [:td (util/format-value (:new-rating l)
+                           :printer util/format-rating
+                           :class? nil
+                           :checker (partial < 1500))]])
 
 (defn- render-log-inactivity [players l]
   [:tr.danger
@@ -41,8 +50,8 @@
    [:td ""]
    [:td ""]
    [:td.text-danger (:inactivity l)]
-   [:td (format-value (:delta l) :printer format-rating)]
-   [:td (format-value (:new-rating l) :printer format-rating :class? nil :checker (partial < 1500))]])
+   [:td (util/format-value (:delta l) :printer util/format-rating)]
+   [:td (util/format-value (:new-rating l) :printer util/format-rating :class? nil :checker (partial < 1500))]])
 
 (defn- render-log [players {:keys [log-type] :as l}]
   (if (= :inactivity  log-type)
@@ -67,7 +76,7 @@
           (map (partial render-log players)))]]])
 
 (defn player-log-page [matches players selected-playerid]
-  (let [playerid (parse-id selected-playerid)
+  (let [playerid (when selected-playerid (util/uuid-from-string selected-playerid))
         player   (->> players (filter (comp (partial = playerid) :id)) first)]
     (html5
      [:h1 (str "Player Log")]

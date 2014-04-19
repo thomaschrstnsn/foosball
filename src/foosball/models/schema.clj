@@ -2,7 +2,16 @@
   (:require [datomic.api :as d]))
 
 (def eav-schema
-  [{:db/id (d/tempid :db.part/db)
+  [ ;; players (and users)
+   {:db/id (d/tempid :db.part/db)
+    :db/ident :player/id
+    :db/valueType :db.type/uuid
+    :db/cardinality :db.cardinality/one
+    :db/unique :db.unique/identity
+    :db/doc "A player's id"
+    :db.install/_attribute :db.part/db}
+
+   {:db/id (d/tempid :db.part/db)
     :db/ident :player/name
     :db/valueType :db.type/string
     :db/cardinality :db.cardinality/one
@@ -31,6 +40,7 @@
     :db/doc "A player's active flag"
     :db.install/_attribute :db.part/db}
 
+   ;; team
    {:db/id (d/tempid :db.part/db)
     :db/ident :team/player1
     :db/valueType :db.type/ref
@@ -43,6 +53,15 @@
     :db/valueType :db.type/ref
     :db/cardinality :db.cardinality/one
     :db/doc "A team's second player"
+    :db.install/_attribute :db.part/db}
+
+   ;; match
+   {:db/id (d/tempid :db.part/db)
+    :db/ident :match/id
+    :db/valueType :db.type/uuid
+    :db/cardinality :db.cardinality/one
+    :db/unique :db.unique/identity
+    :db/doc "A match's id"
     :db.install/_attribute :db.part/db}
 
    {:db/id (d/tempid :db.part/db)
