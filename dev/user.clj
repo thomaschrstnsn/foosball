@@ -14,7 +14,7 @@
             [dev-data :as d]
             [taoensso.timbre :as timbre]
             [taoensso.timbre.appenders (socket :as socket-appender)]
-            [midje.repl :refer [autotest]]
+            [midje.repl :refer [load-facts]]
             [midje.config :as midje.config]
             [com.stuartsierra.component :as component]))
 
@@ -52,8 +52,13 @@
   []
   (init)
   (start)
-  (autotest)
   :ok)
+
+(defn run-tests
+  "Runs tests against the codebase."
+  []
+  (load-facts)
+  (timbre/warn "Tests have been run. Current development system is hosed, use (reset) to recover"))
 
 (defn reset []
   (stop)
