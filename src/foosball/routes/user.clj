@@ -9,6 +9,9 @@
             [ring.util.response :as response]
             [taoensso.timbre :refer [error info]]))
 
+(defn- playername-from-auth [auth]
+  (str (:firstname auth) " " (:lastname auth)))
+
 (defn- assign-player-page [{:keys [db config-options]}]
   (let [current-auth (auth/current-auth)
         {:keys [playerid playername]} current-auth]
@@ -39,7 +42,10 @@
                      [:div.panel-body
                       [:form.form-inline {:action "/user/create-player" :method "POST"}
                        [:div.form-group.col-lg-4
-                        [:input.input-lg.form-control.col-lg-3 {:type "text" :name "playername" :placeholder "New Player"}]]
+                        [:input.input-lg.form-control.col-lg-3
+                         {:type "text" :name "playername"
+                          :value (playername-from-auth current-auth)
+                          :disabled "disabled"}]]
                        [:div.form-group.col-lg-3
                         [:button.btn.btn-primary.btn-lg.btn-block {:type "submit" :value "Report"} "Create!"]]]]]]))))))
 
@@ -104,9 +110,10 @@
         (error ["cannot claim player" (util/symbols-as-map openid id current-playername players-openids player)])
         (response/status (response/response "cannot claim player") 405)))))
 
-(defn create-player [{:keys [db]} playername]
+(defn create-player [{:keys [db]}]
   (let [current-auth       (auth/current-auth)
         openid             (:identity current-auth)
+        playername         (playername-from-auth current-auth)
         current-playername (:playername current-auth)]
     (if (and (not (auth/user?))
              openid
@@ -140,8 +147,8 @@
          [playerid]
          (claim-player deps playerid))
    (POST "/user/create-player"
-         [playername]
-         (create-player deps playername))
+         []
+         (create-player deps))
    (GET  "/user/created/:id"
          [id]
          (created-page deps id))
