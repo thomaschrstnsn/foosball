@@ -1,9 +1,12 @@
 (ns foosball.models.domains.players
   (:require [datomic.api :as d]
+            [foosball.models.domains.helpers :as h]
             [foosball.util :as util]))
 
 (defn get-by-id [dbc id]
-  (->> (d/q '[:find ?player :in $ ?id :where [?id :player/name ?player]] dbc id)
+  (->> (d/q '[:find ?player :in $ ?id :where
+              [?ent :player/id ?id]
+              [?ent :player/name ?player]] dbc id)
        ffirst))
 
 (defn get-all [dbc]
@@ -25,8 +28,7 @@
                   {:db/id eid :user/role :user}])))
 
 (defn entity-id-from-id [dbc uuid]
-  (->> (d/q '[:find ?eid :in $ ?id :where [?eid :player/id ?id]] dbc uuid)
-       ffirst))
+  (h/entity-id-from-attr-value dbc :player/id uuid))
 
 (defn rename! [conn id newplayername]
   (let [eid (entity-id-from-id (d/db conn) id)]

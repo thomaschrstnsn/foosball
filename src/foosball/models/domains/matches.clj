@@ -1,15 +1,12 @@
 (ns foosball.models.domains.matches
   (:require [datomic.api :as d :refer [db]]
+            [foosball.models.domains.helpers :as h]
             [foosball.util :as util]))
-
-(defn entity-id-from-attr-value [dbc attr value]
-  (->> (d/q '[:find ?eid :in $ ?attr ?value :where [?eid ?attr ?value]] dbc attr value)
-       ffirst))
 
 (defn create! [conn {:keys [matchdate team1 team2 reported-by]}]
   (let [[match-id team1-id team2-id] (repeatedly #(d/tempid :db.part/user))
         dbc                          (db conn)
-        player-entity-from-id        (partial entity-id-from-attr-value dbc :player/id)
+        player-entity-from-id        (partial h/entity-id-from-attr-value dbc :player/id)
         team-fns                     [(comp player-entity-from-id :player1)
                                       (comp player-entity-from-id :player2)
                                       :score]

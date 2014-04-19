@@ -88,7 +88,7 @@
   (let [current-auth       (auth/current-auth)
         openid             (:identity current-auth)
         current-playername (:playername current-auth)
-        id                 (util/parse-id id)
+        id                 (util/uuid-from-string id)
         player             (d/get-player db id)
         players-openids    (d/get-player-openids db id)]
     (if (and (not (auth/user?))
@@ -101,7 +101,7 @@
         (d/add-openid-to-player! db id openid)
         (friend/logout* (response/redirect (str "/user/created/" id))))
       (do
-        (error ["cannot claim player" (util/symbols-as-map openid id current-playername players-openids)])
+        (error ["cannot claim player" (util/symbols-as-map openid id current-playername players-openids player)])
         (response/status (response/response "cannot claim player") 405)))))
 
 (defn create-player [{:keys [db]} playername]
@@ -111,16 +111,16 @@
     (if (and (not (auth/user?))
              openid
              (nil? current-playername))
-      (do
-        (info {:create-player playername :for-openid openid :user-auth current-auth})
-        (let [id (d/create-player! db playername openid)]
-          (friend/logout* (response/redirect (str "/user/created/" id)))))
+      (let [id (util/random-uuid)]
+        (info {:create-player playername :id id :for-openid openid :user-auth current-auth})
+        (d/create-player! db id playername openid)
+        (friend/logout* (response/redirect (str "/user/created/" id))))
       (do
         (error ["cannot create player" (util/symbols-as-map openid playername current-playername)])
         (response/status (response/response "cannot create player") 405)))))
 
 (defn created-page [{:keys [config-options db]} id]
-  (let [player (d/get-player db (util/parse-id id))]
+  (let [player (d/get-player db (util/uuid-from-string id))]
     (layout/common config-options
      :title "Player Created"
      :content (html5

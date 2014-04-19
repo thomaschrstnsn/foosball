@@ -48,8 +48,8 @@
   (get-players [this]
     (players/get-all (db connection)))
 
-  (create-player! [this name openid]
-    (players/create! connection name openid))
+  (create-player! [this id name openid]
+    (players/create! connection id name openid))
   (rename-player! [this id newplayername]
     (players/rename! connection id newplayername))
 

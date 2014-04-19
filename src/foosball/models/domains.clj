@@ -4,7 +4,7 @@
   (get-player [this id])
   (get-players [this])
 
-  (create-player! [this name openid])
+  (create-player! [this id name openid])
   (rename-player! [this id new-name])
 
   (activate-player! [this id])
