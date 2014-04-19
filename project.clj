@@ -67,8 +67,8 @@
                                                               slingshot
                                                               commons-codec]]
                                   [server-socket "1.0.0"]
-                                  [prismatic/dommy "0.1.2"]
-                                  [secretary "1.1.0" :exclusions [org.clojure/clojurescript]]
+                                  [prismatic/dommy "0.1.1"]
+                                  [secretary "0.4.0" :exclusions [org.clojure/clojurescript]]
                                   [jayq "2.5.0"]]
                    :plugins      [[com.cemerick/austin "0.1.3"]]
                    :repositories {"sonatype-oss-public"
