@@ -1,9 +1,10 @@
 (ns foosball.util
   (:require [clojure.edn :as edn]
+            [datomic.api :as d]
             [hiccup.element :refer [link-to]]))
 
-(defn random-uuid []
-  (java.util.UUID/randomUUID))
+(defn create-uuid []
+  (d/squuid))
 
 (defn uuid-from-string [s]
   (java.util.UUID/fromString s))

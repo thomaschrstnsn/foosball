@@ -118,7 +118,7 @@
     (if (and (not (auth/user?))
              openid
              (nil? current-playername))
-      (let [id (util/random-uuid)]
+      (let [id (util/create-uuid)]
         (info {:create-player playername :id id :for-openid openid :user-auth current-auth})
         (d/create-player! db id playername openid)
         (friend/logout* (response/redirect (str "/user/created/" id))))

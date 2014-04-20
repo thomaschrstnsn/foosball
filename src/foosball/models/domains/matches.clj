@@ -25,7 +25,7 @@
                                       {:db/id match-id :match/team2 team2-id}
                                       {:db/id match-id :match/time matchdate}
                                       {:db/id match-id :match/reported-by reported-by}
-                                      {:db/id match-id :match/id (util/random-uuid)}]]
+                                      {:db/id match-id :match/id (util/create-uuid)}]]
     @(d/transact conn transaction)))
 
 (defn get-all [dbc]
