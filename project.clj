@@ -1,6 +1,6 @@
 (defproject foosball "1.3.1-SNAPSHOT"
   :dependencies [[org.clojure/clojure "1.5.1"]
-                 [com.datomic/datomic-free "0.8.4159" :exclusions [com.amazonaws/aws-java-sdk]]
+                 [com.datomic/datomic-free "0.9.4724" :exclusions [com.amazonaws/aws-java-sdk]]
                  [ring/ring-core "1.2.0" :exclusions [org.clojure/tools.reader]]
                  [org.clojure/data.json "0.2.4"]
                  [liberator "0.11.0" :exlusions [org.clojure/data.json]]

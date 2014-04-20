@@ -51,10 +51,17 @@
     (info "Matches given id:" (count matches-without-id))
     @(d/transact conn transaction)))
 
+(defn remove-uniqueness-constraint-on-player-name
+  "Removes the uniqueness constraint on :player/name"
+  [conn]
+  @(d/transact conn [[:db/retract :player/name :db/unique :db.unique/identity]
+                     [:db/add :db.part/db :db.alter/attribute :player/name]]))
+
 (def migrations "seq of idempotent migration functions"
   [#'ensure-players-users-have-roles
    #'ensure-players-have-ids
-   #'ensure-matches-have-ids])
+   #'ensure-matches-have-ids
+   #'remove-uniqueness-constraint-on-player-name])
 
 (defn migrate-schema-and-data [conn]
   (doseq [migration-var migrations]

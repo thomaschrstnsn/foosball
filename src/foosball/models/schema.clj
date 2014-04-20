@@ -15,7 +15,6 @@
     :db/ident :player/name
     :db/valueType :db.type/string
     :db/cardinality :db.cardinality/one
-    :db/unique :db.unique/identity
     :db/doc "A player's name"
     :db.install/_attribute :db.part/db}
 
