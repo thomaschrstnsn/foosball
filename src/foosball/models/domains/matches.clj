@@ -13,6 +13,7 @@
         apply-fn-to-map              (fn [m] (fn [f] (f m)))
         [t1p1 t1p2 t1score]          (map (apply-fn-to-map team1) team-fns)
         [t2p1 t2p2 t2score]          (map (apply-fn-to-map team2) team-fns)
+        reporter-entity              (player-entity-from-id reported-by)
         transaction                  [{:db/id team1-id :team/player1 t1p1}
                                       {:db/id team1-id :team/player2 t1p2}
                                       {:db/id team1-id :team/score t1score}
@@ -24,7 +25,7 @@
                                       {:db/id match-id :match/team1 team1-id}
                                       {:db/id match-id :match/team2 team2-id}
                                       {:db/id match-id :match/time matchdate}
-                                      {:db/id match-id :match/reported-by reported-by}
+                                      {:db/id match-id :match/reported-by reporter-entity}
                                       {:db/id match-id :match/id (util/create-uuid)}]]
     @(d/transact conn transaction)))
 
