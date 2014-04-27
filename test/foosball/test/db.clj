@@ -2,8 +2,11 @@
   (:require [foosball.models.db :refer :all]
             [com.stuartsierra.component :as c]
             [foosball.models.domains :as d]
+            [foosball.util :as util]
             [clojure.test :refer :all]
-            [taoensso.timbre :as t]))
+            [clojure.data :as data]
+            [taoensso.timbre :as t]
+            [clojure.pprint :refer [pprint]]))
 
 (defn memory-db []
   (c/start
@@ -15,9 +18,10 @@
 
 (use-fixtures :each log-fixture)
 
-(defn intersect-keys= [expected actual]
-  (let [keys-to-compare (keys expected)]
-    (= expected (select-keys actual keys-to-compare))))
+(defn diff-with-first-nil? [expected actual]
+  (let [diff (first (data/diff expected actual))]
+    (when diff (pprint {:diff diff}))
+    (= nil (first (data/diff expected actual)))))
 
 (defn make-uuid []
   (java.util.UUID/randomUUID))
@@ -45,18 +49,18 @@
                      :id id}] (d/get-players db))))
 
           (testing "we can get the player be his openid"
-            (is (intersect-keys= {:playername name
-                                  :playerid id} (d/get-player-with-given-openid db openid))))
+            (is (diff-with-first-nil? {:playername name
+                                       :playerid id} (d/get-player-with-given-openid db openid))))
 
           (testing "we can inactivate him,"
             (is (not= nil (d/deactivate-player! db id)))
             (testing "then he is inactive"
-              (is (intersect-keys= {:active false} (first (d/get-players db))))))
+              (is (diff-with-first-nil? {:active false} (first (d/get-players db))))))
 
           (testing "we can reactivate him,"
             (is (not= nil (d/activate-player! db id)))
             (testing "then he is active again"
-              (is (intersect-keys= {:active true} (first (d/get-players db))))))
+              (is (diff-with-first-nil? {:active true} (first (d/get-players db))))))
           (testing "we can rename our player,"
             (let [new-name "jeffrey"]
               (is (not= nil (d/rename-player! db id new-name)))
@@ -66,13 +70,26 @@
   (testing "Creating matches"
     (let [db            (memory-db)
           create-player (fn [seed]
-                          (let [id (make-uuid)]
-                            (d/create-player! db id (str "name" seed) (str "openid" seed))
-                            id))
+                          (let [id (make-uuid)
+                                name (str "name-" seed)
+                                openid (str "openid-" seed)]
+                            (d/create-player! db id name openid )
+                            (util/symbols-as-map id name openid)))
           [p1 p2 p3 p4] (map create-player ["p1" "p2" "p3" "p3"])
-          match-date (java.util.Date.)]
-      (testing "We can create a match with our four players"
+          match-date (java.util.Date.)
+          team1score 10
+          team2score 5
+          reporter (create-player "reporter")]
+      (testing "We can create a match with our four players,"
         (is (not= nil (d/create-match! db {:matchdate match-date
-                                           :team1 {:player1 p1 :player2 p2 :score 10}
-                                           :team2 {:player1 p3 :player2 p4 :score 5}
-                                           :reported-by p1})))))))
+                                           :team1 {:player1 (:id p1) :player2 (:id p2) :score team1score}
+                                           :team2 {:player1 (:id p3) :player2 (:id p4) :score team2score}
+                                           :reported-by (:id reporter)})))
+        (testing "then we can get it out again"
+          (let [result (d/get-matches db)]
+            (is (diff-with-first-nil? {:matchdate match-date
+                                       :team1 {:player1 (:name p1) :player2 (:name p2) :score team1score}
+                                       :team2 {:player1 (:name p3) :player2 (:name p4) :score team2score}
+                                       :reported-by (:name reporter)}
+                                      (first result)))
+            (is (= 1 (count result)))))))))
