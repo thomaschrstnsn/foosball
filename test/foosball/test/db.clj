@@ -76,15 +76,16 @@
                             (d/create-player! db id name openid )
                             (util/symbols-as-map id name openid)))
           [p1 p2 p3 p4] (map create-player ["p1" "p2" "p3" "p3"])
-          match-date (java.util.Date.)
-          team1score 10
-          team2score 5
-          reporter (create-player "reporter")]
+          match-date    (java.util.Date.)
+          team1score    10
+          team2score    5
+          reporter      (create-player "reporter")
+          create-match  (fn [] (d/create-match! db {:matchdate match-date
+                                                   :team1 {:player1 (:id p1) :player2 (:id p2) :score team1score}
+                                                   :team2 {:player1 (:id p3) :player2 (:id p4) :score team2score}
+                                                   :reported-by (:id reporter)}))]
       (testing "We can create a match with our four players,"
-        (is (not= nil (d/create-match! db {:matchdate match-date
-                                           :team1 {:player1 (:id p1) :player2 (:id p2) :score team1score}
-                                           :team2 {:player1 (:id p3) :player2 (:id p4) :score team2score}
-                                           :reported-by (:id reporter)})))
+        (is (not= nil (create-match)))
         (testing "then we can get it out again"
           (let [result (d/get-matches db)]
             (is (diff-with-first-nil? {:matchdate match-date
@@ -92,4 +93,16 @@
                                        :team2 {:player1 (:name p3) :player2 (:name p4) :score team2score}
                                        :reported-by (:name reporter)}
                                       (first result)))
-            (is (= 1 (count result)))))))))
+            (is (= 1 (count result)))))
+
+        (testing "; and we can delete it again"
+          (let [matchid (->> (d/get-matches db) first :match/id)]
+            (is (not= nil matchid))
+            (is (not= nil (d/delete-match! db matchid))))
+          (testing ", and we cannot get it out again."
+            (is (empty? (d/get-matches db)))))
+
+        (testing "Creation of multiple matches"
+          (let [num-matches 100
+                created-matches (doall (repeatedly num-matches create-match))]
+            (is (= num-matches (count (d/get-matches db))))))))))
