@@ -6,7 +6,7 @@
             [foosball.models.domains :as d]))
 
 (defresource players [db]
-  :available-media-types ["text/html" "application/json" "application/edn" "application/clojure"]
+  :available-media-types ["application/edn" "text/html" "application/json" "application/clojure"]
   :handle-ok (fn [_] (d/get-players db)))
 
 (defn routes [{:keys [db]}]
