@@ -80,7 +80,8 @@
   :plugins [[lein-ring "0.8.3"]
             [lein-cljsbuild "1.0.0-alpha2"]
             [configleaf "0.4.6"]
-            [lein-release "1.0.4"]]
+            [lein-release "1.0.4"]
+            [lein-midje "3.1.3"]]
 
   :description "Foosball result tracking and statistics site."
   :min-lein-version "2.0.0")
