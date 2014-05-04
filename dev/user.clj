@@ -60,10 +60,18 @@
   (load-facts)
   (timbre/warn "Tests have been run. Current development system is hosed, use (reset) to recover"))
 
-(defn reset []
+(defn reset-and-then [after]
   (stop)
   (set-refresh-dirs "src/" "dev/" "test/")
-  (refresh :after 'user/go))
+  (refresh :after after))
+
+(defn reload-and-run-clojure-tests
+  "Reloads and runs the clojure.test tests loaded"
+  []
+  (reset-and-then 'clojure.test/run-all-tests))
+
+(defn reset []
+  (reset-and-then 'user/go))
 
 (defn delete-database-and-stop! []
   (db/delete! (:db system))
