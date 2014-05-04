@@ -1,5 +1,7 @@
 # foosball
 
+[![Build Status](https://travis-ci.org/thomaschrstnsn/foosball.svg?branch=master)](https://travis-ci.org/thomaschrstnsn/foosball)
+
 Web application for tracking foosball match results and statistics.
 
 But most of all, a playground for  learning web development with 
