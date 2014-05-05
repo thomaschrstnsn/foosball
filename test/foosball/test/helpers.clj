@@ -2,6 +2,8 @@
   (:require [com.stuartsierra.component :as c]
             [taoensso.timbre :as t]
             [foosball.models.db :as db]
+            [foosball.app :as a]
+            [foosball.system :as system]
             [clojure.data :as data]
             [clojure.pprint :refer [pprint]]))
 
@@ -28,3 +30,9 @@
 (defn only-error-log-fixture [f]
   (t/with-log-level :error
     (f)))
+
+;;;; app
+
+(defn app-with-memory-db []
+  (c/start (a/map->App {:database (memory-db)
+                        :config-options system/default-config-options})))
