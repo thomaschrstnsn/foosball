@@ -32,7 +32,7 @@
             (are [mime-type]
               (= 200 (-> request
                          (mockr/header :accept mime-type)
-                         ((libdev/wrap-trace handler :header))
+                         handler
                          :status))
               "application/edn"
               "text/html"
@@ -44,7 +44,7 @@
                      :active true
                      :id (str id)} (-> request
                                        (mockr/header :accept "application/json")
-                                       ((libdev/wrap-trace handler :header))
+                                       handler
                                        :body
                                        (json/read-str :key-fn keyword)
                                        first)))))))))
