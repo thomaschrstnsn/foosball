@@ -54,7 +54,9 @@
                  :nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
 
   :profiles {:production {:ring {:stacktraces? false}
-                          :dependencies [[org.clojure/tools.reader "0.7.10"]]}
+                          :dependencies [[org.clojure/tools.reader "0.7.10"]
+                                         [org.clojure/tools.macro "0.1.5"]]
+                          :aot :all}
 
              :dev {:ring {:stacktraces? true}
                    :source-paths ["dev"]
@@ -83,8 +85,11 @@
             [lein-release "1.0.4"]
             [lein-midje "3.1.3"]]
 
-  :aliases {"build-jar" ["with-profile" "production" "ring" "uberjar"]
+  :aliases {"deps-tree-prod" ["with-profile" "production" "deps" ":tree"]
+            "deps-tree-dev" ["with-profile" "dev" "deps" ":tree"]
+            "build-jar" ["with-profile" "production" "ring" "uberjar"]
             "build-war" ["with-profile" "production" "ring" "uberwar"]
+            "clean-all" ["do" "cljsbuild" "clean," "clean"] ;; we cannot rely on :hooks [leiningen.cljsbuild]
             "ci" ["with-profile" "dev" "do"
                   "cljsbuild" "once,"
                   "midje,"
