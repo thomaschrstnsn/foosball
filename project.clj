@@ -83,5 +83,13 @@
             [lein-release "1.0.4"]
             [lein-midje "3.1.3"]]
 
+  :aliases {"build-jar" ["with-profile" "production" "ring" "uberjar"]
+            "build-war" ["with-profile" "production" "ring" "uberwar"]
+            "ci" ["with-profile" "dev" "do"
+                  "cljsbuild" "once,"
+                  "midje,"
+                  "build-jar,"
+                  "build-war"]}
+
   :description "Foosball result tracking and statistics site."
   :min-lein-version "2.0.0")
