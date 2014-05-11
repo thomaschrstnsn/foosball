@@ -49,17 +49,11 @@
 
   (testing "Creating matches"
     (let [db            (h/memory-db)
-          create-player (fn [seed]
-                          (let [id (h/make-uuid)
-                                name (str "name-" seed)
-                                openid (str "openid-" seed)]
-                            (d/create-player! db id name openid )
-                            (util/symbols-as-map id name openid)))
-          [p1 p2 p3 p4] (map create-player ["p1" "p2" "p3" "p3"])
+          [p1 p2 p3 p4] (map (partial h/create-dummy-player db) ["p1" "p2" "p3" "p3"])
           match-date    (java.util.Date.)
           team1score    10
           team2score    5
-          reporter      (create-player "reporter")
+          reporter      (h/create-dummy-player db "reporter")
           create-match  (fn [] (d/create-match! db {:matchdate match-date
                                                    :team1 {:player1 (:id p1) :player2 (:id p2) :score team1score}
                                                    :team2 {:player1 (:id p3) :player2 (:id p4) :score team2score}

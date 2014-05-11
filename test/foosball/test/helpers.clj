@@ -4,6 +4,8 @@
             [foosball.models.db :as db]
             [foosball.app :as a]
             [foosball.system :as system]
+            [foosball.models.domains :as d]
+            [foosball.util :as util]
             [clojure.data :as data]
             [clojure.pprint :refer [pprint]]))
 
@@ -36,3 +38,12 @@
 (defn app-with-memory-db []
   (c/start (a/map->App {:database (memory-db)
                         :config-options system/default-config-options})))
+
+;;;; dummy data generators
+
+(defn create-dummy-player [db seed]
+  (let [id (make-uuid)
+        name (str "name-" seed)
+        openid (str "openid-" seed)]
+    (d/create-player! db id name openid )
+    (util/symbols-as-map id name openid)))
