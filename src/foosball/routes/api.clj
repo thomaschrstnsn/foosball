@@ -6,6 +6,7 @@
             [foosball.models.domains :as d]
             [foosball.statistics.ratings :as ratings]
             [foosball.statistics.team-player :as player]
+            [foosball.util :as util]
             [clojure.data.json :as json]))
 
 (extend java.util.UUID
@@ -52,5 +53,4 @@
                         (friend/wrap-authorize (compojure/routes player-route)
                                                #{auth/user}))
      player-route
-     (GET "/api/ratings/leaderboard" [] (leaderboard db 5))
-     (GET "/api/ratings/leaderboard" [n] (leaderboard db n)))))
+     (GET "/api/ratings/leaderboard/:n" [n] (leaderboard db (or (util/parse-int n) 5))))))

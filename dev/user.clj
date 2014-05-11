@@ -86,9 +86,14 @@
 (defn db []
   (datomic.api/db (conn)))
 
-(defn http-get [path]
-  @(http/get (str "http://localhost:" (get-in system [:config-options :web-port]) path)
-             {:as :text}))
+(defn http-get
+  ([path] (http-get path {}))
+  ([path opts]
+     @(http/get (str "http://localhost:" (get-in system [:config-options :web-port]) path)
+                (merge {:as :text} opts))))
 
-(defn http-get-edn [path]
-  (update-in (http-get path) [:body] edn/read-string))
+(defn response-as-edn [resp]
+  (update-in resp [:body] edn/read-string))
+
+(defn leaderboard [n]
+  (-> (str "/api/ratings/leaderboard/" n) http-get response-as-edn :body pprint))

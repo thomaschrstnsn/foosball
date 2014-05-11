@@ -65,6 +65,9 @@
     (. Long parseLong s)
     (catch Exception e nil)))
 
+(defn parse-int [s]
+  (parse-id s))
+
 (defn format-percentage
   ([p] (format-percentage 1 p))
   ([digits p] (format (str "%." digits "f%%") (double p))))
