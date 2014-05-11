@@ -45,6 +45,22 @@
                                                    :rating (:rating player)})
                                 (range))))))
 
+(defresource player-log [db playerid]
+  :available-media-types media-types
+  :handle-ok (fn [_]
+               (let [matches             (d/get-matches db)
+                     playername          (d/get-player db playerid)
+                     log                 (ratings/calculate-reduced-log-for-player playername matches)
+                     activity-log-keys   [:log-type :matchdate :team-mate :opponents
+                                          :expected :win? :delta :new-rating]
+                     inactivity-log-keys [:log-type :inactivity :delta :new-rating]]
+                 (map (fn [{:keys [log-type] :as l}]
+                        (select-keys l
+                                     (if (not= :inactivity log-type)
+                                       activity-log-keys
+                                       inactivity-log-keys)))
+                      (reverse log)))))
+
 (defn routes [{:keys [db]}]
   (let [player-route (ANY "/api/players" [] (players db))]
     (compojure/routes
@@ -53,4 +69,5 @@
                         (friend/wrap-authorize (compojure/routes player-route)
                                                #{auth/user}))
      player-route
-     (GET "/api/ratings/leaderboard/:n" [n] (leaderboard db (or (util/parse-int n) 5))))))
+     (GET "/api/ratings/leaderboard/:n" [n] (leaderboard db (or (util/parse-int n) 5)))
+     (GET "/api/ratings/log/:playerid" [playerid] (player-log db (util/uuid-from-string playerid))))))
