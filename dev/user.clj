@@ -16,6 +16,8 @@
             [taoensso.timbre.appenders (socket :as socket-appender)]
             [midje.repl :refer [load-facts]]
             [midje.config :as midje.config]
+            [org.httpkit.client :as http]
+            [clojure.edn :as edn]
             [com.stuartsierra.component :as component]))
 
 (def system nil)
@@ -83,3 +85,10 @@
 
 (defn db []
   (datomic.api/db (conn)))
+
+(defn http-get [path]
+  @(http/get (str "http://localhost:" (get-in system [:config-options :web-port]) path)
+             {:as :text}))
+
+(defn http-get-edn [path]
+  (update-in (http-get path) [:body] edn/read-string))
