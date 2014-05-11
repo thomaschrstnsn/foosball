@@ -78,4 +78,18 @@
           (is (= 4 (count response)))
           (is (= (map :name [p1 p2 p3 p4]) (->> response (map :player/name))))
           (is (apply > (map :rating response)))
-          (is (= [1 2 3 4] (vec (map :position response)))))))))
+          (is (= [1 2 3 4] (vec (map :position response))))
+
+          (testing "; with different request params"
+            (are [request-size expected-size]
+              (= expected-size (-> (mockr/request :get (str "/api/ratings/leaderboard/" request-size))
+                                   handler
+                                   :body
+                                   edn/read-string
+                                   count))
+              1 1
+              2 2
+              3 3
+              4 4
+              5 4
+              10 4)))))))
