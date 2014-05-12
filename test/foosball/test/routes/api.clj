@@ -8,9 +8,11 @@
             [clojure.data.json :as json]
             [liberator.dev :as libdev]
             [clj-time.core :as time]
-            [clj-time.coerce :as time-coerce]))
+            [clj-time.coerce :as time-coerce]
+            [schema.test :as schema.test]))
 
 (use-fixtures :each h/only-error-log-fixture)
+(use-fixtures :once schema.test/validate-schemas)
 
 (defn test-route-for-supported-media-types [handler request]
   (testing "Accept header decides result"

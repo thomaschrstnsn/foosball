@@ -1,15 +1,20 @@
 (ns foosball.models.domains.players
   (:require [datomic.api :as d]
+            [schema.core :as s]
             [foosball.models.domains.helpers :as h]
-            [foosball.util :as util]))
+            [foosball.util :as util]
+            [foosball.entities :as e]))
 
-(defn get-by-id [dbc id]
+(s/defn get-by-id :- (s/maybe s/Str)
+  [dbc
+   id :- s/Uuid]
   (->> (d/q '[:find ?player :in $ ?id :where
               [?ent :player/id ?id]
               [?ent :player/name ?player]] dbc id)
        ffirst))
 
-(defn get-all [dbc]
+(s/defn get-all :- [e/Player]
+  [dbc]
   (->> (d/q '[:find ?pid ?n ?a ?role :where
               [?pe :player/id ?pid]
               [?pe :player/name ?n]
@@ -18,7 +23,11 @@
        (map (fn [[id name active role]] (util/symbols-as-map id name active role)))
        (sort-by :name)))
 
-(defn create! [conn uuid name openid]
+(s/defn create!
+  [conn
+   uuid :- s/Uuid
+   name :- s/Str
+   openid :- s/Str]
   (let [eid (d/tempid :db.part/user)]
     @(d/transact conn
                  [{:db/id eid :player/id uuid}

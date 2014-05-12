@@ -2,16 +2,15 @@
   (:require [foosball.models.domains :as d]
             [foosball.util :as util]
             [foosball.test.helpers :as h]
-            [clojure.test :refer :all]))
+            [clojure.test :refer :all]
+            [schema.test :as schema.test]))
 
 (use-fixtures :each h/only-error-log-fixture)
+(use-fixtures :once schema.test/validate-schemas)
 
 (deftest database-tests
   (testing "Creating players:"
     (let [db (h/memory-db)]
-      (testing "error on nil args"
-        (is (thrown? java.util.concurrent.ExecutionException (d/create-player! db nil nil nil))))
-
       (testing "Upon creating a player:"
         (let [name   "thomas"
               openid "http://example.org/openid"

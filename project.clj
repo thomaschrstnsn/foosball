@@ -20,7 +20,8 @@
                  [org.clojure/math.combinatorics "0.0.7"]
                  [clj-time "0.6.0"]
                  [com.stuartsierra/component "0.2.1"]
-                 [org.clojure/tools.nrepl "0.2.3"]]
+                 [org.clojure/tools.nrepl "0.2.3"]
+                 [prismatic/schema "0.2.2"]]
 
   :hooks [configleaf.hooks]
   :configleaf {:verbose false}
