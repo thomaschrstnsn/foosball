@@ -22,8 +22,8 @@
 
 (defresource leaderboard [db size]
   :available-media-types media-types
-  :handle-ok (fn [_] (let [players           (d/get-players db)
-                          matches           (d/get-matches db)]
+  :handle-ok (fn [_] (let [players (d/get-players db)
+                          matches (d/get-matches db)]
                       (ratings/leaderboard matches players size))))
 
 (defresource player-log [db playerid]

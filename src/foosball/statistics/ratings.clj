@@ -4,7 +4,9 @@
             [foosball.statistics.core :refer :all]
             [foosball.statistics.elo :refer :all]
             [foosball.statistics.team-player :as player]
-            [foosball.util :refer [less-than-or-equal?]]))
+            [foosball.util :refer [less-than-or-equal?]]
+            [foosball.entities :as e]
+            [schema.core :as s]))
 
 (defn- expected-sum-for-teams [ratings heroes opponents]
   (let [rate-team (fn [players] (->> players
@@ -202,7 +204,13 @@
     (map (partial matchup-with-rating current-ratings) possible-matchups)))
 
 
-(defn leaderboard [matches players size]
+(s/defn leaderboard :- [{(s/required-key :position)    s/Int
+                         (s/required-key :player/name) s/Str
+                         (s/required-key :form)        [(s/enum :won :lost)]
+                         (s/required-key :rating)      s/Num}]
+  [matches :- [e/Match]
+   players :- [e/Player]
+   size    :- s/Int]
   (let [stats             (player/calculate-player-stats matches)
         log-and-ratings   (ratings-with-log players matches)
         ratings           (:ratings log-and-ratings)

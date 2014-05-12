@@ -4,9 +4,11 @@
             [foosball.test.response-helpers :as rh]
             [clojure.test :refer :all]
             [ring.mock.request :as mockr]
-            [clojure.edn :as edn]))
+            [clojure.edn :as edn]
+            [schema.test :as schema.test]))
 
 (use-fixtures :each h/only-error-log-fixture)
+(use-fixtures :once schema.test/validate-schemas)
 
 (deftest frontpage-route-tests
   (testing "GET /"

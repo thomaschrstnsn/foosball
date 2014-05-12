@@ -1,7 +1,9 @@
 (ns foosball.models.domains.matches
   (:require [datomic.api :as d :refer [db]]
             [foosball.models.domains.helpers :as h]
-            [foosball.util :as util]))
+            [foosball.util :as util]
+            [foosball.entities :as e]
+            [schema.core :as s]))
 
 (defn create! [conn {:keys [matchdate team1 team2 reported-by]}]
   (let [[match-id team1-id team2-id] (repeatedly #(d/tempid :db.part/user))
@@ -29,7 +31,8 @@
                                       {:db/id match-id :match/id (util/create-uuid)}]]
     @(d/transact conn transaction)))
 
-(defn get-all [dbc]
+(s/defn get-all :- [e/Match]
+  [dbc]
   (->> (d/q '[:find ?m ?mid ?mt
               ?t1id ?t1p1 ?t1p2 ?t1score
               ?t2id ?t2p1 ?t2p2 ?t2score
@@ -64,7 +67,9 @@
                  :reported-by (:player/name reporter)})))
        (sort-by (juxt :matchdate :tx))))
 
-(defn delete! [conn id]
+(s/defn delete!
+  [conn
+   id :- s/Uuid]
   (let [entity-id (->> (d/q '[:find ?eid :in $ ?id
                               :where
                               [?eid :match/id ?id]]
