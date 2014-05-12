@@ -23,27 +23,8 @@
 (defresource leaderboard [db size]
   :available-media-types media-types
   :handle-ok (fn [_] (let [players           (d/get-players db)
-                          matches           (d/get-matches db)
-                          stats             (player/calculate-player-stats matches)
-                          log-and-ratings   (ratings/ratings-with-log players matches)
-                          ratings           (:ratings log-and-ratings)
-                          logs              (:logs log-and-ratings)
-                          won-matches       (:won-matches log-and-ratings)
-                          form-by-player    (ratings/calculate-form-from-matches won-matches 5)
-                          stats-and-ratings (map (fn [{:keys [player] :as stat}]
-                                                   (merge stat
-                                                          {:rating (ratings player)}
-                                                          {:form   (form-by-player player)}))
-                                                 stats)]
-                      (->> stats-and-ratings
-                           (sort-by :rating)
-                           (reverse)
-                           (take size)
-                           (map (fn [index player] {:position (inc index)
-                                                   :player/name (:player player)
-                                                   :form (map {true :won false :lost} (:form player))
-                                                   :rating (:rating player)})
-                                (range))))))
+                          matches           (d/get-matches db)]
+                      (ratings/leaderboard matches players size))))
 
 (defresource player-log [db playerid]
   :available-media-types media-types

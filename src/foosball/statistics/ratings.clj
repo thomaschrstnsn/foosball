@@ -3,6 +3,7 @@
             [clojure.set :as set]
             [foosball.statistics.core :refer :all]
             [foosball.statistics.elo :refer :all]
+            [foosball.statistics.team-player :as player]
             [foosball.util :refer [less-than-or-equal?]]))
 
 (defn- expected-sum-for-teams [ratings heroes opponents]
@@ -199,3 +200,26 @@
         player-names      (map :name selected-players)
         possible-matchups (possible-matchups player-names)]
     (map (partial matchup-with-rating current-ratings) possible-matchups)))
+
+
+(defn leaderboard [matches players size]
+  (let [stats             (player/calculate-player-stats matches)
+        log-and-ratings   (ratings-with-log players matches)
+        ratings           (:ratings log-and-ratings)
+        logs              (:logs log-and-ratings)
+        won-matches       (:won-matches log-and-ratings)
+        form-by-player    (calculate-form-from-matches won-matches 5)
+        stats-and-ratings (map (fn [{:keys [player] :as stat}]
+                                 (merge stat
+                                        {:rating (ratings player)}
+                                        {:form   (form-by-player player)}))
+                               stats)]
+    (->> stats-and-ratings
+         (sort-by :rating)
+         (reverse)
+         (take size)
+         (map (fn [index player] {:position (inc index)
+                                 :player/name (:player player)
+                                 :form (map {true :won false :lost} (:form player))
+                                 :rating (:rating player)})
+              (range)))))
