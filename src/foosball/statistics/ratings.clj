@@ -76,13 +76,13 @@
                                  won-matches
                                  active-players-by-matchid
                                  {:keys [ratings logs players]}
-                                 {:keys [winners losers players matchdate id] :as match}]
+                                 {:keys [winners losers players matchdate match/id] :as match}]
   (let [match-players        players
-        inactive-players     (active-players-by-matchid id)
+        active-players       (active-players-by-matchid id)
         {:keys
          [active-player-bonus
           inactive-ratings
-          inactive-logs]}    (inactive-players-rating match-players inactive-players ratings match)
+          inactive-logs]}    (inactive-players-rating match-players active-players ratings match)
         updating-fn          (partial updated-rating-and-log-for-player-in-match
                                       ratings match winners losers active-player-bonus)
         new-ratings-and-logs (map updating-fn match-players)]
@@ -95,10 +95,11 @@
   "Builds the accumulated set of active players as a map from match-id to set of player names.
    The input is assumed to be sorted matches by time played (earliest first)"
   [won-matches]
-  (let [accum-sets (drop 1 (reductions (fn [accum {:keys [players]}] (set/union players accum))
-                                       #{}
-                                       won-matches))
-        seperate-maps (map (fn [{:keys [id]} accum] {id accum}) won-matches accum-sets)]
+  (let [accum-sets (drop 1 (reductions
+                            (fn [accum {:keys [players]}] (set/union players accum))
+                            #{}
+                            won-matches))
+        seperate-maps (map (fn [{:keys [match/id]} accum] {id accum}) won-matches accum-sets)]
     (apply merge seperate-maps)))
 
 (defn ratings-with-log [players matches]
