@@ -1,7 +1,7 @@
 (ns foosball.views.stats
   (:require [clj-time.coerce :refer [from-date]]
             [clj-time.core :refer [in-days interval]]
-            [foosball.statistics.ratings :refer :all]
+            [foosball.statistics.ratings :as ratings]
             [foosball.statistics.team-player :refer :all]
             [foosball.util :refer :all]
             [hiccup.page :refer [html5]]))
@@ -72,11 +72,11 @@
                           (sortable-column "Rating" :rating)])]
      [:tbody
       (let [stats             (calculate-player-stats matches)
-            log-and-ratings   (ratings-with-log players matches)
+            log-and-ratings   (ratings/ratings-with-log players matches)
             ratings           (:ratings log-and-ratings)
             won-matches       (:won-matches log-and-ratings)
             today             (from-date (java.util.Date.))
-            forms-by-player   (calculate-form-from-matches won-matches 5)
+            forms-by-player   (ratings/calculate-form-from-matches won-matches 5)
             stats-and-ratings (map (fn [{:keys [player] :as stat}]
                                      (merge stat
                                             {:rating                  (ratings player)

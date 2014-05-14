@@ -1,6 +1,8 @@
 (ns foosball.statistics.ratings
   (:require [clojure.math.combinatorics :as combo]
             [clojure.set :as set]
+            [clj-time.coerce :refer [from-date]]
+            [clj-time.core :refer [in-days interval]]
             [foosball.statistics.core :refer :all]
             [foosball.statistics.elo :refer :all]
             [foosball.statistics.team-player :as player]
@@ -231,3 +233,22 @@
                                  :form (map {true :won false :lost} (:form player))
                                  :rating (:rating player)})
               (range)))))
+
+(defn calculate-player-stats-table [matches players]
+  (let [stats             (player/calculate-player-stats matches)
+        log-and-ratings   (ratings-with-log players matches)
+        ratings           (:ratings log-and-ratings)
+        won-matches       (:won-matches log-and-ratings)
+        today             (from-date (java.util.Date.))
+        forms-by-player   (calculate-form-from-matches won-matches 5)
+        stats-and-ratings (map (fn [{:keys [player] :as stat}]
+                                 (merge stat
+                                        {:rating                  (ratings player)
+                                         :form                    (forms-by-player player)
+                                         :days-since-latest-match (in-days (interval (from-date (:latest-matchdate stat))
+                                                                                     today))}))
+                               stats)
+        with-position     (map (fn [s n] (merge s {:position (inc n)}))
+                               (reverse (sort-by :rating stats-and-ratings))
+                               (range))]
+    with-position))

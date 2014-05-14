@@ -5,7 +5,7 @@
             [foosball.auth :as auth]
             [foosball.models.domains :as d]
             [foosball.statistics.ratings :as ratings]
-            [foosball.statistics.team-player :as player]
+            [foosball.statistics.team-player :as team-player]
             [foosball.util :as util]
             [clojure.data.json :as json]))
 
@@ -42,6 +42,19 @@
                                        inactivity-log-keys)))
                       (reverse log)))))
 
+(defresource player-stats [db]
+  :available-media-types media-types
+  :handle-ok (fn [_]
+               (let [players (d/get-players db)
+                     matches (d/get-matches db)]
+                 (ratings/calculate-player-stats-table matches players))))
+
+(defresource team-stats [db]
+  :available-media-types media-types
+  :handle-ok (fn [_]
+               (let [matches (d/get-matches db)]
+                 (team-player/calculate-team-stats matches))))
+
 (defn routes [{:keys [db]}]
   (let [player-route (ANY "/api/players" [] (players db))]
     (compojure/routes
@@ -51,4 +64,6 @@
                                                #{auth/user}))
      player-route
      (GET "/api/ratings/leaderboard/:n" [n] (leaderboard db (or (util/parse-int n) 5)))
-     (GET "/api/ratings/log/:playerid" [playerid] (player-log db (util/uuid-from-string playerid))))))
+     (GET "/api/ratings/log/:playerid" [playerid] (player-log db (util/uuid-from-string playerid)))
+     (GET "/api/ratings/player-stats" [] (player-stats db))
+     (GET "/api/ratings/team-stats" [] (team-stats db)))))
