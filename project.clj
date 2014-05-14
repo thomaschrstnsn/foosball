@@ -1,5 +1,5 @@
 (defproject foosball "1.3.1-SNAPSHOT"
-  :jvm-opts ["-Xmx1g" "-server"]
+  :jvm-opts ["-Xmx1g" "-server" "-XX:MaxPermSize=128M"]
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [com.datomic/datomic-free "0.9.4724" :exclusions [com.amazonaws/aws-java-sdk]]
                  [ring/ring-core "1.2.0" :exclusions [org.clojure/tools.reader]]
@@ -85,8 +85,7 @@
             [lein-cljsbuild "1.0.0-alpha2"]
             [configleaf "0.4.6"]
             [lein-release "1.0.4"]
-            [lein-midje "3.1.3"]
-            [cider/cider-nrepl "0.6.0"]]
+            [lein-midje "3.1.3"]]
 
   :aliases {"deps-tree-prod" ["with-profile" "production" "deps" ":tree"]
             "deps-tree-dev" ["with-profile" "dev" "deps" ":tree"]
