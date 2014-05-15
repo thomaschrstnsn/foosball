@@ -14,6 +14,8 @@ src/cfg/
 dev/cfg/
 resources/public/js/dev
 resources/public/js/foosball.js
+resources/public/js/dev-old
+resources/public/js/foosball-*.js
 out/
 repl/
 .nrepl-port

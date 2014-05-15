@@ -40,11 +40,11 @@
 
 (defn footer [{:keys [cljs-repl-script-fn cljs-optimized?]} auto-refresh?]
   (list
-   (let [cljs-path (if cljs-optimized? "/js/" "/js/dev/")
+   (let [cljs-path (if cljs-optimized? "/js/" "/js/dev-old/")
          scripts   (filter identity ["/js/jquery.min.js"
                                      "/js/bootstrap.min.js"
                                      (when-not cljs-optimized? (str cljs-path "goog/base.js"))
-                                     (str cljs-path "foosball.js")])]
+                                     (str cljs-path "foosball-old.js")])]
      (apply include-js scripts))
    (when-not cljs-optimized?
      [:script {:type "text/javascript"} "goog.require(\"foosball.browser\");"])

@@ -31,19 +31,26 @@
                  :shell ["echo" "built: " :build-artifact]}
 
   :cljsbuild {:builds
-              [{:id "dev"
+              [{:id "dev-old"
                 :source-paths ["src/cljs-old"],
+                :compiler {:pretty-print false
+                           :output-to "resources/public/js/dev-old/foosball-old.js"
+                           :output-dir "resources/public/js/dev-old"
+                           :optimizations :none
+                           :source-map true}}
+               {:id "production-old"
+                :source-paths ["src/cljs-old"],
+                :compiler {:pretty-print false
+                           :output-to "resources/public/js/foosball-old.js"
+                           :optimizations :advanced
+                           :externs ["externs/jquery-1.9.js"]}}
+               {:id "dev"
+                :source-paths ["src/cljs"],
                 :compiler {:pretty-print false
                            :output-to "resources/public/js/dev/foosball.js"
                            :output-dir "resources/public/js/dev"
                            :optimizations :none
-                           :source-map true}}
-               {:id "production"
-                :source-paths ["src/cljs-old"],
-                :compiler {:pretty-print false
-                           :output-to "resources/public/js/foosball.js"
-                           :optimizations :advanced
-                           :externs ["externs/jquery-1.9.js"]}}]}
+                           :source-map true}}]}
 
   :ring {:handler foosball.servlet-lifecycle/handler,
          :init    foosball.servlet-lifecycle/init,
