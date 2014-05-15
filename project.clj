@@ -32,14 +32,14 @@
 
   :cljsbuild {:builds
               [{:id "dev"
-                :source-paths ["src-cljs"],
+                :source-paths ["src/cljs-old"],
                 :compiler {:pretty-print false
                            :output-to "resources/public/js/dev/foosball.js"
                            :output-dir "resources/public/js/dev"
                            :optimizations :none
                            :source-map true}}
                {:id "production"
-                :source-paths ["src-cljs"],
+                :source-paths ["src/cljs-old"],
                 :compiler {:pretty-print false
                            :output-to "resources/public/js/foosball.js"
                            :optimizations :advanced
