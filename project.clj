@@ -54,6 +54,8 @@
   :repl-options {:port 1234
                  :nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
 
+  :source-paths ["src/clj"]
+
   :profiles {:production {:ring {:stacktraces? false}
                           :dependencies [[org.clojure/tools.reader "0.7.10"]
                                          [org.clojure/tools.macro "0.1.5"]]

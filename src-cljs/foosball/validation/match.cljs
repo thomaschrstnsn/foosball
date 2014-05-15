@@ -1,1 +1,1 @@
-../../../src/foosball/validation/match.clj
+../../../src/clj/foosball/validation/match.clj
