@@ -1,4 +1,4 @@
-(defproject foosball "1.3.1-SNAPSHOT"
+(defproject foosball "1.4.0-SNAPSHOT"
   :jvm-opts ["-Xmx1g" "-server" "-XX:MaxPermSize=128M"]
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [com.datomic/datomic-free "0.9.4724" :exclusions [com.amazonaws/aws-java-sdk]]
@@ -12,10 +12,6 @@
                  [ring-server "0.3.0" :exclusions [org.clojure/core.incubator]]
                  [com.cemerick/friend "0.2.0" :exclusions [org.clojure/core.cache]]
                  [com.taoensso/timbre "3.1.6"]
-                 [log4j "1.2.17" :exclusions [javax.mail/mail
-                                              javax.jms/jms
-                                              com.sun.jdmk/jmxtools
-                                              com.sun.jmx/jmxri]]
                  [hiccup "1.0.5"]
                  [org.clojure/math.combinatorics "0.0.7"]
                  [clj-time "0.6.0"]
@@ -31,26 +27,12 @@
                  :shell ["echo" "built: " :build-artifact]}
 
   :cljsbuild {:builds
-              [{:id "dev-old"
-                :source-paths ["src/cljs-old"],
-                :compiler {:pretty-print false
-                           :output-to "resources/public/js/dev-old/foosball-old.js"
-                           :output-dir "resources/public/js/dev-old"
-                           :optimizations :none
-                           :source-map true}}
-               {:id "production-old"
-                :source-paths ["src/cljs-old"],
-                :compiler {:pretty-print false
-                           :output-to "resources/public/js/foosball-old.js"
-                           :optimizations :advanced
-                           :externs ["externs/jquery-1.9.js"]}}
-               {:id "dev"
-                :source-paths ["src/cljs"],
-                :compiler {:pretty-print false
-                           :output-to "resources/public/js/dev/foosball.js"
-                           :output-dir "resources/public/js/dev"
-                           :optimizations :none
-                           :source-map true}}]}
+              {:dev {:source-paths ["src/cljs"]
+                     :compiler {:pretty-print false
+                                :output-to "resources/public/js/dev/foosball.js"
+                                :output-dir "resources/public/js/dev"
+                                :optimizations :none
+                                :source-map true}}}}
 
   :ring {:handler foosball.servlet-lifecycle/handler,
          :init    foosball.servlet-lifecycle/init,
@@ -58,8 +40,7 @@
          :open-browser? false
          :auto-reload? false}
 
-  :repl-options {:port 1234
-                 :nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
+  :repl-options {:port 1234}
 
   :source-paths ["src/clj"]
 
@@ -70,9 +51,7 @@
 
              :dev {:ring {:stacktraces? true}
                    :source-paths ["dev"]
-                   :dependencies [[org.clojure/clojurescript "0.0-2030"]
-                                  [org.clojure/core.async "0.1.256.0-1bf8cf-alpha"]
-                                  [org.clojure/tools.namespace "0.2.4"]
+                   :dependencies [[org.clojure/tools.namespace "0.2.4"]
                                   [org.clojure/java.classpath "0.2.2"]
                                   [ring-mock "0.1.5"]
                                   [ring/ring-devel "1.2.0"]
@@ -80,18 +59,18 @@
                                                               slingshot
                                                               commons-codec]]
                                   [server-socket "1.0.0"]
-                                  [prismatic/dommy "0.1.1"]
-                                  [secretary "0.4.0" :exclusions [org.clojure/clojurescript]]
-                                  [jayq "2.5.0"]
-                                  [http-kit "2.1.18"]]
-                   :plugins      [[com.cemerick/austin "0.1.3"]]
-                   :repositories {"sonatype-oss-public"
-                                  "https://oss.sonatype.org/content/groups/public/"}}}
+                                  [http-kit "2.1.18"]
+                                  ;;;; clojurescript deps
+                                  [org.clojure/clojurescript "0.0-2202"]
+                                  [org.clojure/core.async "0.1.267.0-0d7780-alpha"]
+                                  [om "0.5.3"]
+                                  [sablono "0.2.13"]
+                                  [secretary "1.0.2"]]}}
 
   :url "https://foosball.chrstnsn.dk/"
 
   :plugins [[lein-ring "0.8.3"]
-            [lein-cljsbuild "1.0.0-alpha2"]
+            [lein-cljsbuild "1.0.3"]
             [configleaf "0.4.6"]
             [lein-release "1.0.4"]
             [lein-midje "3.1.3"]]

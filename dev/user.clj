@@ -10,7 +10,6 @@
             [foosball.system :as system]
             [foosball.models.db :as db]
             [foosball.models.domains.openids :as openid]
-            [dev-cljs-repl :as cljs-repl]
             [dev-data :as d]
             [taoensso.timbre :as timbre]
             [taoensso.timbre.appenders (socket :as socket-appender)]
@@ -28,8 +27,7 @@
   (alter-var-root #'system (constantly (system/system system/dev-system-components
                                         :handler-wrapper stacktrace/wrap-stacktrace
                                         :cljs-optimized? false
-                                        :repl-port 12345
-                                        :cljs-repl-script-fn cljs-repl/script-tag-fn))))
+                                        :repl-port 12345))))
 
 (defn socket-logger []
   (timbre/set-config! [:appenders :socket] socket-appender/socket-appender)
@@ -64,7 +62,7 @@
 
 (defn reset-and-then [after]
   (stop)
-  (set-refresh-dirs "src/" "dev/" "test/")
+  (set-refresh-dirs "src/clj" "dev/" "test/")
   (refresh :after after))
 
 (defn reload-and-run-clojure-tests

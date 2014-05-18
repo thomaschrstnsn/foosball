@@ -10,12 +10,10 @@ pom.xml
 resources/public/site.db.h2.db
 resources/public/site.db.trace.db
 .DS_Store
-src/cfg/
+src/clj/cfg/
 dev/cfg/
 resources/public/js/dev
 resources/public/js/foosball.js
-resources/public/js/dev-old
-resources/public/js/foosball-*.js
 out/
 repl/
 .nrepl-port
