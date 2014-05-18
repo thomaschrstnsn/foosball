@@ -62,10 +62,11 @@
                                   [http-kit "2.1.18"]
                                   ;;;; clojurescript deps
                                   [org.clojure/clojurescript "0.0-2202"]
-                                  [org.clojure/core.async "0.1.267.0-0d7780-alpha"]
+                                  [org.clojure/core.async "0.1.298.0-2a82a1-alpha"]
                                   [om "0.5.3"]
                                   [sablono "0.2.13"]
-                                  [secretary "1.0.2"]]}}
+                                  [secretary "1.0.2"]
+                                  [cljs-http "0.1.10"]]}}
 
   :url "https://foosball.chrstnsn.dk/"
 
