@@ -21,6 +21,6 @@
 
 (defn routes [deps]
   (compojure/routes
-   (GET "/" [] (front-page deps))
+   (GET "/"      [] (front-page deps))
    (GET "/old"   [] (old-front-page deps))
    (GET "/about" [] (about-page deps))))

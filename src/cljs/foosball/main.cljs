@@ -2,4 +2,4 @@
 
 (enable-console-print!)
 
-(print "hello world")
+(print "hello world from ClojureScript")

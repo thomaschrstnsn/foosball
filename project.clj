@@ -84,7 +84,10 @@
                   "cljsbuild" "once,"
                   "midje,"
                   "build-jar,"
-                  "build-war"]}
+                  "build-war"]
+            "auto-cljs" ["do"
+                         "cljsbuild" "clean,"
+                         "cljsbuild" "auto"]}
 
   :description "Foosball result tracking and statistics site."
   :min-lein-version "2.0.0")
