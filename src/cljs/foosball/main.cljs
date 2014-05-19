@@ -31,9 +31,6 @@
 
 (defmulti render-location (fn [{:keys [current-location]}] current-location))
 
-(defn format-form [form]
-  (map #(f/format-value % :printer {true "W" false "L"} :class? nil :checker true? :container-tag :span) form))
-
 (defmethod render-location :location/player-statistics [{:keys [current-location player-statistics]}]
   (let [columns [{:heading "Position"
                   :key :position}
@@ -48,23 +45,23 @@
                   :key :total}
                  {:heading "Wins %"
                   :key :win-perc
-                  :printer (partial f/format-match-percentage true)}
+                  :printer (partial f/style-match-percentage true)}
                  {:heading "Losses %"
                   :key :loss-perc
-                  :printer (partial f/format-match-percentage false)}
+                  :printer (partial f/style-match-percentage false)}
                  {:heading "Score diff."
                   :key :score-delta
-                  :printer f/format-value}
+                  :printer f/style-value}
                  {:heading [:th "Inactive" [:br] "Days/Matches"]
                   :key #(select-keys % [:days-since-latest-match :matches-after-last])
                   :printer (fn [{:keys [days-since-latest-match matches-after-last]}]
                              (list days-since-latest-match "/" matches-after-last))}
                  {:heading "Form"
                   :key :form
-                  :printer format-form}
+                  :printer f/style-form}
                  {:heading "Rating"
                   :key :rating
-                  :printer #(f/format-value % :printer f/format-rating :class? nil :checker (partial < 1500))}]]
+                  :printer f/style-rating}]]
     (om/build table/table player-statistics {:opts {:columns columns
                                                     :caption [:h1 "Player Statistics"]}})))
 

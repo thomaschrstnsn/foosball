@@ -14,7 +14,7 @@
 (defn format-rating [r]
   (format "%.1f" (double r)))
 
-(defn format-value
+(defn style-value
   "Formats a value with text-success and text-error classes, based on optional checker.
    Defaults to pos? such that positive numbers are text-success and negative are text-error.
    Values failing the optional class? predicate are not given a class.
@@ -29,13 +29,19 @@
      {:class (if (checker d) "text-success" "text-danger")})
    (printer d)])
 
-(defn format-score [s]
-  (format-value s :checker (partial < 9) :class? nil))
+(defn style-score [s]
+  (style-value s :checker (partial < 9) :class? nil))
 
-(defn format-match-percentage [wins? p]
-  (format-value p
+(defn style-match-percentage [wins? p]
+  (style-value p
                 :printer format-percentage
                 :class?  #(not= (double 50) (double p))
                 :checker (if wins?
                            (partial < 50)
                            (partial > 50))))
+
+(defn style-rating [r]
+  (style-value r :printer format-rating :class? nil :checker (partial < 1500)))
+
+(defn style-form [form]
+  (map #(style-value % :printer {true "W" false "L"} :class? nil :checker true? :container-tag :span) form))
