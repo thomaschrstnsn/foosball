@@ -26,13 +26,18 @@
                  :build-via  :lein-ring-uberwar
                  :shell ["echo" "built: " :build-artifact]}
 
-  :cljsbuild {:builds
-              {:dev {:source-paths ["src/cljs"]
-                     :compiler {:pretty-print false
-                                :output-to "resources/public/js/dev/foosball.js"
-                                :output-dir "resources/public/js/dev"
-                                :optimizations :none
-                                :source-map true}}}}
+  :cljsbuild {:builds {:dev {:source-paths ["src/cljs"]
+                               :compiler {:pretty-print false
+                                          :output-to "resources/public/js/dev/foosball.js"
+                                          :output-dir "resources/public/js/dev"
+                                          :optimizations :none
+                                          :source-map true}}
+                       :testable {:source-paths ["src/cljs" "test/cljs"]
+                                  :notify-command ["phantomjs" :cljs.test/runner "target/cljs/testable.js"]
+                                  :compiler {:pretty-print false
+                                             :output-to "target/cljs/testable.js"
+                                             :optimizations :whitespace}}}
+              :test-commands {"unit" ["phantomjs" :runner "target/cljs/testable.js"]}}
 
   :ring {:handler foosball.servlet-lifecycle/handler,
          :init    foosball.servlet-lifecycle/init,
@@ -43,6 +48,7 @@
   :repl-options {:port 1234}
 
   :source-paths ["src/clj"]
+  :test-paths ["test/clj"]
 
   :profiles {:production {:ring {:stacktraces? false}
                           :dependencies [[org.clojure/tools.reader "0.7.10"]
@@ -74,7 +80,8 @@
             [lein-cljsbuild "1.0.3"]
             [configleaf "0.4.6"]
             [lein-release "1.0.4"]
-            [lein-midje "3.1.3"]]
+            [lein-midje "3.1.3"]
+            [com.cemerick/clojurescript.test "0.3.0"]]
 
   :aliases {"deps-tree-prod" ["with-profile" "production" "deps" ":tree"]
             "deps-tree-dev" ["with-profile" "dev" "deps" ":tree"]
@@ -88,7 +95,7 @@
                   "build-war"]
             "auto-cljs" ["do"
                          "cljsbuild" "clean,"
-                         "cljsbuild" "auto"]}
+                         "cljsbuild" "auto" "dev" "testable"]}
 
   :description "Foosball result tracking and statistics site."
   :min-lein-version "2.0.0")

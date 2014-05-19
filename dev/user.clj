@@ -62,7 +62,7 @@
 
 (defn reset-and-then [after]
   (stop)
-  (set-refresh-dirs "src/clj" "dev/" "test/")
+  (set-refresh-dirs "src/clj" "dev/" "test/clj")
   (refresh :after after))
 
 (defn reload-and-run-clojure-tests

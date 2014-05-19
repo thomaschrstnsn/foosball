@@ -31,14 +31,6 @@
 
 (defmulti render-location (fn [{:keys [current-location]}] current-location))
 
-(defn format-match-percentage [wins? p]
-  (f/format-value p
-                  :print f/format-percentage
-                  :class? #(not= (double 50) (double p))
-                  :checker (if wins?
-                             (partial < 50)
-                             (partial > 50))))
-
 (defn format-form [form]
   (map #(f/format-value % :printer {true "W" false "L"} :class? nil :checker true? :container-tag :span) form))
 
@@ -56,10 +48,10 @@
                   :key :total}
                  {:heading "Wins %"
                   :key :win-perc
-                  :printer (partial format-match-percentage true)}
+                  :printer (partial f/format-match-percentage true)}
                  {:heading "Losses %"
                   :key :loss-perc
-                  :printer (partial format-match-percentage false)}
+                  :printer (partial f/format-match-percentage false)}
                  {:heading "Score diff."
                   :key :score-delta
                   :printer f/format-value}
