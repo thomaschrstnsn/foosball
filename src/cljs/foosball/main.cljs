@@ -26,6 +26,12 @@
         (om/update! app :player-statistics (:body response))))
   (set-location app (:id v)))
 
+(defmethod handle-new-location :location/team-statistics [app v]
+  (om/update! app :team-statistics nil)
+  (go (let [response (<! (http/get "/api/ratings/team-stats"))]
+        (om/update! app :team-statistics (:body response))))
+  (set-location app (:id v)))
+
 (defmethod handle-new-location :default [app {:keys [id]}]
   (set-location app id))
 
@@ -64,6 +70,27 @@
                   :printer f/style-rating}]]
     (om/build table/table player-statistics {:opts {:columns columns
                                                     :caption [:h1 "Player Statistics"]}})))
+
+(defmethod render-location :location/team-statistics [{:keys [current-location team-statistics]}]
+  (let [columns [{:heading "Team"
+                  :key :team}
+                 {:heading "Wins"
+                  :key :wins}
+                 {:heading "Losses"
+                  :key :losses}
+                 {:heading "Played"
+                  :key :total}
+                 {:heading "Wins %"
+                  :key :win-perc
+                  :printer (partial f/style-match-percentage true)}
+                 {:heading "Losses %"
+                  :key :loss-perc
+                  :printer (partial f/style-match-percentage false)}
+                 {:heading "Score diff."
+                  :key :score-delta
+                  :printer f/style-value}]]
+    (om/build table/table team-statistics {:opts {:columns columns
+                                                  :caption [:h1 "Team Statistics"]}})))
 
 (defmethod render-location :default [{:keys [current-location]}]
   (list

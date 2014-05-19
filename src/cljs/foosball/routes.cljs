@@ -20,6 +20,9 @@
       (defroute player-statistics-path "/statistics/player" []
         (set-active-menu :location/player-statistics))
 
+      (defroute team-statistics-path "/statistics/team" []
+        (set-active-menu :location/team-statistics))
+
       (defroute about-path "/about" []
         (set-active-menu :location/about))
 
@@ -38,6 +41,9 @@
             menu-locations [{:id    :location/player-statistics
                              :text  "Player Statistics"
                              :route (player-statistics-path)}
+                            {:id    :location/team-statistics
+                             :text  "Team Statistics"
+                             :route (team-statistics-path)}
                             {:id    :location/about
                              :text  "About"
                              :route (about-path)}]]
