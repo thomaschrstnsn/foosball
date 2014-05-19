@@ -39,26 +39,34 @@
 
 (defmethod render-location :location/player-statistics [{:keys [current-location player-statistics]}]
   (let [columns [{:heading "Position"
-                  :key :position}
+                  :key :position
+                  :sort-fn identity}
                  {:heading "Player"
                   :key :player
-                  :printer (fn [r] [:a {:href "#/omg"} r])}
+                  :printer (fn [r] [:a {:href "#/omg"} r])
+                  :sort-fn identity}
                  {:heading "Wins"
-                  :key :wins}
+                  :key :wins
+                  :sort-fn identity}
                  {:heading "Losses"
-                  :key :losses}
+                  :key :losses
+                  :sort-fn identity}
                  {:heading "Played"
-                  :key :total}
+                  :key :total
+                  :sort-fn identity}
                  {:heading "Wins %"
                   :key :win-perc
-                  :printer (partial f/style-match-percentage true)}
+                  :printer (partial f/style-match-percentage true)
+                  :sort-fn identity}
                  {:heading "Losses %"
                   :key :loss-perc
-                  :printer (partial f/style-match-percentage false)}
+                  :printer (partial f/style-match-percentage false)
+                  :sort-fn identity}
                  {:heading "Score diff."
                   :key :score-delta
-                  :printer f/style-value}
-                 {:heading [:th "Inactive" [:br] "Days/Matches"]
+                  :printer f/style-value
+                  :sort-fn identity}
+                 {:heading ["Inactive" [:br] "Days/Matches"]
                   :key #(select-keys % [:days-since-latest-match :matches-after-last])
                   :printer (fn [{:keys [days-since-latest-match matches-after-last]}]
                              (list days-since-latest-match "/" matches-after-last))}
@@ -67,7 +75,8 @@
                   :printer f/style-form}
                  {:heading "Rating"
                   :key :rating
-                  :printer f/style-rating}]]
+                  :printer f/style-rating
+                  :sort-fn identity}]]
     (om/build table/table player-statistics {:opts {:columns columns
                                                     :caption [:h1 "Player Statistics"]}})))
 
@@ -75,20 +84,26 @@
   (let [columns [{:heading "Team"
                   :key :team}
                  {:heading "Wins"
-                  :key :wins}
+                  :key :wins
+                  :sort-fn identity}
                  {:heading "Losses"
-                  :key :losses}
+                  :key :losses
+                  :sort-fn identity}
                  {:heading "Played"
-                  :key :total}
+                  :key :total
+                  :sort-fn identity}
                  {:heading "Wins %"
                   :key :win-perc
-                  :printer (partial f/style-match-percentage true)}
+                  :printer (partial f/style-match-percentage true)
+                  :sort-fn identity}
                  {:heading "Losses %"
                   :key :loss-perc
-                  :printer (partial f/style-match-percentage false)}
+                  :printer (partial f/style-match-percentage false)
+                  :sort-fn identity}
                  {:heading "Score diff."
                   :key :score-delta
-                  :printer f/style-value}]]
+                  :printer f/style-value
+                  :sort-fn identity}]]
     (om/build table/table team-statistics {:opts {:columns columns
                                                   :caption [:h1 "Team Statistics"]}})))
 
