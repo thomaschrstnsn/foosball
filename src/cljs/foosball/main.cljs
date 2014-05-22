@@ -77,8 +77,10 @@
                   :key :rating
                   :printer f/style-rating
                   :sort-fn identity}]]
-    (om/build table/table player-statistics {:opts {:columns columns
-                                                    :caption [:h1 "Player Statistics"]}})))
+    (om/build table/table player-statistics {:opts {:columns      columns
+                                                    :caption      [:h1 "Player Statistics"]
+                                                    :default-sort {:key :position
+                                                                   :dir :asc}}})))
 
 (defmethod render-location :location/team-statistics [{:keys [current-location team-statistics]}]
   (let [columns [{:heading "Team"
@@ -104,8 +106,10 @@
                   :key :score-delta
                   :printer f/style-value
                   :sort-fn identity}]]
-    (om/build table/table team-statistics {:opts {:columns columns
-                                                  :caption [:h1 "Team Statistics"]}})))
+    (om/build table/table team-statistics {:opts {:columns      columns
+                                                  :caption      [:h1 "Team Statistics"]
+                                                  :default-sort {:key :wins
+                                                                 :dir :desc}}})))
 
 (defmethod render-location :default [{:keys [current-location]}]
   (list

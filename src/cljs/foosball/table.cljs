@@ -12,41 +12,53 @@
   [:tr (map (partial render-column-in-row row) columns)])
 
 (defn render-header-cell [owner {:keys [heading sort-fn key] :as column}]
-  (let [sort-chan (om/get-state owner [:sort :chan])
+  (let [sort      (om/get-state owner :sort)
+        sort-chan (:chan sort)
         attrs     (when sort-fn {:on-click (fn [_] (put! sort-chan column))
-                                 :style    {:cursor "pointer"}})]
+                                 :style    {:cursor "pointer"}})
+        sort-elem (when (= column (:column sort))
+                    [:span.pull-right.text-info.glyphicon {:class (if (= :asc (:dir sort))
+                                                                    "glyphicon-sort-by-attributes"
+                                                                    "glyphicon-sort-by-attributes-alt")} ])]
     (if (goog/isString heading)
-      [:th attrs heading]
+      [:th attrs heading sort-elem]
       (->> heading (concat [:th attrs]) vec))))
 
 (defn render-header-row [owner columns]
   [:thead [:tr (map (partial render-header-cell owner) columns)]])
 
-(defn table [data owner {:keys [columns caption initial-sort] :as opts}]
+(defn make-sort-fn [dir sort-column]
+  (comp (partial (if (= dir :asc) identity reverse))
+        (partial sort-by (comp (:sort-fn sort-column) (:key sort-column)))))
+
+(defn table [data owner {:keys [columns caption default-sort] :as opts}]
   (reify
     om/IInitState
     (init-state [_]
-      {:sort {:fn     (or initial-sort identity)
-              :column nil
-              :dir    nil
-              :chan   (chan)}})
+      (let [sort-column (->> columns
+                             (filter (fn [{:keys [key]}] (= (:key default-sort) key)))
+                             first)
+            sort-fn     (when default-sort (make-sort-fn (:dir default-sort) sort-column))]
+        {:sort {:fn     (or sort-fn identity)
+                :column sort-column
+                :dir    (or (:dir default-sort) :desc)
+                :chan   (chan)}}))
 
     om/IWillMount
     (will-mount [_]
       (let [sort-chan (om/get-state owner [:sort :chan])]
         (go-loop []
-          (let [next-sort-column    (<! sort-chan)
-                current-sort        (om/get-state owner :sort)
-                same?               (= next-sort-column (:column current-sort))
-                default-dir         :desc
-                current-dir         (or (:dir current-sort) default-dir)
-                next-dir            (if same?
-                                      (if (= default-dir current-dir)
-                                        :asc
-                                        default-dir)
-                                      default-dir)
-                next-fn             (comp (partial (if (= next-dir :asc) identity reverse))
-                                          (partial sort-by (comp (:sort-fn next-sort-column) (:key next-sort-column))))]
+          (let [next-sort-column (<! sort-chan)
+                current-sort     (om/get-state owner :sort)
+                same?            (= next-sort-column (:column current-sort))
+                default-dir      :desc
+                current-dir      (or (:dir current-sort) default-dir)
+                next-dir         (if same?
+                                   (if (= default-dir current-dir)
+                                     :asc
+                                     default-dir)
+                                   default-dir)
+                next-fn          (make-sort-fn next-dir next-sort-column)]
             (om/update-state! owner :sort (fn [current]
                                             (merge current
                                                    {:fn     next-fn
