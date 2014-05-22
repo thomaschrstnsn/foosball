@@ -38,10 +38,11 @@
 (defmulti render-location (fn [{:keys [current-location]}] current-location))
 
 (defmethod render-location :location/player-statistics [{:keys [current-location player-statistics]}]
-  (let [columns [{:heading "Position"
-                  :key :position
-                  :printer (fn [p] (str p "."))
-                  :sort-fn identity}
+  (let [position-col {:heading "Position"
+                      :key :position
+                      :printer (fn [p] (str p "."))
+                      :sort-fn identity}
+        columns [position-col
                  {:heading "Player"
                   :key :player
                   :printer (fn [r] [:a {:href "#/omg"} r])
@@ -83,40 +84,42 @@
                   :sort-fn identity}]]
     (om/build table/table player-statistics {:opts {:columns       columns
                                                     :caption       [:h1 "Player Statistics"]
-                                                    :default-sort  {:key :position
-                                                                    :dir :asc}
-                                                    :default-align :right}})))
+                                                    :default-align :right}
+                                             :state {:sort {:column position-col
+                                                            :dir    :asc}}})))
 
 (defmethod render-location :location/team-statistics [{:keys [current-location team-statistics]}]
-  (let [columns [{:heading "Team"
-                  :key :team
-                  :align :left}
-                 {:heading "Wins"
+  (let [wins-col {:heading "Wins"
                   :key :wins
                   :sort-fn identity}
-                 {:heading "Losses"
-                  :key :losses
-                  :sort-fn identity}
-                 {:heading "Played"
-                  :key :total
-                  :sort-fn identity}
-                 {:heading "Wins %"
+        columns  [{:heading "Team"
+                   :key :team
+                   :align :left}
+                  wins-col
+                  {:heading "Losses"
+                   :key :losses
+                   :sort-fn identity}
+                  {:heading "Played"
+                   :key :total
+                   :sort-fn identity}
+                  {:heading "Wins %"
                   :key :win-perc
                   :printer (partial f/style-match-percentage true)
                   :sort-fn identity}
-                 {:heading "Losses %"
-                  :key :loss-perc
-                  :printer (partial f/style-match-percentage false)
-                  :sort-fn identity}
-                 {:heading "Score diff."
-                  :key :score-delta
-                  :printer f/style-value
-                  :sort-fn identity}]]
+                  {:heading "Losses %"
+                   :key :loss-perc
+                   :printer (partial f/style-match-percentage false)
+                   :sort-fn identity}
+                  {:heading "Score diff."
+                   :key :score-delta
+                   :printer f/style-value
+                   :sort-fn identity}]]
     (om/build table/table team-statistics {:opts {:columns       columns
                                                   :caption       [:h1 "Team Statistics"]
-                                                  :default-sort  {:key :wins
-                                                                  :dir :desc}
-                                                  :default-align :right}})))
+                                                  :default-align :right}
+                                           :state {:sort {:column wins-col
+                                                          :dir    :desc}}})))
+
 
 (defmethod render-location :default [{:keys [current-location]}]
   (list

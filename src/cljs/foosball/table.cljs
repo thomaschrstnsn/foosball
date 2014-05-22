@@ -14,7 +14,7 @@
 
 (defn render-header-cell [owner {:keys [heading sort-fn key] :as column}]
   (let [sort      (om/get-state owner :sort)
-        sort-chan (:chan sort)
+        sort-chan (om/get-state owner :sort-chan)
         attrs     (when sort-fn {:on-click (fn [_] (put! sort-chan column))
                                  :style    {:cursor "pointer"}})
         sort-elem (when (= column (:column sort))
@@ -29,25 +29,22 @@
   [:thead [:tr (map (partial render-header-cell owner) columns)]])
 
 (defn make-sort-fn [dir sort-column]
-  (comp (partial (if (= dir :asc) identity reverse))
-        (partial sort-by (comp (:sort-fn sort-column) (:key sort-column)))))
+  (if sort-column
+    (comp (partial (if (= dir :asc) identity reverse))
+          (partial sort-by (comp (:sort-fn sort-column) (:key sort-column))))
+    identity))
 
-(defn table [data owner {:keys [columns caption default-sort default-align] :as opts}]
+(defn table [data owner {:keys [columns caption default-align] :as opts}]
   (reify
     om/IInitState
     (init-state [_]
-      (let [sort-column (->> columns
-                             (filter (fn [{:keys [key]}] (= (:key default-sort) key)))
-                             first)
-            sort-fn     (when default-sort (make-sort-fn (:dir default-sort) sort-column))]
-        {:sort {:fn     (or sort-fn identity)
-                :column sort-column
-                :dir    (or (:dir default-sort) :desc)
-                :chan   (chan)}}))
+      {:sort      {:column nil
+                   :dir    :desc}
+       :sort-chan (chan)})
 
     om/IWillMount
     (will-mount [_]
-      (let [sort-chan (om/get-state owner [:sort :chan])]
+      (let [sort-chan (om/get-state owner [:sort-chan])]
         (go-loop []
           (let [next-sort-column (<! sort-chan)
                 current-sort     (om/get-state owner :sort)
@@ -58,18 +55,16 @@
                                    (if (= default-dir current-dir)
                                      :asc
                                      default-dir)
-                                   default-dir)
-                next-fn          (make-sort-fn next-dir next-sort-column)]
+                                   default-dir)]
             (om/update-state! owner :sort (fn [current]
                                             (merge current
-                                                   {:fn     next-fn
-                                                    :column next-sort-column
+                                                   {:column next-sort-column
                                                     :dir    next-dir})))
             (recur)))))
 
     om/IRenderState
-    (render-state [_ state]
-      (let [sort-fn (om/get-state owner [:sort :fn])]
+    (render-state [_ {:keys [sort] :as state}]
+      (let [sort-fn (make-sort-fn (:dir sort) (:column sort))]
         (html [:table.table.table-hover.table-bordered
                [:caption caption]
                (render-header-row owner columns)
