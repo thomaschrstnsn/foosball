@@ -40,11 +40,13 @@
 (defmethod render-location :location/player-statistics [{:keys [current-location player-statistics]}]
   (let [columns [{:heading "Position"
                   :key :position
+                  :printer (fn [p] (str p "."))
                   :sort-fn identity}
                  {:heading "Player"
                   :key :player
                   :printer (fn [r] [:a {:href "#/omg"} r])
-                  :sort-fn identity}
+                  :sort-fn identity
+                  :align :left}
                  {:heading "Wins"
                   :key :wins
                   :sort-fn identity}
@@ -69,22 +71,26 @@
                  {:heading ["Inactive" [:br] "Days/Matches"]
                   :key #(select-keys % [:days-since-latest-match :matches-after-last])
                   :printer (fn [{:keys [days-since-latest-match matches-after-last]}]
-                             (list days-since-latest-match "/" matches-after-last))}
+                             (list days-since-latest-match "/" matches-after-last))
+                  :align :left}
                  {:heading "Form"
                   :key :form
-                  :printer f/style-form}
+                  :printer f/style-form
+                  :align :left}
                  {:heading "Rating"
                   :key :rating
                   :printer f/style-rating
                   :sort-fn identity}]]
-    (om/build table/table player-statistics {:opts {:columns      columns
-                                                    :caption      [:h1 "Player Statistics"]
-                                                    :default-sort {:key :position
-                                                                   :dir :asc}}})))
+    (om/build table/table player-statistics {:opts {:columns       columns
+                                                    :caption       [:h1 "Player Statistics"]
+                                                    :default-sort  {:key :position
+                                                                    :dir :asc}
+                                                    :default-align :right}})))
 
 (defmethod render-location :location/team-statistics [{:keys [current-location team-statistics]}]
   (let [columns [{:heading "Team"
-                  :key :team}
+                  :key :team
+                  :align :left}
                  {:heading "Wins"
                   :key :wins
                   :sort-fn identity}
@@ -106,10 +112,11 @@
                   :key :score-delta
                   :printer f/style-value
                   :sort-fn identity}]]
-    (om/build table/table team-statistics {:opts {:columns      columns
-                                                  :caption      [:h1 "Team Statistics"]
-                                                  :default-sort {:key :wins
-                                                                 :dir :desc}}})))
+    (om/build table/table team-statistics {:opts {:columns       columns
+                                                  :caption       [:h1 "Team Statistics"]
+                                                  :default-sort  {:key :wins
+                                                                  :dir :desc}
+                                                  :default-align :right}})))
 
 (defmethod render-location :default [{:keys [current-location]}]
   (list

@@ -5,11 +5,12 @@
             [cljs.core.async :refer [chan <! put!]]
             [foosball.console :refer-macros [debug debug-js info log trace error]]))
 
-(defn render-column-in-row [row {:keys [key printer] :or {printer str}}]
-  [:td (printer (key row))])
+(defn render-column-in-row [{:keys [default-align] :as opts} row {:keys [key printer align] :or {printer str}}]
+  (let [align (or align default-align)]
+    [:td (when (= :right align) {:class "text-right"}) (printer (key row))]))
 
-(defn render-row [columns row]
-  [:tr (map (partial render-column-in-row row) columns)])
+(defn render-row [opts columns row]
+  [:tr (map (partial render-column-in-row opts row) columns)])
 
 (defn render-header-cell [owner {:keys [heading sort-fn key] :as column}]
   (let [sort      (om/get-state owner :sort)
@@ -31,7 +32,7 @@
   (comp (partial (if (= dir :asc) identity reverse))
         (partial sort-by (comp (:sort-fn sort-column) (:key sort-column)))))
 
-(defn table [data owner {:keys [columns caption default-sort] :as opts}]
+(defn table [data owner {:keys [columns caption default-sort default-align] :as opts}]
   (reify
     om/IInitState
     (init-state [_]
@@ -69,8 +70,8 @@
     om/IRenderState
     (render-state [_ state]
       (let [sort-fn (om/get-state owner [:sort :fn])]
-        (html [:table.table.table-hover
+        (html [:table.table.table-hover.table-bordered
                [:caption caption]
                (render-header-row owner columns)
                [:tbody
-                (map (partial render-row columns) (sort-fn data))]])))))
+                (map (partial render-row opts columns) (sort-fn data))]])))))
