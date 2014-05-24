@@ -32,10 +32,56 @@
         (om/update! app :team-statistics (:body response))))
   (set-location app (:id v)))
 
+(defmethod handle-new-location :location/home [app v]
+  (om/update! app :leaderboard nil)
+  (go (let [response (<! (http/get "/api/ratings/leaderboard/5"))]
+        (om/update! app :leaderboard (:body response))))
+  (set-location app (:id v)))
+
 (defmethod handle-new-location :default [app {:keys [id]}]
   (set-location app id))
 
 (defmulti render-location (fn [{:keys [current-location]}] current-location))
+
+(defn- nav-button [url label]
+  [:div.col-lg-6
+      [:a.btn.btn-info.btn-lg.btn-block {:href url} label]])
+
+(defmethod render-location :location/home [{:keys [leaderboard]}]
+  (list
+   [:div.jumbotron
+    [:h1 "Foosball"]
+    [:h2 "Keeps track of results, ratings and players for foosball matches."]
+    (if false
+      [:div
+       [:div.row
+        (nav-button (routes/player-statistics-path) "See ratings for all players")
+        (nav-button "/matchup"       "Matchup players for a match")]
+       [:br]
+       [:div.row
+        (nav-button "/report/match"  "Report the result of a match")
+        (nav-button "/matches"       "See results of all played  matches")]]
+      [:div.row
+;       [:div.col-lg-6 (auth/login-form :button-class "btn-lg btn-block" :button-text "Login or create a new player")]
+       (nav-button (routes/player-statistics-path) "See ratings for all players")])]
+   (let [columns [{:heading "Position"
+                   :key :position
+                   :printer (fn [p] (str p "."))}
+                  {:heading "Player"
+                   :key :player/name
+                   :printer (fn [r] [:a {:href "#/omg"} r])
+                   :align :left}
+                  {:heading "Form"
+                   :key :form
+                   :printer (partial f/style-form :won :lost)
+                   :align :left}
+                  {:heading "Rating"
+                   :key :rating
+                   :printer f/style-rating}]]
+     (om/build table/table leaderboard {:opts {:columns       columns
+                                               :caption       [:h1 "Current leaderboard"]
+                                               :default-container :h3
+                                               :class         ["table-hover" "table-condensed"]}}))))
 
 (defmethod render-location :location/player-statistics [{:keys [current-location player-statistics]}]
   (let [position-col {:heading "Position"
@@ -69,14 +115,14 @@
                   :key :score-delta
                   :printer f/style-value
                   :sort-fn identity}
-                 {:heading ["Inactive" [:br] "Days/Matches"]
+                 {:heading [:div "Inactive" [:br] "Days/Matches"]
                   :key #(select-keys % [:days-since-latest-match :matches-after-last])
                   :printer (fn [{:keys [days-since-latest-match matches-after-last]}]
                              (list days-since-latest-match "/" matches-after-last))
                   :align :left}
                  {:heading "Form"
                   :key :form
-                  :printer f/style-form
+                  :printer (partial f/style-form true false)
                   :align :left}
                  {:heading "Rating"
                   :key :rating
@@ -84,7 +130,8 @@
                   :sort-fn identity}]]
     (om/build table/table player-statistics {:opts {:columns       columns
                                                     :caption       [:h1 "Player Statistics"]
-                                                    :default-align :right}
+                                                    :default-align :right
+                                                    :class         ["table-hover" "table-bordered"]}
                                              :state {:sort {:column position-col
                                                             :dir    :asc}}})))
 
@@ -116,7 +163,8 @@
                    :sort-fn identity}]]
     (om/build table/table team-statistics {:opts {:columns       columns
                                                   :caption       [:h1 "Team Statistics"]
-                                                  :default-align :right}
+                                                  :default-align :right
+                                                  :class         ["table-hover" "table-bordered"]}
                                            :state {:sort {:column wins-col
                                                           :dir    :desc}}})))
 

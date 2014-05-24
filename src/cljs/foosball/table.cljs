@@ -5,14 +5,20 @@
             [cljs.core.async :refer [chan <! put!]]
             [foosball.console :refer-macros [debug debug-js info log trace error]]))
 
-(defn render-column-in-row [{:keys [default-align] :as opts} row {:keys [key printer align] :or {printer str}}]
-  (let [align (or align default-align)]
-    [:td (when (= :right align) {:class "text-right"}) (printer (key row))]))
+(defn render-column-in-row [{:keys [default-container default-align] :as opts}
+                            row
+                            {:keys [key printer align] :or {printer str}}]
+  (let [align (or align default-align)
+        value (printer (key row))]
+    [:td (when (= :right align) {:class "text-right"})
+     (if default-container
+       [default-container value]
+       value)]))
 
 (defn render-row [opts columns row]
   [:tr (map (partial render-column-in-row opts row) columns)])
 
-(defn render-header-cell [owner {:keys [heading sort-fn key] :as column}]
+(defn render-header-cell [owner {:keys [default-container] :as opts} {:keys [heading sort-fn key] :as column}]
   (let [sort      (om/get-state owner :sort)
         sort-chan (om/get-state owner :sort-chan)
         attrs     (when sort-fn {:on-click (fn [_] (put! sort-chan column))
@@ -21,12 +27,14 @@
                     [:span.pull-right.text-info.glyphicon {:class (if (= :asc (:dir sort))
                                                                     "glyphicon-sort-by-attributes"
                                                                     "glyphicon-sort-by-attributes-alt")} ])]
-    (if (goog/isString heading)
-      [:th attrs heading sort-elem]
-      (->> heading (concat [:th attrs]) vec))))
+    [:th attrs
+     (if default-container
+       [default-container heading]
+       heading)
+     sort-elem]))
 
-(defn render-header-row [owner columns]
-  [:thead [:tr (map (partial render-header-cell owner) columns)]])
+(defn render-header-row [owner opts columns]
+  [:thead [:tr (map (partial render-header-cell owner opts) columns)]])
 
 (defn make-sort-fn [dir sort-column]
   (if sort-column
@@ -34,7 +42,7 @@
           (partial sort-by (comp (:sort-fn sort-column) (:key sort-column))))
     identity))
 
-(defn table [data owner {:keys [columns caption default-align] :as opts}]
+(defn table [data owner {:keys [columns caption default-align default-container class] :as opts}]
   (reify
     om/IInitState
     (init-state [_]
@@ -65,8 +73,8 @@
     om/IRenderState
     (render-state [_ {:keys [sort] :as state}]
       (let [sort-fn (make-sort-fn (:dir sort) (:column sort))]
-        (html [:table.table.table-hover.table-bordered
+        (html [:table.table (when class {:class class})
                [:caption caption]
-               (render-header-row owner columns)
+               (render-header-row owner opts columns)
                [:tbody
                 (map (partial render-row opts columns) (sort-fn data))]])))))

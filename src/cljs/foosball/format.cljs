@@ -43,5 +43,5 @@
 (defn style-rating [r]
   (style-value r :printer format-rating :class? nil :checker (partial < 1500)))
 
-(defn style-form [form]
-  (map #(style-value % :printer {true "W" false "L"} :class? nil :checker true? :container-tag :span) form))
+(defn style-form [won lost form]
+  (map #(style-value % :printer {won "W" lost "L"} :class? nil :checker (partial = won) :container-tag :span) form))

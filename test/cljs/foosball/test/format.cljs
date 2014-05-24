@@ -20,8 +20,11 @@
   (is (= [:div {:class "text-danger"}  "1499.9"] (sut/style-rating 1499.9))))
 
 (deftest style-form
+  (is (= [[:span {:class "text-danger"}  "L"]
+          [:span {:class "text-success"} "W"]
+          [:span {:class "text-success"} "W"]] (sut/style-form :w :l [:l :w :w])))
   (is (= [[:span {:class "text-success"} "W"]
-          [:span {:class "text-danger"}  "L"]] (sut/style-form [true false]))))
+          [:span {:class "text-danger"}  "L"]] (sut/style-form true false [true false]))))
 
 (deftest style-match-percentage
   (testing "winners"
