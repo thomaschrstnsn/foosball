@@ -1,6 +1,9 @@
 (ns foosball.format
   (:require [goog.string :as gstring]
-            [goog.string.format]))
+            [goog.string.format]
+            [cljs-time.format :as tf]
+            [cljs-time.coerce :as tc]
+            [foosball.routes :as routes]))
 
 (defn format
   "Formats a string using goog.string.format."
@@ -13,6 +16,19 @@
 
 (defn format-rating [r]
   (format "%.1f" (double r)))
+
+(defn format-date [d]
+  (tf/unparse (tf/formatter "dd-MM-yyyy") (tc/to-date-time d)))
+
+(defn format-player-link [players playername]
+  (let [player (->> players
+                   (filter (fn [{:keys [name]}] (= name playername)))
+                   first)]
+    [:a {:href (routes/player-log-path {:player-id (:id player)})} (:name player)]))
+
+(defn format-team-links [players team]
+  [:span (->> (map (partial format-player-link players) team)
+              (interpose ", "))])
 
 (defn style-value
   "Formats a value with text-success and text-error classes, based on optional checker.

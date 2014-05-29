@@ -4,6 +4,7 @@
             [sablono.core :as html :refer-macros [html]]
             [cljs-http.client :as http]
             [cljs.core.async :refer [chan <!]]
+            [cljs-uuid-utils :as uuid]
             [foosball.routes :as routes]
             [foosball.menu :as menu]
             [foosball.table :as table]
@@ -20,23 +21,43 @@
 (defn set-location [app id]
   (om/update! app :current-location id))
 
+(defn go-update-data [url app key]
+  (go (let [response (<! (http/get url))]
+        (om/update! app key (:body response)))))
+
 (defmethod handle-new-location :location/player-statistics [app v]
   (om/update! app :player-statistics nil)
-  (go (let [response (<! (http/get "/api/ratings/player-stats"))]
-        (om/update! app :player-statistics (:body response))))
+  (when-not (@app :players)
+    (go-update-data "/api/players" app :players))
+  (go-update-data "/api/ratings/player-stats" app :player-statistics)
   (set-location app (:id v)))
 
 (defmethod handle-new-location :location/team-statistics [app v]
   (om/update! app :team-statistics nil)
-  (go (let [response (<! (http/get "/api/ratings/team-stats"))]
-        (om/update! app :team-statistics (:body response))))
+  (when-not (@app :players)
+    (go-update-data "/api/players" app :players))
+  (go-update-data "/api/ratings/team-stats" app :team-statistics)
   (set-location app (:id v)))
 
 (defmethod handle-new-location :location/home [app v]
   (om/update! app :leaderboard nil)
-  (go (let [response (<! (http/get "/api/ratings/leaderboard/5"))]
-        (om/update! app :leaderboard (:body response))))
+  (when-not (@app :players)
+    (go-update-data "/api/players" app :players))
+  (go-update-data "/api/ratings/leaderboard/5" app :leaderboard)
   (set-location app (:id v)))
+
+(defmethod handle-new-location :location/player-log [app {:keys [args] :as v}]
+  (let [player-id (first args)]
+    (when-not (@app :players)
+      (go-update-data "/api/players" app :players))
+    (om/update! app :player-log-player ())
+    (om/update! app :players nil)
+    (when player-id
+      (do
+        (om/update! app :player-log-player (uuid/make-uuid-from player-id))
+        (go-update-data (str "/api/ratings/log/" player-id) app :player-log)))
+    (go-update-data "/api/players" app :players)
+    (set-location app (:id v))))
 
 (defmethod handle-new-location :default [app {:keys [id]}]
   (set-location app id))
@@ -47,127 +68,176 @@
   [:div.col-lg-6
       [:a.btn.btn-info.btn-lg.btn-block {:href url} label]])
 
-(defmethod render-location :location/home [{:keys [leaderboard]}]
-  (list
-   [:div.jumbotron
-    [:h1 "Foosball"]
-    [:h2 "Keeps track of results, ratings and players for foosball matches."]
-    (if false
-      [:div
-       [:div.row
-        (nav-button (routes/player-statistics-path) "See ratings for all players")
-        (nav-button "/matchup"       "Matchup players for a match")]
-       [:br]
-       [:div.row
-        (nav-button "/report/match"  "Report the result of a match")
-        (nav-button "/matches"       "See results of all played  matches")]]
-      [:div.row
-;       [:div.col-lg-6 (auth/login-form :button-class "btn-lg btn-block" :button-text "Login or create a new player")]
-       (nav-button (routes/player-statistics-path) "See ratings for all players")])]
-   (let [columns [{:heading "Position"
-                   :key :position
-                   :printer (fn [p] (str p "."))}
-                  {:heading "Player"
-                   :key :player/name
-                   :printer (fn [r] [:a {:href "#/omg"} r])
-                   :align :left}
-                  {:heading "Form"
-                   :key :form
-                   :printer (partial f/style-form :won :lost)
-                   :align :left}
-                  {:heading "Rating"
-                   :key :rating
-                   :printer f/style-rating}]]
-     (om/build table/table leaderboard {:opts {:columns       columns
-                                               :caption       [:h1 "Current leaderboard"]
-                                               :default-container :h3
-                                               :class         ["table-hover" "table-condensed"]}}))))
+(defmethod render-location :location/home [{:keys [leaderboard players]}]
+  (when players
+    (list
+     [:div.jumbotron
+      [:h1 "Foosball"]
+      [:h2 "Keeps track of results, ratings and players for foosball matches."]
+      (if false
+        [:div
+         [:div.row
+          (nav-button (routes/player-statistics-path) "See ratings for all players")
+          (nav-button "/matchup"       "Matchup players for a match")]
+         [:br]
+         [:div.row
+          (nav-button "/report/match"  "Report the result of a match")
+          (nav-button "/matches"       "See results of all played  matches")]]
+        [:div.row
+                                        ;       [:div.col-lg-6 (auth/login-form :button-class "btn-lg btn-block" :button-text "Login or create a new player")]
+         (nav-button (routes/player-statistics-path) "See ratings for all players")])]
+     (let [columns [{:heading "Position"
+                     :key :position
+                     :printer (fn [p] (str p "."))}
+                    {:heading "Player"
+                     :key :player/name
+                     :printer (partial f/format-player-link players)
+                     :align :left}
+                    {:heading "Form"
+                     :key :form
+                     :printer (partial f/style-form :won :lost)
+                     :align :left}
+                    {:heading "Rating"
+                     :key :rating
+                     :printer f/style-rating}]]
+       (om/build table/table leaderboard {:opts {:columns       columns
+                                                 :caption       [:h1 "Current leaderboard"]
+                                                 :default-container :h3
+                                                 :class         ["table-hover" "table-condensed"]}})))))
 
-(defmethod render-location :location/player-statistics [{:keys [current-location player-statistics]}]
-  (let [position-col {:heading "Position"
-                      :key :position
-                      :printer (fn [p] (str p "."))
-                      :sort-fn identity}
-        columns [position-col
-                 {:heading "Player"
-                  :key :player
-                  :printer (fn [r] [:a {:href "#/omg"} r])
-                  :sort-fn identity
-                  :align :left}
-                 {:heading "Wins"
-                  :key :wins
-                  :sort-fn identity}
-                 {:heading "Losses"
-                  :key :losses
-                  :sort-fn identity}
-                 {:heading "Played"
-                  :key :total
-                  :sort-fn identity}
-                 {:heading "Wins %"
-                  :key :win-perc
-                  :printer (partial f/style-match-percentage true)
-                  :sort-fn identity}
-                 {:heading "Losses %"
-                  :key :loss-perc
-                  :printer (partial f/style-match-percentage false)
-                  :sort-fn identity}
-                 {:heading "Score diff."
-                  :key :score-delta
-                  :printer f/style-value
-                  :sort-fn identity}
-                 {:heading [:div "Inactive" [:br] "Days/Matches"]
-                  :key #(select-keys % [:days-since-latest-match :matches-after-last])
-                  :printer (fn [{:keys [days-since-latest-match matches-after-last]}]
-                             (list days-since-latest-match "/" matches-after-last))
-                  :align :left}
-                 {:heading "Form"
-                  :key :form
-                  :printer (partial f/style-form true false)
-                  :align :left}
-                 {:heading "Rating"
-                  :key :rating
-                  :printer f/style-rating
-                  :sort-fn identity}]]
-    (om/build table/table player-statistics {:opts {:columns       columns
-                                                    :caption       [:h1 "Player Statistics"]
+(defmethod render-location :location/player-statistics [{:keys [player-statistics players]}]
+  (when players
+    (let [position-col {:heading "Position"
+                        :key :position
+                        :printer (fn [p] (str p "."))
+                        :sort-fn identity}
+          columns [position-col
+                   {:heading "Player"
+                    :key :player
+                    :printer (partial f/format-player-link players)
+                    :sort-fn identity
+                    :align :left}
+                   {:heading "Wins"
+                    :key :wins
+                    :sort-fn identity}
+                   {:heading "Losses"
+                    :key :losses
+                    :sort-fn identity}
+                   {:heading "Played"
+                    :key :total
+                    :sort-fn identity}
+                   {:heading "Wins %"
+                    :key :win-perc
+                    :printer (partial f/style-match-percentage true)
+                    :sort-fn identity}
+                   {:heading "Losses %"
+                    :key :loss-perc
+                    :printer (partial f/style-match-percentage false)
+                    :sort-fn identity}
+                   {:heading "Score diff."
+                    :key :score-delta
+                    :printer f/style-value
+                    :sort-fn identity}
+                   {:heading [:div "Inactive" [:br] "Days/Matches"]
+                    :key #(select-keys % [:days-since-latest-match :matches-after-last])
+                    :printer (fn [{:keys [days-since-latest-match matches-after-last]}]
+                               (list days-since-latest-match "/" matches-after-last))
+                    :align :left}
+                   {:heading "Form"
+                    :key :form
+                    :printer (partial f/style-form true false)
+                    :align :left}
+                   {:heading "Rating"
+                    :key :rating
+                    :printer f/style-rating
+                    :sort-fn identity}]]
+      (om/build table/table player-statistics {:opts {:columns       columns
+                                                      :caption       [:h1 "Player Statistics"]
+                                                      :default-align :right
+                                                      :class         ["table-hover" "table-bordered"]}
+                                               :state {:sort {:column position-col
+                                                              :dir    :asc}}}))))
+
+(defmethod render-location :location/team-statistics [{:keys [team-statistics players]}]
+  (when players
+    (let [wins-col {:heading "Wins"
+                    :key :wins
+                    :sort-fn identity}
+          columns  [{:heading "Team"
+                     :key :team
+                     :align :left
+                     :printer (partial f/format-team-links players)}
+                    wins-col
+                    {:heading "Losses"
+                     :key :losses
+                     :sort-fn identity}
+                    {:heading "Played"
+                     :key :total
+                     :sort-fn identity}
+                    {:heading "Wins %"
+                     :key :win-perc
+                     :printer (partial f/style-match-percentage true)
+                     :sort-fn identity}
+                    {:heading "Losses %"
+                     :key :loss-perc
+                     :printer (partial f/style-match-percentage false)
+                     :sort-fn identity}
+                    {:heading "Score diff."
+                     :key :score-delta
+                     :printer f/style-value
+                     :sort-fn identity}]]
+      (om/build table/table team-statistics {:opts {:columns       columns
+                                                    :caption       [:h1 "Team Statistics"]
                                                     :default-align :right
                                                     :class         ["table-hover" "table-bordered"]}
-                                             :state {:sort {:column position-col
-                                                            :dir    :asc}}})))
+                                             :state {:sort {:column wins-col
+                                                            :dir    :desc}}}))))
 
-(defmethod render-location :location/team-statistics [{:keys [current-location team-statistics]}]
-  (let [wins-col {:heading "Wins"
-                  :key :wins
-                  :sort-fn identity}
-        columns  [{:heading "Team"
-                   :key :team
-                   :align :left}
-                  wins-col
-                  {:heading "Losses"
-                   :key :losses
-                   :sort-fn identity}
-                  {:heading "Played"
-                   :key :total
-                   :sort-fn identity}
-                  {:heading "Wins %"
-                  :key :win-perc
-                  :printer (partial f/style-match-percentage true)
-                  :sort-fn identity}
-                  {:heading "Losses %"
-                   :key :loss-perc
-                   :printer (partial f/style-match-percentage false)
-                   :sort-fn identity}
-                  {:heading "Score diff."
-                   :key :score-delta
-                   :printer f/style-value
-                   :sort-fn identity}]]
-    (om/build table/table team-statistics {:opts {:columns       columns
-                                                  :caption       [:h1 "Team Statistics"]
-                                                  :default-align :right
-                                                  :class         ["table-hover" "table-bordered"]}
-                                           :state {:sort {:column wins-col
-                                                          :dir    :desc}}})))
-
+(defmethod render-location :location/player-log [{:keys [player-log player-log-player players]}]
+  (when players
+    (let [player (when (and player-log-player player-log)
+                   (->> players
+                        (filter (fn [{:keys [id]}] (= id player-log-player)))
+                        first))]
+      (list
+       [:div.form-group.col-lg-3
+        [:select.form-control {:value (if player
+                                        (str (:id player))
+                                        "default")
+                               :on-change (fn [e]
+                                            (routes/navigate-to
+                                             (routes/player-log-path {:player-id (-> e .-target .-value)})))}
+         [:option {:value "default" :disabled "disabled"} "Active players"]
+         (map (fn [{:keys [id name]}] [:option {:value id} name]) players)]]
+       (when player-log
+         (let [columns      [{:heading "Match date"
+                              :key     :matchdate
+                              :printer (fn [d] (when d (f/format-date d)))}
+                             {:heading "Team mate"
+                              :key     :team-mate
+                              :printer (fn [tm] (when tm (f/format-player-link players tm)))}
+                             {:heading "Opponents"
+                              :key     :opponents
+                              :printer (fn [ops] (when ops (f/format-team-links players ops)))}
+                             {:heading "Expected"
+                              :key     :expected
+                              :printer (fn [v] (when v (f/style-match-percentage true (* 100 v))))}
+                             {:heading "Actual"
+                              :key     :win?}
+                             {:heading "Inactive matches"
+                              :key     :inactivity}
+                             {:heading "Diff rating"
+                              :key     :delta
+                              :printer (fn [v] (when v (f/style-value v :printer f/format-rating)))}
+                             {:heading "New rating"
+                              :key     :new-rating
+                              :printer f/style-rating}]
+               row-class-fn (fn [{:keys [log-type]}] (when (= :inactivity log-type) "danger"))]
+           (om/build table/table player-log {:opts {:columns       columns
+                                                    :caption       [:h1 (str "Player Log: " (:name player))]
+                                                    :default-align :right
+                                                    :class         ["table-hover" "table-bordered"]
+                                                    :row-class-fn  row-class-fn}})))))))
 
 (defmethod render-location :default [{:keys [current-location]}]
   (list

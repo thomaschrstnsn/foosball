@@ -56,7 +56,7 @@
                  (team-player/calculate-team-stats matches))))
 
 (defn routes [{:keys [db]}]
-  (let [player-route (ANY "/api/players" [] (players db))]
+  (let [player-route (GET "/api/players" [] (players db))]
     (compojure/routes
      (compojure/context "/private"
                         request

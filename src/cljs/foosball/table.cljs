@@ -15,10 +15,14 @@
        [default-container value]
        value)]))
 
-(defn render-row [opts columns row]
-  [:tr (map (partial render-column-in-row opts row) columns)])
+(defn render-row [{:keys [row-class-fn] :as opts :or {row-class-fn (constantly nil)}}
+                  columns
+                  row]
+  [:tr {:class (row-class-fn row)} (map (partial render-column-in-row opts row) columns)])
 
-(defn render-header-cell [owner {:keys [default-container] :as opts} {:keys [heading sort-fn key] :as column}]
+(defn render-header-cell [owner
+                          {:keys [default-container] :as opts}
+                          {:keys [heading sort-fn key] :as column}]
   (let [sort      (om/get-state owner :sort)
         sort-chan (om/get-state owner :sort-chan)
         attrs     (when sort-fn {:on-click (fn [_] (put! sort-chan column))
@@ -42,7 +46,9 @@
           (partial sort-by (comp (:sort-fn sort-column) (:key sort-column))))
     identity))
 
-(defn table [data owner {:keys [columns caption default-align default-container class] :as opts}]
+(defn table [data
+             owner
+             {:keys [columns caption default-align default-container class] :as opts}]
   (reify
     om/IInitState
     (init-state [_]

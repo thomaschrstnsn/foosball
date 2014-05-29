@@ -72,7 +72,9 @@
                                   [om "0.6.2"]
                                   [sablono "0.2.17"]
                                   [secretary "1.0.2"]
-                                  [cljs-http "0.1.10"]]}}
+                                  [cljs-http "0.1.10"]
+                                  [com.andrewmcveigh/cljs-time "0.1.4"]
+                                  [org.clojars.franks42/cljs-uuid-utils "0.1.3"]]}}
 
   :url "https://foosball.chrstnsn.dk/"
 

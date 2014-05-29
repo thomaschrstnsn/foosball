@@ -2,7 +2,9 @@
   (:require-macros [cemerick.cljs.test
                     :refer (is are deftest testing)])
   (:require [cemerick.cljs.test :as t]
-            [foosball.format :as sut]))
+            [foosball.format :as sut]
+            [foosball.routes :as routes]
+            [cljs-uuid-utils :as uuid]))
 
 (deftest style-value
   (is (= [:div nil "0"] (sut/style-value 0)))
@@ -33,3 +35,14 @@
   (testing "loosers"
     (is (= [:div {:class "text-danger"}  "51.0%"] (sut/style-match-percentage false 51.001)))
     (is (= [:div {:class "text-success"} "49.9%"] (sut/style-match-percentage false 49.9)))))
+
+(deftest format-date
+  (is (= "24-11-2003" (sut/format-date #inst "2003-11-24"))))
+
+(deftest format-player-link
+  (let [my-player-id (uuid/make-random-uuid)
+        players [{:id (uuid/make-random-uuid) :name "Other player"}
+                 {:id my-player-id :name "My player"}]]
+    (with-redefs [routes/player-log-path (constantly "fixed-link")]
+      (is (= [:a {:href "fixed-link"} "My player"]
+             (sut/format-player-link players "My player"))))))

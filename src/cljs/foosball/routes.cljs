@@ -6,8 +6,8 @@
   (:import goog.History
            goog.history.EventType))
 
-(defn navigate-to [route]
-  (set! (.-hash js/location) (route)))
+(defn navigate-to [fragment]
+  (set! (.-hash js/location) fragment))
 
 (defn init! []
   (let [req-location-chan (chan)]
@@ -23,11 +23,17 @@
       (defroute team-statistics-path "/statistics/team" []
         (set-active-menu :location/team-statistics))
 
+      (defroute player-log-path "/player/log/:player-id" [player-id]
+        (set-active-menu :location/player-log player-id))
+
+      (defroute players-log-path "/player/log/" []
+        (set-active-menu :location/player-log))
+
       (defroute about-path "/about" []
         (set-active-menu :location/about))
 
       (defroute "*" []
-        (navigate-to home-path))
+        (navigate-to (home-path)))
 
       (let [h (History.)]
         (goog.events/listen h EventType/NAVIGATE
@@ -44,6 +50,9 @@
                             {:id    :location/team-statistics
                              :text  "Team Statistics"
                              :route (team-statistics-path)}
+                            {:id    :location/player-log
+                             :text  "Player Log"
+                             :route (players-log-path)}
                             {:id    :location/about
                              :text  "About"
                              :route (about-path)}]]
