@@ -59,6 +59,13 @@
     (go-update-data "/api/players" app :players)
     (set-location app (:id v))))
 
+(defmethod handle-new-location :location/matches [app v]
+  (om/update! app :matches nil)
+  (when-not (@app :players)
+    (go-update-data "/api/players" app :players))
+  (go-update-data "/api/matches" app :matches)
+  (set-location app (:id v)))
+
 (defmethod handle-new-location :default [app {:keys [id]}]
   (set-location app id))
 
@@ -238,6 +245,41 @@
                                                     :default-align :right
                                                     :class         ["table-hover" "table-bordered"]
                                                     :row-class-fn  row-class-fn}})))))))
+
+(defmethod render-location :location/matches [{:keys [matches players]}]
+  (when players
+    (let [players-from-team (fn [{:keys [player1 player2]}] [player1 player2])
+          date-column {:heading "Date played"
+                       :key :matchdate
+                       :printer f/format-date
+                       :align :left
+                       :sort-fn identity}
+          columns  [date-column
+                    {:heading "Team 1"
+                     :key (comp players-from-team :team1)
+                     :align :left
+                     :printer (partial f/format-team-links players)}
+                    {:heading "Score"
+                     :key (comp :score :team1)
+                     :sort-fn identity
+                     :printer f/style-score}
+                    {:heading "Team 1"
+                     :key (comp players-from-team :team2)
+                     :align :left
+                     :printer (partial f/format-team-links players)}
+                    {:heading "Score"
+                     :key (comp :score :team2)
+                     :sort-fn identity
+                     :printer f/style-score}
+                    {:heading "Reported by"
+                     :key :reported-by
+                     :align :left}]]
+      (om/build table/table matches {:opts {:columns       columns
+                                            :caption       [:h1 "Played Matches"]
+                                            :default-align :right
+                                            :class         ["table-hover" "table-bordered"]}
+                                             :state {:sort {:column date-column
+                                                            :dir    :desc}}}))))
 
 (defmethod render-location :default [{:keys [current-location]}]
   (list

@@ -29,6 +29,9 @@
       (defroute players-log-path "/player/log/" []
         (set-active-menu :location/player-log))
 
+      (defroute matches-path "/matches" []
+        (set-active-menu :location/matches))
+
       (defroute about-path "/about" []
         (set-active-menu :location/about))
 
@@ -53,6 +56,9 @@
                             {:id    :location/player-log
                              :text  "Player Log"
                              :route (players-log-path)}
+                            {:id    :location/matches
+                             :text  "Played Matches"
+                             :route (matches-path)}
                             {:id    :location/about
                              :text  "About"
                              :route (about-path)}]]

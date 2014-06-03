@@ -11,10 +11,13 @@
 
 ;;;; asserts/diffs
 
-(defn diff-with-first-nil? [expected actual]
+(defn diff-with-first-is-nil? [expected actual]
   (let [diff (first (data/diff expected actual))]
     (when diff (pprint {:diff diff}))
     (= nil (first (data/diff expected actual)))))
+
+(defn seq-diff-with-first-is-nil? [expecteds actuals]
+  (every? identity (map (fn [exp act] (diff-with-first-is-nil? exp act)) expecteds actuals)))
 
 ;;;; util
 

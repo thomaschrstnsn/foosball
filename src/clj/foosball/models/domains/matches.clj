@@ -5,7 +5,7 @@
             [foosball.entities :as e]
             [schema.core :as s]))
 
-(defn create! [conn {:keys [matchdate team1 team2 reported-by]}]
+(defn create! [conn {:keys [matchdate team1 team2 reported-by id]}]
   (let [[match-id team1-id team2-id] (repeatedly #(d/tempid :db.part/user))
         dbc                          (db conn)
         player-entity-from-id        (partial h/entity-id-from-attr-value dbc :player/id)
@@ -16,6 +16,7 @@
         [t1p1 t1p2 t1score]          (map (apply-fn-to-map team1) team-fns)
         [t2p1 t2p2 t2score]          (map (apply-fn-to-map team2) team-fns)
         reporter-entity              (player-entity-from-id reported-by)
+        id                           (or id (util/create-uuid))
         transaction                  [{:db/id team1-id :team/player1 t1p1}
                                       {:db/id team1-id :team/player2 t1p2}
                                       {:db/id team1-id :team/score t1score}
@@ -28,7 +29,7 @@
                                       {:db/id match-id :match/team2 team2-id}
                                       {:db/id match-id :match/time matchdate}
                                       {:db/id match-id :match/reported-by reporter-entity}
-                                      {:db/id match-id :match/id (util/create-uuid)}]]
+                                      {:db/id match-id :match/id id}]]
     @(d/transact conn transaction)))
 
 (s/defn get-all :- [e/Match]

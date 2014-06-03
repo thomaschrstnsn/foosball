@@ -159,4 +159,55 @@
               (is (= 16 (->> (response-for-player p6)
                              (filter filter-inactivity)
                              first
-                             :inactivity))))))))))
+                             :inactivity)))))))))
+
+  (testing "GET '/api/matches':"
+    (let [app     (h/app-with-memory-db)
+          handler (:ring-handler app)
+          request (mockr/request :get "/api/matches")]
+      (testing "without any players in the database"
+        (is (some #{"application/edn" "charset=UTF-8"} (-> request handler rh/content-type)))
+        (is (empty? (-> request handler :body edn/read-string))))
+
+      (test-route-for-supported-media-types handler request)
+
+      (testing "with players and matches in the database"
+        (let [db (:database app)
+              [p1 p2 p3 p4 reporter] (map (partial h/create-dummy-player db) ["p1" "p2" "p3" "p4" "rep"])
+              matches (vec (for [index (range 8)
+                                 :let [team1score 10
+                                       team2score index
+                                       match-date (java.util.Date.)
+                                       t1p1 p1
+                                       t1p2 p2
+                                       t2p1 p3
+                                       t2p2 p4]]
+                             {:matchdate match-date
+                              :team1 {:player1 (:id t1p1) :player2 (:id t1p2) :score team1score}
+                              :team2 {:player1 (:id t2p1) :player2 (:id t2p2) :score team2score}
+                              :reported-by (:id reporter)
+                              :id (h/make-uuid)}))
+
+              _ (doall (map (fn [m] (d/create-match! db m)) matches))
+              response (-> request handler :body edn/read-string)]
+          (testing "first teams match expected"
+            (let [expected-team1s (vec (map (fn [{:keys [team1]}] {:score (:score team1)
+                                                                  :player1 (:name p1)
+                                                                  :player2 (:name p2)})
+                                            matches))]
+              (is (h/seq-diff-with-first-is-nil? expected-team1s (map :team1 response)))))
+          (testing "second teams match expected"
+            (let [expected-team2s (vec (map (fn [{:keys [team2]}] {:score (:score team2)
+                                                                  :player1 (:name p3)
+                                                                  :player2 (:name p4)})
+                                            matches))]
+              (is (h/seq-diff-with-first-is-nil? expected-team2s (map :team2 response)))))
+          (testing "match data match expected"
+            (let [expected-matches (vec (map  (fn [{:keys [id matchdate]}] {:match/id id
+                                                                           :reported-by (:name reporter)
+                                                                           :matchdate matchdate})
+                                              matches))]
+              (is (h/seq-diff-with-first-is-nil? expected-matches
+                                                 (map (fn [m] (select-keys m [:match/id
+                                                                             :reported-by
+                                                                             :matchdate])) response))))))))))

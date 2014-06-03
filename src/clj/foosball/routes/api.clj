@@ -20,6 +20,10 @@
   :available-media-types media-types
   :handle-ok (fn [_] (d/get-players db)))
 
+(defresource matches [db]
+  :available-media-types media-types
+  :handle-ok (fn [_] (d/get-matches db)))
+
 (defresource leaderboard [db size]
   :available-media-types media-types
   :handle-ok (fn [_] (let [players (d/get-players db)
@@ -63,6 +67,7 @@
                         (friend/wrap-authorize (compojure/routes player-route)
                                                #{auth/user}))
      player-route
+     (GET "/api/matches" [] (matches db))
      (GET "/api/ratings/leaderboard/:n" [n] (leaderboard db (or (util/parse-int n) 5)))
      (GET "/api/ratings/log/:playerid" [playerid] (player-log db (util/uuid-from-string playerid)))
      (GET "/api/ratings/player-stats" [] (player-stats db))

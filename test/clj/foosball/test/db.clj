@@ -28,18 +28,18 @@
                      :id id}] (d/get-players db))))
 
           (testing "we can get the player be his openid"
-            (is (h/diff-with-first-nil? {:playername name
+            (is (h/diff-with-first-is-nil? {:playername name
                                        :playerid id} (d/get-player-with-given-openid db openid))))
 
           (testing "we can inactivate him,"
             (is (not= nil (d/deactivate-player! db id)))
             (testing "then he is inactive"
-              (is (h/diff-with-first-nil? {:active false} (first (d/get-players db))))))
+              (is (h/diff-with-first-is-nil? {:active false} (first (d/get-players db))))))
 
           (testing "we can reactivate him,"
             (is (not= nil (d/activate-player! db id)))
             (testing "then he is active again"
-              (is (h/diff-with-first-nil? {:active true} (first (d/get-players db))))))
+              (is (h/diff-with-first-is-nil? {:active true} (first (d/get-players db))))))
           (testing "we can rename our player,"
             (let [new-name "jeffrey"]
               (is (not= nil (d/rename-player! db id new-name)))
@@ -61,7 +61,7 @@
         (is (not= nil (create-match)))
         (testing "then we can get it out again"
           (let [result (d/get-matches db)]
-            (is (h/diff-with-first-nil? {:matchdate match-date
+            (is (h/diff-with-first-is-nil? {:matchdate match-date
                                        :team1 {:player1 (:name p1) :player2 (:name p2) :score team1score}
                                        :team2 {:player1 (:name p3) :player2 (:name p4) :score team2score}
                                        :reported-by (:name reporter)}
