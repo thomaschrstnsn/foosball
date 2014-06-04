@@ -12,7 +12,8 @@
             [foosball.auth              :as auth]
             [noir.util.middleware       :as middleware]
             [compojure.route            :as route]
-            [com.stuartsierra.component :as component]))
+            [com.stuartsierra.component :as component]
+            [cfg.current :refer [project]]))
 
 (defroutes app-routes
   (route/resources "/")
@@ -31,7 +32,8 @@
                         stats/routes
                         user/routes]
           app-routes   (-> (map (fn [route-fn] (route-fn {:db database
-                                                         :config-options config-options}))
+                                                         :config-options config-options
+                                                         :project project}))
                                 route-fns)
                            (concat [app-routes])
                            (vec))

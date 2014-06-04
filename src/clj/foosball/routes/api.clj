@@ -7,6 +7,7 @@
             [foosball.statistics.ratings :as ratings]
             [foosball.statistics.team-player :as team-player]
             [foosball.util :as util]
+            [foosball.software :as sw]
             [clojure.data.json :as json]))
 
 (extend java.util.UUID
@@ -59,7 +60,12 @@
                (let [matches (d/get-matches db)]
                  (team-player/calculate-team-stats matches))))
 
-(defn routes [{:keys [db]}]
+(defresource about-software [project]
+  :available-media-types media-types
+  :handle-ok (fn [_]
+               (sw/software-dependencies project)))
+
+(defn routes [{:keys [db project]}]
   (let [player-route (GET "/api/players" [] (players db))]
     (compojure/routes
      (compojure/context "/private"
@@ -71,4 +77,5 @@
      (GET "/api/ratings/leaderboard/:n" [n] (leaderboard db (or (util/parse-int n) 5)))
      (GET "/api/ratings/log/:playerid" [playerid] (player-log db (util/uuid-from-string playerid)))
      (GET "/api/ratings/player-stats" [] (player-stats db))
-     (GET "/api/ratings/team-stats" [] (team-stats db)))))
+     (GET "/api/ratings/team-stats" [] (team-stats db))
+     (GET "/api/about/software" [] (about-software project)))))
