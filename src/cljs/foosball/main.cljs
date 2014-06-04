@@ -66,6 +66,11 @@
   (go-update-data "/api/matches" app :matches)
   (set-location app (:id v)))
 
+(defmethod handle-new-location :location/about [app v]
+  (om/update! app :software-dependencies nil)
+  (go-update-data "/api/about/software" app :software-dependencies)
+  (set-location app (:id v)))
+
 (defmethod handle-new-location :default [app {:keys [id]}]
   (set-location app id))
 
@@ -280,6 +285,28 @@
                                             :class         ["table-hover" "table-bordered"]}
                                              :state {:sort {:column date-column
                                                             :dir    :desc}}}))))
+
+(defmethod render-location :location/about [{:keys [software-dependencies version]}]
+  [:div.col-lg-8.jumbotron
+   [:h1 "Foosball"]
+   (when version
+     [:p.lead (str "Version " version)])
+    [:p.lead "Copyright © 2014 " [:a {:href "http://about.me/thomaschrstnsn"} "Thomas Christensen"]]
+    [:h2 "Built using"]
+    [:div.col-lg-12
+     [:table.table.table-hover
+      [:thead
+       [:tr
+        [:th.text-right "Software"]
+        [:th "Version"]]]
+      [:tbody
+       (map (fn [{:keys [name url version]}]
+              [:tr
+               [:td.text-right [:a {:href url} name]]
+               [:td version]])
+            software-dependencies)]]]
+    [:h2 "Styled using"]
+    [:p.lead [:a {:href "http://getbootstrap.com"} "Bootstrap 3"] " with " [:a {:href "http://glyphicons.com"} "Glyphicons"] "."]])
 
 (defmethod render-location :default [{:keys [current-location]}]
   (list
