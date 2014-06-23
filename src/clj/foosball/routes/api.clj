@@ -8,6 +8,7 @@
             [foosball.statistics.team-player :as team-player]
             [foosball.util :as util]
             [foosball.software :as sw]
+            [foosball.auth :as auth]
             [clojure.data.json :as json]))
 
 (extend java.util.UUID
@@ -60,6 +61,25 @@
                (let [matches (d/get-matches db)]
                  (team-player/calculate-team-stats matches))))
 
+(defresource login-status []
+  :available-media-types media-types
+  :handle-ok (fn [_]
+               (let [a    (auth/current-auth)
+                     name (str (:firstname a) " " (:lastname a))
+                     existy? (fn [x] (not (nil? x)))]
+                 (merge
+                  {:logged-in (existy? a)}
+                  (when a
+                    {:user?       (existy? (auth/user?))
+                     :admin?      (existy? (auth/admin?))
+                     :name        name
+
+                     :logout-form (auth/logout-form :extra-class "navbar-form"
+                                                    :text (str "Logout")
+                                                    :title name)})
+                  (when-not a
+                    {:login-form  (auth/login-form :form-class "navbar-form")})))))
+
 (defresource about-software [project]
   :available-media-types media-types
   :handle-ok (fn [_]
@@ -78,4 +98,5 @@
      (GET "/api/ratings/log/:playerid" [playerid] (player-log db (util/uuid-from-string playerid)))
      (GET "/api/ratings/player-stats" [] (player-stats db))
      (GET "/api/ratings/team-stats" [] (team-stats db))
+     (GET "/api/login/status" [] (login-status))
      (GET "/api/about/software" [] (about-software project)))))
