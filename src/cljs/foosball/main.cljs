@@ -9,6 +9,7 @@
             [foosball.menu :as menu]
             [foosball.table :as table]
             [foosball.format :as f]
+            [foosball.auth :as auth]
             [foosball.console :refer-macros [debug debug-js info log trace error]]))
 
 (defmulti request-new-location (fn [app req] (-> @app :current-location)))
@@ -80,24 +81,27 @@
   [:div.col-lg-6
       [:a.btn.btn-info.btn-lg.btn-block {:href url} label]])
 
-(defmethod render-location :location/home [{:keys [leaderboard players]}]
+(defmethod render-location :location/home [{:keys [leaderboard players auth]}]
   (when players
     (list
      [:div.jumbotron
       [:h1 "Foosball"]
       [:h2 "Keeps track of results, ratings and players for foosball matches."]
-      (if false
+      (if (:logged-in? auth)
         [:div
          [:div.row
           (nav-button (routes/player-statistics-path) "See ratings for all players")
-          (nav-button "/matchup"       "Matchup players for a match")]
+          ;; (nav-button "/matchup"       "Matchup players for a match")
+          ]
          [:br]
          [:div.row
-          (nav-button "/report/match"  "Report the result of a match")
-          (nav-button "/matches"       "See results of all played  matches")]]
+          ;; (nav-button "/report/match"  "Report the result of a match")
+          (nav-button (routes/matches-path) "See results of all played  matches")]]
         [:div.row
-                                        ;       [:div.col-lg-6 (auth/login-form :button-class "btn-lg btn-block" :button-text "Login or create a new player")]
-         (nav-button (routes/player-statistics-path) "See ratings for all players")])]
+         (nav-button (routes/player-statistics-path) "See ratings for all players")
+         (when auth [:div.col-lg-6 (auth/login-form auth
+                                                    :button-class "btn-lg btn-block"
+                                                    :button-text "Login or create a new player")])])]
      (let [columns [{:heading "Position"
                      :key :position
                      :printer (fn [p] (str p "."))}
