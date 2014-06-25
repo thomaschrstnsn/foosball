@@ -213,10 +213,10 @@
                                                                              :reported-by
                                                                              :matchdate])) response)))))))))
 
-  (testing "GET '/api/login/status':"
+  (testing "GET '/api/auth':"
     (let [app  (h/app-with-memory-db)
           handler (:ring-handler app)
-          request (mockr/request :get "/api/login/status")]
+          request (mockr/request :get "/api/auth")]
       (test-route-for-supported-media-types handler request)
 
       (with-redefs [foosball.auth/current-auth (constantly nil)]
@@ -235,7 +235,7 @@
                 (is (= {:logged-in? true
                         :user?      true
                         :admin?     false
-                        :name       (str firstname " " lastname)}
+                        :username   (str firstname " " lastname)}
                        response))
                 (is (nil? (:login-form response))))))
 
@@ -245,5 +245,5 @@
                 (is (= {:logged-in? true
                         :user?      true
                         :admin?     true
-                        :name       (str firstname " " lastname)}
+                        :username   (str firstname " " lastname)}
                        response))))))))))

@@ -61,19 +61,19 @@
                (let [matches (d/get-matches db)]
                  (team-player/calculate-team-stats matches))))
 
-(defresource login-status []
+(defresource auth-status []
   :available-media-types media-types
   :handle-ok (fn [_]
-               (let [a    (auth/current-auth)
-                     name (str (:firstname a) " " (:lastname a))
+               (let [a       (auth/current-auth)
+                     name    (str (:firstname a) " " (:lastname a))
                      existy? (fn [x] (not (nil? x)))
                      truthy? (fn [x] (if x true false))]
                  (merge
                   {:logged-in? (existy? a)}
                   (when a
-                    {:user?  (truthy? (auth/user?))
-                     :admin? (truthy? (auth/admin?))
-                     :name   name})
+                    {:user?    (truthy? (auth/user?))
+                     :admin?   (truthy? (auth/admin?))
+                     :username name})
                   (when-not a
                     {:provider auth/provider})))))
 
@@ -95,5 +95,5 @@
      (GET "/api/ratings/log/:playerid" [playerid] (player-log db (util/uuid-from-string playerid)))
      (GET "/api/ratings/player-stats" [] (player-stats db))
      (GET "/api/ratings/team-stats" [] (team-stats db))
-     (GET "/api/login/status" [] (login-status))
+     (GET "/api/auth" [] (auth-status))
      (GET "/api/about/software" [] (about-software project)))))

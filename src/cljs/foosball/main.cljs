@@ -317,7 +317,7 @@
   (reify
     om/IInitState
     (init-state [_]
-      (go-update-data "/api/login/status" app :login)
+      (go-update-data "/api/auth" app :auth)
       {})
 
     om/IWillMount

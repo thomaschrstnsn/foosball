@@ -23,7 +23,7 @@
   (reify
     om/IRender
     (render [this]
-      (let [{:keys [current-location login]} app]
+      (let [{:keys [current-location auth]} app]
         (html [:div.navbar.navbar-static-top.navbar-default
                (let [{:keys [route text]} home-location]
                  [:a.navbar-brand {:href route} text])
@@ -34,10 +34,10 @@
                                :fn (fn [{:keys [id] :as item}]
                                      (merge item {:active (or (= id current-location)
                                                               (isa? current-location id))}))})]
-               (when login
+               (when auth
                  [:ul.nav.navbar-nav.pull-right
-                  [:li (if (:logged-in? login)
+                  [:li (if (:logged-in? auth)
                          (logout-form :extra-class "navbar-form"
                                       :text (str "Logout")
-                                      :title (:name login))
-                         (login-form  (-> login :provider :url) :form-class "navbar-form"))]])])))))
+                                      :title (:username auth))
+                         (login-form  (-> auth :provider :url) :form-class "navbar-form"))]])])))))
