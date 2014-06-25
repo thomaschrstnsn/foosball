@@ -2,6 +2,7 @@
   (:require [foosball.models.domains :as d]
             [foosball.test.helpers :as h]
             [foosball.test.response-helpers :as rh]
+            [foosball.util :as util]
             [clojure.test :refer :all]
             [ring.mock.request :as mockr]
             [clojure.edn :as edn]
@@ -49,11 +50,11 @@
                      :name name
                      :active true
                      :id (str id)} (-> request
-                                       (mockr/header :accept "application/json")
-                                       handler
-                                       :body
-                                       (json/read-str :key-fn keyword)
-                                       first))))))))
+                     (mockr/header :accept "application/json")
+                     handler
+                     :body
+                     (json/read-str :key-fn keyword)
+                     first))))))))
   (testing "GET '/api/ratings/leaderboard':"
     (let [app     (h/app-with-memory-db)
           handler (:ring-handler app)
@@ -75,7 +76,7 @@
                                                   :team1 {:player1 (:id t1p1) :player2 (:id t1p2) :score team1score}
                                                   :team2 {:player1 (:id t2p1) :player2 (:id t2p2) :score team2score}
                                                   :reported-by (:id reporter)}))
-              ;;;; should give: p1 > p2 > p3 > p4
+              ;; should give: p1 > p2 > p3 > p4
               _ (doall (map (fn [i] (create-match p1 p2 p3 p4)) (range 15)))
               _ (create-match p1 p3 p2 p4)
               response (-> request handler :body edn/read-string)]
@@ -210,4 +211,42 @@
               (is (h/seq-diff-with-first-is-nil? expected-matches
                                                  (map (fn [m] (select-keys m [:match/id
                                                                              :reported-by
-                                                                             :matchdate])) response))))))))))
+                                                                             :matchdate])) response)))))))))
+
+  (testing "GET '/api/login/status':"
+    (let [app  (h/app-with-memory-db)
+          handler (:ring-handler app)
+          request (mockr/request :get "/api/login/status")]
+      (test-route-for-supported-media-types handler request)
+
+      (with-redefs [foosball.auth/current-auth (constantly nil)]
+        (testing "with no auth"
+          (let [response (-> request handler :body edn/read-string)]
+            (is (= false  (:logged-in response)))
+            (is (not= nil (:login-form response)))
+            (is (nil?     (:logout-form response))))))
+
+      (let [firstname "James"
+            lastname "Brown"]
+        (with-redefs [foosball.auth/current-auth (constantly (util/symbols-as-map firstname lastname))]
+          (with-redefs [foosball.auth/has-role? (fn [r?] (= :foosball.auth/user r?))]
+            (let [response (-> request handler :body edn/read-string)]
+              (testing "with auth as user"
+                (is (= {:logged-in true
+                        :user? true
+                        :admin? false
+                        :name (str firstname " " lastname)}
+                       (select-keys response [:user? :admin? :name :logged-in])))
+                (is (not= nil (:logout-form response)))
+                (is (nil? (:login-form response))))))
+
+          (with-redefs [foosball.auth/has-role? (constantly true)]
+            (let [response (-> request handler :body edn/read-string)]
+              (testing "with auth as admin"
+                (is (= {:logged-in true
+                        :user? true
+                        :admin? true
+                        :name (str firstname " " lastname)}
+                       (select-keys response [:user? :admin? :name :logged-in])))
+                (is (not= nil (:logout-form response)))
+                (is (nil? (:login-form response)))))))))))

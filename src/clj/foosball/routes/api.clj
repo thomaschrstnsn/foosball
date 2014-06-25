@@ -66,14 +66,14 @@
   :handle-ok (fn [_]
                (let [a    (auth/current-auth)
                      name (str (:firstname a) " " (:lastname a))
-                     existy? (fn [x] (not (nil? x)))]
+                     existy? (fn [x] (not (nil? x)))
+                     truthy? (fn [x] (if x true false))]
                  (merge
                   {:logged-in (existy? a)}
                   (when a
-                    {:user?       (existy? (auth/user?))
-                     :admin?      (existy? (auth/admin?))
+                    {:user?       (truthy? (auth/user?))
+                     :admin?      (truthy? (auth/admin?))
                      :name        name
-
                      :logout-form (auth/logout-form :extra-class "navbar-form"
                                                     :text (str "Logout")
                                                     :title name)})
