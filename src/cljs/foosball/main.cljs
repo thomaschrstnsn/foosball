@@ -316,7 +316,9 @@
 (defn app-root [app owner {:keys [menu] :as opts}]
   (reify
     om/IInitState
-    (init-state [_] {})
+    (init-state [_]
+      (go-update-data "/api/login/status" app :login)
+      {})
 
     om/IWillMount
     (will-mount [_]
@@ -335,7 +337,7 @@
               (render-location app)]]))))
 
 (debug "initializing application")
-(let [app (atom {})
+(let [app         (atom {})
       route-setup (routes/init!)]
   (om/root app-root app {:target     (. js/document (getElementById "app"))
                          :init-state {:req-location-chan (:req-location-chan route-setup)}

@@ -49,12 +49,11 @@
 
 (defn login-form [& {:keys [form-class button-class button-text] :or {button-text "Login"}}]
   (let [{:keys [url]} provider
-        base-login-url (str "/login?identifier=" url)
         dom-id (str (gensym))]
     [:form {:class form-class :method "POST" :action "/login"}
      [:input {:type "hidden" :name "identifier" :value url :id dom-id}]
      [:input.button.btn.btn-info {:class button-class :type "submit" :value button-text}]]))
 
 (defn logout-form [& {:keys [text extra-class title] :or {text "Logout"}}]
-  [:form {:class extra-class :method "GET" :action "/logout"}
+  [:form {:class extra-class :method "POST" :action "/logout"}
    [:input.button.btn.btn-default {:type "submit" :value text :title title}]])

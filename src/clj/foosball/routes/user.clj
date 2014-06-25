@@ -152,6 +152,6 @@
    (GET  "/user/created/:id"
          [id]
          (created-page deps id))
-   (GET  "/logout"
-         req
-         (friend/logout* (response/redirect (str (:context req) "/"))))))
+   (POST  "/logout"
+          req
+          (friend/logout* (response/redirect (str (:context req) "/"))))))

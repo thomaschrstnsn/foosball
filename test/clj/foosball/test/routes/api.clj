@@ -222,9 +222,9 @@
       (with-redefs [foosball.auth/current-auth (constantly nil)]
         (testing "with no auth"
           (let [response (-> request handler :body edn/read-string)]
-            (is (= false  (:logged-in response)))
-            (is (not= nil (:login-form response)))
-            (is (nil?     (:logout-form response))))))
+            (is (= {:logged-in? false
+                    :provider   foosball.auth/provider}
+                   response)))))
 
       (let [firstname "James"
             lastname "Brown"]
@@ -232,21 +232,18 @@
           (with-redefs [foosball.auth/has-role? (fn [r?] (= :foosball.auth/user r?))]
             (let [response (-> request handler :body edn/read-string)]
               (testing "with auth as user"
-                (is (= {:logged-in true
-                        :user? true
-                        :admin? false
-                        :name (str firstname " " lastname)}
-                       (select-keys response [:user? :admin? :name :logged-in])))
-                (is (not= nil (:logout-form response)))
+                (is (= {:logged-in? true
+                        :user?      true
+                        :admin?     false
+                        :name       (str firstname " " lastname)}
+                       response))
                 (is (nil? (:login-form response))))))
 
           (with-redefs [foosball.auth/has-role? (constantly true)]
             (let [response (-> request handler :body edn/read-string)]
               (testing "with auth as admin"
-                (is (= {:logged-in true
-                        :user? true
-                        :admin? true
-                        :name (str firstname " " lastname)}
-                       (select-keys response [:user? :admin? :name :logged-in])))
-                (is (not= nil (:logout-form response)))
-                (is (nil? (:login-form response)))))))))))
+                (is (= {:logged-in? true
+                        :user?      true
+                        :admin?     true
+                        :name       (str firstname " " lastname)}
+                       response))))))))))

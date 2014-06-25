@@ -69,16 +69,13 @@
                      existy? (fn [x] (not (nil? x)))
                      truthy? (fn [x] (if x true false))]
                  (merge
-                  {:logged-in (existy? a)}
+                  {:logged-in? (existy? a)}
                   (when a
-                    {:user?       (truthy? (auth/user?))
-                     :admin?      (truthy? (auth/admin?))
-                     :name        name
-                     :logout-form (auth/logout-form :extra-class "navbar-form"
-                                                    :text (str "Logout")
-                                                    :title name)})
+                    {:user?  (truthy? (auth/user?))
+                     :admin? (truthy? (auth/admin?))
+                     :name   name})
                   (when-not a
-                    {:login-form  (auth/login-form :form-class "navbar-form")})))))
+                    {:provider auth/provider})))))
 
 (defresource about-software [project]
   :available-media-types media-types
