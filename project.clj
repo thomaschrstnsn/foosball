@@ -64,6 +64,7 @@
                                   [midje "1.6.3" :exclusions [org.codehaus.plexus/plexus-utils
                                                               slingshot
                                                               commons-codec]]
+                                  [pjstadig/humane-test-output "0.6.0"]
                                   [server-socket "1.0.0"]
                                   [http-kit "2.1.18"]
                                   ;;;; clojurescript deps
@@ -74,7 +75,10 @@
                                   [secretary "1.0.2"]
                                   [cljs-http "0.1.10"]
                                   [com.andrewmcveigh/cljs-time "0.1.4"]
-                                  [org.clojars.franks42/cljs-uuid-utils "0.1.3"]]}}
+                                  [org.clojars.franks42/cljs-uuid-utils "0.1.3"]]
+
+                   :injections [(require 'pjstadig.humane-test-output)
+                                (pjstadig.humane-test-output/activate!)]}}
 
   :url "https://foosball.chrstnsn.dk/"
 
