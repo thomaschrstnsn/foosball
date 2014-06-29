@@ -28,8 +28,7 @@
         [:div
          [:div.row
           (nav-button (routes/player-statistics-path) "See ratings for all players")
-          ;; (nav-button "/matchup"       "Matchup players for a match")
-          ]
+          (nav-button (routes/matchup-path)           "Matchup players for a match")]
          [:br]
          [:div.row
           ;; (nav-button "/report/match"  "Report the result of a match")

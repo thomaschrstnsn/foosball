@@ -9,6 +9,14 @@
     (render [this]
       (html [:li (when active {:class "active"}) [:a {:href route} text]]))))
 
+(defn auth-allowed-menu-locations [auth menu-locations]
+  (->> menu-locations
+       (filter (fn [{:keys [login-required?]}]
+                 (if login-required?
+                   (:logged-in? auth)
+                   true)))
+       vec))
+
 (defn menu-bar [app owner {:keys [menu-locations home-location]}]
   (reify
     om/IRender
@@ -19,7 +27,7 @@
                  [:a.navbar-brand {:href route} text])
                [:ul.nav.navbar-nav.pull-left
                 (om/build-all menu-item
-                              menu-locations
+                              (auth-allowed-menu-locations auth menu-locations)
                               {:key :id
                                :fn (fn [{:keys [id] :as item}]
                                      (merge item {:active (or (= id current-location)

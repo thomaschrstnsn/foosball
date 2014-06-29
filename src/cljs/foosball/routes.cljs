@@ -32,6 +32,9 @@
       (defroute matches-path "/matches" []
         (set-active-menu :location/matches))
 
+      (defroute matchup-path "/matchup" []
+        (set-active-menu :location/matchup))
+
       (defroute about-path "/about" []
         (set-active-menu :location/about))
 
@@ -47,7 +50,11 @@
       (let [home-location  {:id    :location/home
                             :text  "Foosball"
                             :route (home-path)}
-            menu-locations [{:id    :location/player-statistics
+            menu-locations [{:id    :location/matchup
+                             :text  "Matchup"
+                             :route (matchup-path)
+                             :login-required? true}
+                            {:id    :location/player-statistics
                              :text  "Player Statistics"
                              :route (player-statistics-path)}
                             {:id    :location/team-statistics
