@@ -13,6 +13,7 @@
       (data/go-update-data! "/api/players" app :players))
     (om/update! app :player-log-player ())
     (om/update! app :players nil)
+    (om/update! app :player-log nil)
     (when player-id
       (do
         (om/update! app :player-log-player (uuid/make-uuid-from player-id))
