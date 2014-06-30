@@ -48,6 +48,20 @@
                                        inactivity-log-keys)))
                       (reverse log)))))
 
+(defresource matchup [db playerids]
+  :available-media-types media-types
+  :malformed? (fn [_] (let [players         (d/get-players db)
+                           request-players (set playerids)
+                           valid-playerids (->> (map :id players)
+                                                (filter (fn [pid] (request-players pid)))
+                                                set)]
+                       (> 4 (count valid-playerids))))
+  :handle-ok  (fn [_] (let [matches          (d/get-matches db)
+                           players          (d/get-players db)
+                           request-players  (set playerids)
+                           selected-players (filter (fn [{:keys [id]}] (contains? request-players id)) players)]
+                       (ratings/calculate-matchup matches selected-players))))
+
 (defresource player-stats [db]
   :available-media-types media-types
   :handle-ok (fn [_]
@@ -95,5 +109,7 @@
      (GET "/api/ratings/log/:playerid" [playerid] (player-log db (util/uuid-from-string playerid)))
      (GET "/api/ratings/player-stats" [] (player-stats db))
      (GET "/api/ratings/team-stats" [] (team-stats db))
+     (GET "/api/matchup" [& players]
+          (matchup db (map util/uuid-from-string (vals players))))
      (GET "/api/auth" [] (auth-status))
      (GET "/api/about/software" [] (about-software project)))))

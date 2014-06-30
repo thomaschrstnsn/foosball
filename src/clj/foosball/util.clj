@@ -7,7 +7,7 @@
   (d/squuid))
 
 (defn uuid-from-string [s]
-  (java.util.UUID/fromString s))
+  (when s (java.util.UUID/fromString s)))
 
 (defmacro symbols-as-map
   "Inverse of descructuring as {:keys [a b c]} -

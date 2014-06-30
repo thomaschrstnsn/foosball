@@ -213,6 +213,69 @@
                                                                              :reported-by
                                                                              :matchdate])) response)))))))))
 
+  (testing "GET '/api/matchup':"
+    (let [app (h/app-with-memory-db)
+          handler (:ring-handler app)
+          base-request (mockr/request :get "/api/matchup")
+
+          db (:database app)
+          [p1 p2 p3 p4 reporter] (map (partial h/create-dummy-player db) ["p1" "p2" "p3" "p4" "rep"])
+          matches (vec (for [index (range 8)
+                             :let [team1score 10
+                                   team2score index
+                                   match-date (java.util.Date.)
+                                   t1p1 p1
+                                   t1p2 p2
+                                   t2p1 p3
+                                   t2p2 p4]]
+                         {:matchdate match-date
+                          :team1 {:player1 (:id t1p1) :player2 (:id t1p2) :score team1score}
+                          :team2 {:player1 (:id t2p1) :player2 (:id t2p2) :score team2score}
+                          :reported-by (:id reporter)
+                          :id (h/make-uuid)}))
+
+          _ (doall (map (fn [m] (d/create-match! db m)) matches))
+
+          build-request-with-players (fn [& players]
+                                       (let [query-params (apply merge (map (fn [player index]
+                                                                              {(keyword (str "player" (inc index)))
+                                                                               (:id player)})
+                                                                            players
+                                                                            (range)))]
+                                         (mockr/query-string base-request query-params)))]
+      (testing "with 4 distinct players, OK"
+        (is (= 200 (-> (build-request-with-players p1 p2 p3 p4) handler :status))))
+
+      (testing "with 4 distinct players, returns 3 results"
+        (is (= 3 (-> (build-request-with-players p1 p2 p3 p4) handler :body edn/read-string count))))
+
+      (testing "with 5 distinct players, returns 15 results"
+        (is (= 15 (-> (build-request-with-players p1 p2 p3 p4 reporter) handler :body edn/read-string count))))
+
+      (testing "any valid result, contains expected keys"
+        (is (= #{:pos-expected
+                 :pos-players
+                 :neg-expected
+                 :neg-players
+                 :expected-diff
+                 :expected-sortable
+                 :pos-rating-diff
+                 :neg-rating-diff}
+               (->> (build-request-with-players p1 p2 p3 p4) handler :body edn/read-string
+                    (mapcat keys) set))))
+
+      (testing "with 5 distinct players, OK"
+        (is (= 200 (-> (build-request-with-players p1 p2 p3 p4 reporter) handler :status))))
+
+      (testing "with 4 players (two duplicate), 400"
+        (is (= 400 (-> (build-request-with-players p1 p2 p3 p1) handler :status))))
+
+      (testing "with 3 distinct players, 400"
+        (is (= 400 (-> (build-request-with-players p1 p2 p3) handler :status))))
+
+      (testing "with no query, 400"
+        (is (= 400 (-> base-request handler :status))))))
+
   (testing "GET '/api/auth':"
     (let [app  (h/app-with-memory-db)
           handler (:ring-handler app)
