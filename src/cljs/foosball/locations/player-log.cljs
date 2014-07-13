@@ -51,7 +51,11 @@
                               :key     :expected
                               :printer (fn [v] (when v (f/style-match-percentage true (* 100 v))))}
                              {:heading "Actual"
-                              :key     :win?}
+                              :key     :win?
+                              :printer (fn [v] (f/style-value v
+                                                             :class?  nil
+                                                             :printer {true "Won" false "Lost"}
+                                                             :checker true?))}
                              {:heading "Inactive matches"
                               :key     :inactivity}
                              {:heading "Diff rating"
