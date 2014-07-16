@@ -24,13 +24,13 @@
    ['com.cemerick/friend
     "Friend"
     "https://github.com/cemerick/friend"]
-   ['om
+   ['om/om
     "Om"
     "https://github.com/swannodette/om"]
    ['org.clojure/core.async
     "core.async"
     "https://github.com/clojure/core.async"]
-   ['sablono
+   ['sablono/sablono
     "Ŝablono"
     "https://github.com/r0man/sablono"]
    ['compojure/compojure
@@ -45,7 +45,7 @@
    ['liberator/liberator
     "Liberator"
     "http://clojure-liberator.github.io/liberator/"]
-   ['secretary
+   ['secretary/secretary
     "Secretary"
     "https://github.com/gf3/secretary"]
    ['clj-time/clj-time
