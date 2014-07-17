@@ -97,7 +97,6 @@
             "ci" ["with-profile" "dev" "do"
                   "cljsbuild" "once,"
                   "midje,"
-                  "build-jar,"
                   "build-war"]
             "auto-cljs" ["do"
                          "cljsbuild" "clean,"
