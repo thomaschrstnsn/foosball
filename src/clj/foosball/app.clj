@@ -31,12 +31,11 @@
                         report/routes
                         stats/routes
                         user/routes]
-          app-routes   (-> (map (fn [route-fn] (route-fn {:db database
+          app-routes   (-> (mapv (fn [route-fn] (route-fn {:db database
                                                          :config-options config-options
                                                          :project project}))
-                                route-fns)
-                           (concat [app-routes])
-                           (vec))
+                                 route-fns)
+                           (conj app-routes))
           auth-wrapper (partial auth/wrap-friend-openid database)
           ring-handler (middleware/app-handler app-routes
                                                :middleware [auth-wrapper])]

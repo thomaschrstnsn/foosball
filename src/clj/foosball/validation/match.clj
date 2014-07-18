@@ -1,15 +1,12 @@
 (ns foosball.validation.match)
 
 (defn- pick-scores [{:keys [team1 team2]}]
-  (->> [team1 team2]
-       (map :score)
-       (apply vector)))
+  (mapv :score [team1 team2]))
 
 (defn- flatten-distinct-filter [& vs]
   (->> vs
        flatten distinct
-       (filter (comp not nil?))
-       vec))
+       (filterv (comp not nil?))))
 
 (defn- valid-single-score? [n] (when n (<= 0 n 11)))
 
