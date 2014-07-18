@@ -3,19 +3,39 @@
             [sablono.core :as html :refer-macros [html]]
             [foosball.auth :as auth]))
 
-(defn menu-item [{:keys [id text active route]} owner]
+(defn classify-item [{:keys [id text route items seperator]}]
+  (cond
+   (and id text route) :location
+   items               :sub-menu
+   seperator           :seperator
+   :else               nil))
+
+(defmulti render-menu-item classify-item)
+
+(defmethod render-menu-item :location [{:keys [id text active route]}]
+  [:li (when active {:class "active"}) [:a {:href route} text]])
+
+(defmethod render-menu-item :sub-menu [{:keys [text items]}]
+  [:li.dropdown
+   [:a.dropdown-toggle {:href "#" :data-toggle "dropdown"} text [:b.caret]]
+   [:ul.dropdown-menu
+    (map render-menu-item items)]])
+
+(defmethod render-menu-item :seperator [_]
+  [:li.divider])
+
+(defn menu-item [item owner]
   (reify
     om/IRender
     (render [this]
-      (html [:li (when active {:class "active"}) [:a {:href route} text]]))))
+      (html (render-menu-item item)))))
 
 (defn auth-allowed-menu-locations [auth menu-locations]
-  (->> menu-locations
-       (filter (fn [{:keys [login-required?]}]
-                 (if login-required?
-                   (:logged-in? auth)
-                   true)))
-       vec))
+  (filterv (fn [{:keys [login-required?]}]
+             (if login-required?
+               (:logged-in? auth)
+               true))
+           menu-locations))
 
 (defn menu-bar [app owner {:keys [menu-locations home-location]}]
   (reify

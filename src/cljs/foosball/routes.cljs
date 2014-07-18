@@ -54,15 +54,17 @@
                              :text  "Matchup"
                              :route (matchup-path)
                              :login-required? true}
-                            {:id    :location/player-statistics
-                             :text  "Player Statistics"
-                             :route (player-statistics-path)}
-                            {:id    :location/team-statistics
-                             :text  "Team Statistics"
-                             :route (team-statistics-path)}
-                            {:id    :location/player-log
-                             :text  "Player Log"
-                             :route (players-log-path)}
+                            {:text  "Statistics"
+                             :items [{:id    :location/player-statistics
+                                      :text  "Player Statistics"
+                                      :route (player-statistics-path)}
+                                     {:id    :location/team-statistics
+                                      :text  "Team Statistics"
+                                      :route (team-statistics-path)}
+                                     {:seperator :sure-thing}
+                                     {:id    :location/player-log
+                                      :text  "Player Log"
+                                      :route (players-log-path)}]}
                             {:id    :location/matches
                              :text  "Played Matches"
                              :route (matches-path)}
