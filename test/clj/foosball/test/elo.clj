@@ -3,9 +3,9 @@
             [clojure.test :refer :all]
             [foosball.test.helpers :as h]
             [clojure.test.check :as tc]
-            [clojure.test.check.clojure-test :refer [defspec]]
             [clojure.test.check.generators :as gen]
-            [clojure.test.check.properties :as prop]))
+            [clojure.test.check.properties :as prop]
+            [clojure.test.check.clojure-test :refer [defspec]]))
 
 (deftest expected-score-tests
   (testing "it should match the wikipedia example"

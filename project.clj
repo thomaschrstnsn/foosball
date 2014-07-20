@@ -6,8 +6,7 @@
                  [org.clojure/data.json "0.2.4"]
                  [liberator "0.11.0" :exlusions [org.clojure/data.json]]
                  [lib-noir "0.8.2"]
-                 [compojure "1.1.6" :exclusions [org.clojure/tools.macro
-                                                 org.clojure/core.incubator
+                 [compojure "1.1.6" :exclusions [org.clojure/core.incubator
                                                  ring/ring-core]]
                  [ring-server "0.3.0" :exclusions [org.clojure/core.incubator]]
                  [com.cemerick/friend "0.2.0" :exclusions [org.clojure/core.cache]]
@@ -51,8 +50,7 @@
   :test-paths ["test/clj"]
 
   :profiles {:production {:ring {:stacktraces? false}
-                          :dependencies [[org.clojure/tools.reader "0.7.10"]
-                                         [org.clojure/tools.macro "0.1.5"]]
+                          :dependencies [[org.clojure/tools.reader "0.7.10"]]
                           :aot :all}
 
              :dev {:ring {:stacktraces? true}
@@ -61,11 +59,9 @@
                                   [org.clojure/java.classpath "0.2.2"]
                                   [ring-mock "0.1.5"]
                                   [ring/ring-devel "1.2.0"]
-                                  [midje "1.6.3" :exclusions [org.codehaus.plexus/plexus-utils
-                                                              slingshot
-                                                              commons-codec]]
                                   [pjstadig/humane-test-output "0.6.0"]
                                   [org.clojure/test.check "0.5.8"]
+                                  [org.clojars.runa/conjure "2.1.3"]
                                   [server-socket "1.0.0"]
                                   [http-kit "2.1.18"]
                                   ;;;; clojurescript deps
@@ -87,7 +83,6 @@
             [lein-cljsbuild "1.0.3"]
             [configleaf "0.4.6"]
             [lein-release "1.0.4"]
-            [lein-midje "3.1.3"]
             [com.cemerick/clojurescript.test "0.3.0"]]
 
   :aliases {"deps-tree-prod" ["with-profile" "production" "deps" ":tree"]
@@ -97,7 +92,7 @@
             "clean-all" ["do" "cljsbuild" "clean," "clean"] ;; we cannot rely on :hooks [leiningen.cljsbuild]
             "ci" ["with-profile" "dev" "do"
                   "cljsbuild" "once,"
-                  "midje,"
+                  "test,"
                   "build-war"]
             "auto-cljs" ["do"
                          "cljsbuild" "clean,"

@@ -10,7 +10,7 @@
 
 (defn- valid-single-score? [n] (when n (<= 0 n 11)))
 
-(defn- validate-scores [[team1 team2 :as both]]
+(defn validate-scores [[team1 team2 :as both]]
   (let [nil-filtered       (filter (comp not nil?) both)
         both-invalid       [[:team1score false] [:team2score false]]
         single-validations [[:team1score (if (nil? team1) nil (valid-single-score? team1))]
@@ -36,7 +36,7 @@
 (defn- pick-matchdate [{:keys [matchdate]}]
   matchdate)
 
-(defn- validate-players [players]
+(defn validate-players [players]
   (let [mapped      (apply assoc {} (interleave [:team1player1 :team1player2
                                                  :team2player1 :team2player2]
                                                 players))
@@ -57,7 +57,7 @@
          (apply (partial merge {:team1player1 true :team1player2 true
              :team2player1 true :team2player2 true})))))
 
-(defn- validate-matchdate [md]
+(defn validate-matchdate [md]
   {:matchdate (when md
                 (if (= :invalid-matchdate md)
                   false

@@ -33,6 +33,16 @@
 (defn make-uuid []
   (java.util.UUID/randomUUID))
 
+(defmacro with-private-fns [[ns fns] & tests]
+  "Refers private fns from ns and runs tests in context."
+  `(let ~(reduce #(conj %1 %2 `(ns-resolve '~ns '~%2)) [] fns)
+     ~@tests))
+
+(comment "example:"
+         (with-private-fns [org.foo.bar [fn1 fn2]]
+           (deftest test-fn1..)
+           (deftest test-fn2..)))
+
 ;;;; db
 
 (defn memory-db []
