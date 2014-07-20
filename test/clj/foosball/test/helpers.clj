@@ -19,6 +19,15 @@
 (defn seq-diff-with-first-is-nil? [expecteds actuals]
   (every? identity (map (fn [exp act] (diff-with-first-is-nil? exp act)) expecteds actuals)))
 
+(defn roughly= [expected actual delta]
+  (let [acceptable (and (number? actual)
+                    (>= expected (- actual delta))
+                    (<= expected (+ actual delta)))]
+    (when-not acceptable (pprint {:expected expected
+                                  :actual   actual
+                                  :delta    delta}))
+    acceptable))
+
 ;;;; util
 
 (defn make-uuid []

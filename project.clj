@@ -65,6 +65,7 @@
                                                               slingshot
                                                               commons-codec]]
                                   [pjstadig/humane-test-output "0.6.0"]
+                                  [org.clojure/test.check "0.5.8"]
                                   [server-socket "1.0.0"]
                                   [http-kit "2.1.18"]
                                   ;;;; clojurescript deps
