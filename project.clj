@@ -50,7 +50,7 @@
   :test-paths ["test/clj"]
 
   :profiles {:production {:ring {:stacktraces? false}
-                          :dependencies [[org.clojure/tools.reader "0.7.10"]]
+                          :dependencies []
                           :aot :all}
 
              :dev {:ring {:stacktraces? true}
@@ -70,7 +70,7 @@
                                   [om "0.6.2"]
                                   [sablono "0.2.17"]
                                   [secretary "1.0.2"]
-                                  [cljs-http "0.1.10"]
+                                  [cljs-http "0.1.10" :exclusions [commons-codec]]
                                   [com.andrewmcveigh/cljs-time "0.1.4"]
                                   [org.clojars.franks42/cljs-uuid-utils "0.1.3"]]
 
