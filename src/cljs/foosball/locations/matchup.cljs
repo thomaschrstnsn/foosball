@@ -16,6 +16,7 @@
         query        (str/join "&" query-params)]
     (data/go-update-data! (str "/api/matchup?" query) app :matchups)))
 
+;; TODO: this should use same logic as report-match, where only going back after :auth received
 (defn handle [app v]
   (if (-> @app :auth :logged-in?)
     (do

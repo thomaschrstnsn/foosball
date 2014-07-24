@@ -9,6 +9,7 @@
             [foosball.locations.matchup :as matchup]
             [foosball.locations.report-match :as report-match]
             [foosball.locations.about :as about]
+            [foosball.spinners :refer [loading]]
             [foosball.console :refer-macros [debug debug-js info log trace error]]))
 
 (defmulti request-new-location (fn [app req] (-> @app :current-location)))
@@ -46,5 +47,4 @@
   (let [func (get-in lookup [current-location :render])]
     (if func
       (func app)
-      (list [:h1 (str current-location)]
-            [:p  "Med dig"]))))
+      (loading))))
