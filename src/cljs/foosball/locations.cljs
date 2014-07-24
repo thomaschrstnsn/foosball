@@ -7,6 +7,7 @@
             [foosball.locations.player-log :as player-log]
             [foosball.locations.matches :as matches]
             [foosball.locations.matchup :as matchup]
+            [foosball.locations.report-match :as report-match]
             [foosball.locations.about :as about]
             [foosball.console :refer-macros [debug debug-js info log trace error]]))
 
@@ -27,7 +28,9 @@
              :location/about             {:handle about/handle
                                           :render about/render}
              :location/matchup           {:handle matchup/handle
-                                          :render matchup/render}})
+                                          :render matchup/render}
+             :location/report-match      {:handle report-match/handle
+                                          :render report-match/render}})
 
 (defmethod request-new-location :default [app new]
   (handle-new-location app new))

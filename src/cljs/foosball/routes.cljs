@@ -35,6 +35,9 @@
       (defroute matchup-path "/matchup" []
         (set-active-menu :location/matchup))
 
+      (defroute report-match-path "/report/match" []
+        (set-active-menu :location/report-match))
+
       (defroute about-path "/about" []
         (set-active-menu :location/about))
 
@@ -53,6 +56,10 @@
             menu-locations [{:id    :location/matchup
                              :text  "Matchup"
                              :route (matchup-path)
+                             :login-required? true}
+                            {:id    :location/report-match
+                             :text  "Report Match Result"
+                             :route (report-match-path)
                              :login-required? true}
                             {:text  "Statistics"
                              :items [{:id    :location/player-statistics
