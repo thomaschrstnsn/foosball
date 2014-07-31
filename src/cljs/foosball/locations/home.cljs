@@ -31,8 +31,8 @@
           (nav-button (routes/matchup-path)           "Matchup players for a match")]
          [:br]
          [:div.row
-          ;; (nav-button "/report/match"  "Report the result of a match")
-          (nav-button (routes/matches-path) "See results of all played  matches")]]
+          (nav-button (routes/report-match-path) "Report the result of a match")
+          (nav-button (routes/matches-path)      "See results of all played  matches")]]
         [:div.row
          (nav-button (routes/player-statistics-path) "See ratings for all players")
          (when auth [:div.col-lg-6 (auth/login-form auth

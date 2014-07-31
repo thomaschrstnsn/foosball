@@ -1,15 +1,16 @@
 (ns foosball.locations.report-match
   (:require-macros [cljs.core.async.macros :refer [go-loop go]])
-  (:require [om.core :as om :include-macros true]
-            [clojure.string :as str]
+  (:require [clojure.string :as str]
             [cljs.core.async :refer [chan <! put!]]
-            [sablono.core :as html :refer-macros [html]]
+            [cljs-uuid-utils :as uuid]
             [foosball.data :as data]
             [foosball.table :as table]
             [foosball.format :as f]
             [foosball.location :as loc]
             [foosball.spinners :refer [spinner]]
-            [foosball.console :refer-macros [debug debug-js info log trace error]]))
+            [foosball.console :refer-macros [debug debug-js info log trace error]]
+            [om.core :as om :include-macros true]
+            [sablono.core :as html :refer-macros [html]]))
 
 (defn handle [app v]
   (let [unauthorized? (and (:auth @app)
@@ -25,33 +26,56 @@
         (loc/set-location app (:id v)))
       (.back js/history))))
 
-(defn- render-players-select [id players & [selected]]
-  [:select.form-control {:id id :name id :default-value (or selected "nil")}
-   [:option {:value "nil" :disabled "disabled"} "Pick a player"]
-   (map (fn [{:keys [id name]}]
-          [:option {:value id} name])
-        players)])
+(defn selected-players [report-match]
+  (let [paths (for [team   [:team1 :team2]
+                    player [:player1 :player2]]
+                [team player])]
+    (->> paths
+         (map (fn [p] (get-in report-match p)))
+         (filter identity)
+         set)))
 
-(defn- render-team-controls [kw team-num {:keys [player1 player2 score]} players]
-  (let [prefix  (name kw)
-        idp1    (str prefix "player" 1)
-        idp2    (str prefix "player" 2)
-        idscore (str prefix "score")]
+(defn- render-players-select [report-match players selected-player-path]
+  (let [selected-player  (get-in report-match selected-player-path)
+        other-selected   (disj (selected-players report-match) selected-player)
+        player-lookup    (group-by :id players)
+        possible-options (->> players
+                              (filter (complement (partial contains? other-selected))))]
+    [:select.form-control
+     {:default-value (or (:id selected-player) "nil")
+      :on-change (fn [e]
+                   (let [player-id (-> e .-target .-value uuid/make-uuid-from)
+                         player    (first (get player-lookup player-id))]
+                     (om/update! report-match selected-player-path player)))}
+     [:option {:value "nil" :disabled "disabled"} "Pick a player"]
+     (map (fn [{:keys [id name]}]
+            [:option {:value id} name])
+          possible-options)]))
+
+(defn render-team-score [{:keys [score] :as team} ]
+  [:div.form-group
+      [:label.control-label.col-lg-4 "Score"]
+      [:div.controls.col-lg-8
+       [:input.form-control {:type "number" :placeholder "0"
+                             :min "0" :max "11" :value score}]]])
+
+(defn render-team-player [report-match players team-path num]
+  (let [player-selector (keyword (str "player" num))
+        team            (get-in report-match team-path)]
+    [:div.form-group
+     [:label.control-label.col-lg-4 (str "Player " num)]
+     [:div.controls.col-lg-8
+      (render-players-select report-match players (conj team-path player-selector))]]))
+
+(defn- render-team-controls [report-match players team-num]
+  (let [team-selector (keyword (str "team" team-num))
+        team          (team-selector report-match)
+        render-player (partial render-team-player report-match players [team-selector])]
     [:div.col-lg-5.well.well-lg
      [:h2 (str "Team " team-num ":")]
-     [:div.form-group
-      [:label.control-label.col-lg-4 {:for idp1} (str "Player " 1)]
-      [:div.controls.col-lg-8 (render-players-select idp1 players player1)]]
-
-     [:div.form-group
-      [:label.control-label.col-lg-4 {:for idp2} (str "Player " 2)]
-      [:div.controls.col-lg-8 (render-players-select idp2 players player2)]]
-
-     [:div.form-group
-      [:label.control-label.col-lg-4 {:for idscore} "Score"]
-      [:div.controls.col-lg-8
-       [:input.form-control {:id idscore :name idscore :type "number" :placeholder "0"
-                             :min "0" :max "11" :value score}]]]]))
+     (render-player 1)
+     (render-player 2)
+     (render-team-score team)]))
 
 (defn render-match-date [matchdate]
   (let [formated-date (f/format-date matchdate)]
@@ -68,7 +92,8 @@
     om/IRender
     (render [_]
       (let [active-players (filterv :active players)
-            _ (debug report-match)]
+            _ (debug report-match)
+            render-team (partial render-team-controls report-match active-players)]
         (html
          [:div
           [:h1 "Report Match Result"]
@@ -79,9 +104,9 @@
 
           [:div.form-horizontal
            [:div.form-group.col-lg-12
-            (render-team-controls :team1 1 nil active-players)
+            (render-team 1)
             [:div.col-lg-2]
-            (render-team-controls :team2 2 nil active-players)]
+            (render-team 2)]
 
            (render-match-date (:matchdate report-match))
 
