@@ -3,12 +3,13 @@
   (:require [clojure.string :as str]
             [cljs.core.async :refer [chan <! put!]]
             [cljs-uuid-utils :as uuid]
+            [foosball.console :refer-macros [debug debug-js info log trace error]]
             [foosball.data :as data]
-            [foosball.table :as table]
+            [foosball.editable :as editable]
             [foosball.format :as f]
             [foosball.location :as loc]
             [foosball.spinners :refer [spinner]]
-            [foosball.console :refer-macros [debug debug-js info log trace error]]
+            [foosball.table :as table]
             [om.core :as om :include-macros true]
             [sablono.core :as html :refer-macros [html]]))
 
@@ -42,7 +43,7 @@
         possible-options (->> players
                               (filter (complement (partial contains? other-selected))))]
     [:select.form-control
-     {:default-value (or (:id selected-player) "nil")
+     {:value     (or (:id selected-player) "nil")
       :on-change (fn [e]
                    (let [player-id (-> e .-target .-value uuid/make-uuid-from)
                          player    (first (get player-lookup player-id))]
@@ -92,7 +93,7 @@
     om/IRender
     (render [_]
       (let [active-players (filterv :active players)
-            _ (debug report-match)
+            _ (debug (map (fn [p] (str "'" (:name p) "'")) (selected-players report-match)))
             render-team (partial render-team-controls report-match active-players)]
         (html
          [:div
