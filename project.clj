@@ -26,17 +26,17 @@
                  :shell ["echo" "built: " :build-artifact]}
 
   :cljsbuild {:builds {:dev {:source-paths ["src/cljs"]
-                               :compiler {:pretty-print false
-                                          :output-to "resources/public/js/dev/foosball.js"
-                                          :output-dir "resources/public/js/dev"
-                                          :optimizations :whitespace
-                                          :source-map "resources/public/js/dev/foosball.map"}}
+                             :compiler {:pretty-print false
+                                        :output-to "resources/public/js/dev/foosball.js"
+                                        :output-dir "resources/public/js/dev"
+                                        :optimizations :none
+                                        :source-map true}}
                        :testable {:source-paths ["src/cljs" "test/cljs"]
                                   :notify-command ["phantomjs" :cljs.test/runner "target/cljs/testable.js"]
                                   :compiler {:pretty-print false
                                              :output-to "target/cljs/testable.js"
                                              :optimizations :whitespace}}}
-              :test-commands {"unit" ["phantomjs" :cljs.test/runner "target/cljs/testable.js"]}}
+              :test-commands {"unit" ["phantomjs" :runner "target/cljs/testable.js"]}}
 
   :ring {:handler foosball.servlet-lifecycle/handler,
          :init    foosball.servlet-lifecycle/init,
@@ -64,8 +64,8 @@
                                   [org.clojars.runa/conjure "2.1.3"]
                                   [server-socket "1.0.0"]
                                   [http-kit "2.1.18"]
-                                  ;;;; clojurescript deps
-                                  [org.clojure/clojurescript "0.0-2280"]
+                                  ;; clojurescript deps
+                                  [org.clojure/clojurescript "0.0-2202"]
                                   [org.clojure/core.async "0.1.298.0-2a82a1-alpha"]
                                   [om "0.6.2"]
                                   [sablono "0.2.17"]

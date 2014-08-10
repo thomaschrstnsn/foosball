@@ -11,8 +11,8 @@
     {}
     {:display "none"}))
 
-(defn handle-change [e data edit-key owner]
-  (om/transact! data edit-key (fn [_] (.. e -target -value))))
+(defn handle-change [e data edit-key value-fn owner]
+  (om/transact! data edit-key (fn [_] (-> e .-target .-value value-fn))))
 
 (defn end-edit [data edit-key text owner]
   (om/set-state! owner :editing false)
@@ -32,7 +32,7 @@
     (when key-kw {:key key-kw :modifiers modifiers :data @data})))
 
 (defn editable
-  [data owner {:keys [edit-key key-chan placeholder input-classes input-props
+  [data owner {:keys [edit-key value-fn key-chan placeholder input-classes input-props
                       fn-broadcast-sub on-unmount-fn autofocus] :as opts}]
   (reify
     om/IInitState
@@ -57,12 +57,13 @@
     om/IRenderState
     (render-state [_ {:keys [editing]}]
       (let [text       (get data edit-key)
+            value-fn   (or value-fn identity)
             defaults   {:type "text"
                         :ref  "input"}
             must-haves {:class       (mapv name input-classes)
                         :value       text
                         :placeholder placeholder
-                        :on-change   #(handle-change % data edit-key owner)
+                        :on-change   #(handle-change % data edit-key value-fn owner)
                         :on-key-down #(when (om/get-state owner :editing)
                                         (let [comp-kb-ev (component-keyboard-event % data)]
                                           (when (= (:key comp-kb-ev) :enter)

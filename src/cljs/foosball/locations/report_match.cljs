@@ -4,6 +4,7 @@
             [cljs.core.async :refer [chan <! put!]]
             [cljs-uuid-utils :as uuid]
             [foosball.console :refer-macros [debug debug-js info log trace error]]
+            [foosball.convert :as c]
             [foosball.data :as data]
             [foosball.editable :as e]
             [foosball.format :as f]
@@ -62,28 +63,29 @@
                                         (= other 11)  losing-to-eleven-scores
                                         (= other 10)  losing-to-ten-scores
                                         :else         winning-scores))
-          _ (debug "valid?" this other valid-range (valid-range this))]
-      (valid-range this))))
+          result (contains? valid-range this)
+          _ (debug "valid?" this other valid-range :contains result)]
+      result)))
 
 (def nil=zero-valid-score? (fnil valid-score? 0 0))
 
 (defn render-team-score [report-match team-path other-team-path]
-  (let [team            (get-in report-match [team-path])
-        team-score      (get-in report-match [team-path :score])
-        other-score     (get-in report-match [other-team-path :score])
-        validation      {:invalid-score (nil? (nil=zero-valid-score? team-score other-score))}
-        _ (debug team-path {:this  team-score
-                            :other other-score
-                            :valid validation})]
+  (let [team             (get-in report-match [team-path])
+        team-score       (get-in report-match [team-path :score])
+        other-score      (get-in report-match [other-team-path :score])
+        invalid-score-fn (complement nil=zero-valid-score?)
+        validation       {:invalid-score (invalid-score-fn team-score other-score)}
+        _                (debug team-path {:this  team-score
+                                           :other other-score
+                                           :valid validation})]
     [:div.form-group
      [:label.control-label.col-lg-4 "Score"]
      [:div.controls.col-lg-8
       (om/build e/editable team {:fn (fn [t] (merge t validation))
                                  :opts {:edit-key :score
+                                        :value-fn c/->int
                                         :placeholder "0"
-                                        :input-props {:type "number"
-                                                      :min  "0"
-                                                      :max  "11"}}})
+                                        :input-props {:type "number"}}})
       #_ [:input.form-control {:type "number" :placeholder "0"
                                :min "0" :max "11" :value score}]]]))
 
