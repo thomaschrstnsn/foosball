@@ -5,7 +5,7 @@
             [cljs-uuid-utils :as uuid]
             [foosball.console :refer-macros [debug debug-js info log trace error]]
             [foosball.data :as data]
-            [foosball.editable :as editable]
+            [foosball.editable :as e]
             [foosball.format :as f]
             [foosball.location :as loc]
             [foosball.spinners :refer [spinner]]
@@ -53,12 +53,39 @@
             [:option {:value id} name])
           possible-options)]))
 
-(defn render-team-score [{:keys [score] :as team} ]
-  [:div.form-group
-      [:label.control-label.col-lg-4 "Score"]
-      [:div.controls.col-lg-8
-       [:input.form-control {:type "number" :placeholder "0"
-                             :min "0" :max "11" :value score}]]])
+(defn valid-score? [this other]
+  (when this
+    (let [losing-to-ten-scores    (range 9)
+          losing-to-eleven-scores (range 10)
+          winning-scores          (range 12)
+          valid-range             (set (cond
+                                        (= other 11)  losing-to-eleven-scores
+                                        (= other 10)  losing-to-ten-scores
+                                        :else         winning-scores))
+          _ (debug "valid?" this other valid-range (valid-range this))]
+      (valid-range this))))
+
+(def nil=zero-valid-score? (fnil valid-score? 0 0))
+
+(defn render-team-score [report-match team-path other-team-path]
+  (let [team            (get-in report-match [team-path])
+        team-score      (get-in report-match [team-path :score])
+        other-score     (get-in report-match [other-team-path :score])
+        validation      {:invalid-score (nil? (nil=zero-valid-score? team-score other-score))}
+        _ (debug team-path {:this  team-score
+                            :other other-score
+                            :valid validation})]
+    [:div.form-group
+     [:label.control-label.col-lg-4 "Score"]
+     [:div.controls.col-lg-8
+      (om/build e/editable team {:fn (fn [t] (merge t validation))
+                                 :opts {:edit-key :score
+                                        :placeholder "0"
+                                        :input-props {:type "number"
+                                                      :min  "0"
+                                                      :max  "11"}}})
+      #_ [:input.form-control {:type "number" :placeholder "0"
+                               :min "0" :max "11" :value score}]]]))
 
 (defn render-team-player [report-match players team-path num]
   (let [player-selector (keyword (str "player" num))
@@ -68,15 +95,23 @@
      [:div.controls.col-lg-8
       (render-players-select report-match players (conj team-path player-selector))]]))
 
+(defn team-selector [team-num]
+  (keyword (str "team" team-num)))
+
+(defn other-teams-selector [team-num]
+  (condp = team-num
+    1 (team-selector 2)
+    2 (team-selector 1)
+    nil))
+
 (defn- render-team-controls [report-match players team-num]
-  (let [team-selector (keyword (str "team" team-num))
-        team          (team-selector report-match)
+  (let [team          ((team-selector team-num) report-match)
         render-player (partial render-team-player report-match players [team-selector])]
     [:div.col-lg-5.well.well-lg
      [:h2 (str "Team " team-num ":")]
      (render-player 1)
      (render-player 2)
-     (render-team-score team)]))
+     (render-team-score report-match (team-selector team-num) (other-teams-selector team-num))]))
 
 (defn render-match-date [matchdate]
   (let [formated-date (f/format-date matchdate)]
@@ -93,7 +128,8 @@
     om/IRender
     (render [_]
       (let [active-players (filterv :active players)
-            _ (debug (map (fn [p] (str "'" (:name p) "'")) (selected-players report-match)))
+            _  (debug (map (fn [p]  (str "'" (:name p) "'")) (selected-players report-match)))
+            __ (debug (map (fn [kw] (get-in report-match [kw :score])) [:team1 :team2]))
             render-team (partial render-team-controls report-match active-players)]
         (html
          [:div

@@ -29,14 +29,14 @@
                                :compiler {:pretty-print false
                                           :output-to "resources/public/js/dev/foosball.js"
                                           :output-dir "resources/public/js/dev"
-                                          :optimizations :none
-                                          :source-map true}}
+                                          :optimizations :whitespace
+                                          :source-map "resources/public/js/dev/foosball.map"}}
                        :testable {:source-paths ["src/cljs" "test/cljs"]
                                   :notify-command ["phantomjs" :cljs.test/runner "target/cljs/testable.js"]
                                   :compiler {:pretty-print false
                                              :output-to "target/cljs/testable.js"
                                              :optimizations :whitespace}}}
-              :test-commands {"unit" ["phantomjs" :runner "target/cljs/testable.js"]}}
+              :test-commands {"unit" ["phantomjs" :cljs.test/runner "target/cljs/testable.js"]}}
 
   :ring {:handler foosball.servlet-lifecycle/handler,
          :init    foosball.servlet-lifecycle/init,
@@ -65,7 +65,7 @@
                                   [server-socket "1.0.0"]
                                   [http-kit "2.1.18"]
                                   ;;;; clojurescript deps
-                                  [org.clojure/clojurescript "0.0-2202"]
+                                  [org.clojure/clojurescript "0.0-2280"]
                                   [org.clojure/core.async "0.1.298.0-2a82a1-alpha"]
                                   [om "0.6.2"]
                                   [sablono "0.2.17"]
@@ -83,7 +83,7 @@
             [lein-cljsbuild "1.0.3"]
             [configleaf "0.4.6"]
             [lein-release "1.0.4"]
-            [com.cemerick/clojurescript.test "0.3.0"]]
+            [com.cemerick/clojurescript.test "0.3.1"]]
 
   :aliases {"deps-tree-prod" ["with-profile" "production" "deps" ":tree"]
             "deps-tree-dev" ["with-profile" "dev" "deps" ":tree"]

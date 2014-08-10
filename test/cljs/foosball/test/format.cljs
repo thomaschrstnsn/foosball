@@ -1,10 +1,26 @@
 (ns foosball.test.format
   (:require-macros [cemerick.cljs.test
                     :refer (is are deftest testing)])
-  (:require [cemerick.cljs.test :as t]
-            [foosball.format :as sut]
+  (:require [foosball.format :as sut]
             [foosball.routes :as routes]
-            [cljs-uuid-utils :as uuid]))
+            [cljs-uuid-utils :as uuid]
+            [foosball.locations.report-match :as rm]
+            [cemerick.cljs.test]))
+
+;; for now only one test namespace is executed?!!
+(deftest clojure-core-set
+  (testing "sets are functions to lookup their elements"
+    (let [range-ten-set (set (range 10))]
+      (is (= nil (range-ten-set -1)))
+      (is (= 1 (range-ten-set 1)))
+      (is (= 2 (range-ten-set 2)))))
+  (testing "score validation"
+    (testing "valid-score?"
+      (are [s1 s2 exp]
+        (= exp (rm/valid-score? s1 s2))
+        0   nil true
+        10  nil true
+        10  10  false))))
 
 (deftest style-value
   (is (= [:div nil "0"] (sut/style-value 0)))
