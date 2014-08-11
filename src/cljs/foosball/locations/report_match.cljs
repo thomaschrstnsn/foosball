@@ -62,10 +62,8 @@
           valid-range             (set (cond
                                         (= other 11)  losing-to-eleven-scores
                                         (= other 10)  losing-to-ten-scores
-                                        :else         winning-scores))
-          result (contains? valid-range this)
-          _ (debug "valid?" this other valid-range :contains result)]
-      result)))
+                                        :else         winning-scores))]
+      (valid-range this))))
 
 (def nil=zero-valid-score? (fnil valid-score? 0 0))
 
@@ -74,20 +72,15 @@
         team-score       (get-in report-match [team-path :score])
         other-score      (get-in report-match [other-team-path :score])
         invalid-score-fn (complement nil=zero-valid-score?)
-        validation       {:invalid-score (invalid-score-fn team-score other-score)}
-        _                (debug team-path {:this  team-score
-                                           :other other-score
-                                           :valid validation})]
+        invalid?         (invalid-score-fn team-score other-score)]
     [:div.form-group
      [:label.control-label.col-lg-4 "Score"]
      [:div.controls.col-lg-8
-      (om/build e/editable team {:fn (fn [t] (merge t validation))
-                                 :opts {:edit-key :score
+      (om/build e/editable team {:opts {:edit-key :score
                                         :value-fn c/->int
                                         :placeholder "0"
-                                        :input-props {:type "number"}}})
-      #_ [:input.form-control {:type "number" :placeholder "0"
-                               :min "0" :max "11" :value score}]]]))
+                                        :input-props {:type "number"}
+                                        :input-classes (when invalid? ["error"])}})]]))
 
 (defn render-team-player [report-match players team-path num]
   (let [player-selector (keyword (str "player" num))
