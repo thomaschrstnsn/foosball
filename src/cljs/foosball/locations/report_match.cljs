@@ -21,7 +21,7 @@
       (do
         (when-not (@app :players)
           (data/go-update-data! "/api/players" app :players))
-        (let [empty-team {:player1 nil :player2 nil :score nil}]
+        (let [empty-team {:player1 nil :player2 nil :score nil :valid-score? true}]
           (om/update! app [:report-match] {:team1 empty-team
                                            :team2 empty-team
                                            :matchdate (js/Date.)}))
@@ -54,32 +54,18 @@
             [:option {:value id} name])
           possible-options)]))
 
-(defn valid-score? [this other]
-  (when this
-    (let [losing-to-ten-scores    (range 9)
-          losing-to-eleven-scores (range 10)
-          winning-scores          (range 12)
-          valid-range             (set (cond
-                                        (= other 11)  losing-to-eleven-scores
-                                        (= other 10)  losing-to-ten-scores
-                                        :else         winning-scores))]
-      (valid-range this))))
-
-(def nil=zero-valid-score? (fnil valid-score? 0 0))
-
-(defn render-team-score [report-match team-path other-team-path]
-  (let [team             (get-in report-match [team-path])
-        team-score       (get-in report-match [team-path :score])
-        other-score      (get-in report-match [other-team-path :score])
-        invalid-score-fn (complement nil=zero-valid-score?)
-        invalid?         (invalid-score-fn team-score other-score)]
-    [:div.form-group (when invalid? {:class "has-error"})
-     [:label.control-label.col-lg-4 "Score"]
-     [:div.controls.col-lg-8
-      (om/build e/editable team {:opts {:edit-key :score
-                                        :value-fn c/->int
-                                        :placeholder "0"
-                                        :input-props {:type "number"}}})]]))
+(defn team-score-component [team owner {:keys [score-ch]}]
+  (reify
+    om/IRender
+    (render [_]
+      (html
+       [:div.form-group (when-not (:valid-score? team) {:class "has-error"})
+        [:label.control-label.col-lg-4 "Score"]
+        [:div.controls.col-lg-8
+         (om/build e/editable team {:opts {:value-fn  (comp str :score)
+                                           :change-ch score-ch
+                                           :placeholder "0"
+                                           :input-props {:type "number"}}})]]))))
 
 (defn render-team-player [report-match players team-path num]
   (let [player-selector (keyword (str "player" num))
@@ -92,20 +78,16 @@
 (defn team-selector [team-num]
   (keyword (str "team" team-num)))
 
-(defn other-teams-selector [team-num]
-  (condp = team-num
-    1 (team-selector 2)
-    2 (team-selector 1)
-    nil))
-
-(defn- render-team-controls [report-match players team-num]
+(defn- render-team-controls [report-match players team-num {:keys [score] :as chans}]
   (let [team          ((team-selector team-num) report-match)
         render-player (partial render-team-player report-match players [team-selector])]
     [:div.col-lg-5.well.well-lg
      [:h2 (str "Team " team-num ":")]
      (render-player 1)
      (render-player 2)
-     (render-team-score report-match (team-selector team-num) (other-teams-selector team-num))]))
+     (om/build team-score-component
+               (get report-match (team-selector team-num))
+               {:opts {:score-ch score}})]))
 
 (defn render-match-date [matchdate]
   (let [formated-date (f/format-date matchdate)]
@@ -117,10 +99,63 @@
                                           :type "date"
                                           :value formated-date}]]]]))
 
+(defn other-team [this-team]
+  (let [difference (disj #{:team1 :team2} this-team)]
+    (when (= 1 (count difference))
+      (first difference))))
+
+(defn valid-score? [this other]
+  (when this
+    (let [losing-to-ten-scores    (range 9)
+          losing-to-eleven-scores [9]
+          winning-scores          (range 12)
+          valid-range             (set (cond
+                                        (= other 11)  losing-to-eleven-scores
+                                        (= other 10)  losing-to-ten-scores
+                                        :else         winning-scores))]
+      (valid-range this))))
+
+(def nil=zero-valid-score? (fnil valid-score? 0 0))
+
+(defn update-score! [report-match team score other-score]
+  (let [valid-score? (nil=zero-valid-score? score other-score)]
+    (om/transact! report-match team (fn [v] (merge v
+                                                  {:score score}
+                                                  {:valid-score? valid-score?})))))
+
+(defn handle-score-update [report-match [team _] [type val]]
+  (when (= :foosball.editable/blur type)
+    (if-let [score (c/->int val)]
+      (let [other (other-team team)
+            other-score (get-in @report-match [other :score])]
+        (update-score! report-match team score other-score)
+        (when other-score
+          (update-score! report-match other other-score score))))))
+
 (defn report-match-component [{:keys [players report-match] :as app} owner]
   (reify
-    om/IRender
-    (render [_]
+    om/IInitState
+    (init-state [_]
+      (letfn [(team-chans-fact [] {:score (chan)})]
+              {:team1 (team-chans-fact)
+               :team2 (team-chans-fact)}))
+
+    om/IWillMount
+    (will-mount [_]
+      (let [chan-to-path-map (apply merge
+                                    (for [team [:team1 :team2]
+                                          chan [:score]]
+                                      {(om/get-state owner [team chan]) [team chan]}))]
+        (go-loop []
+          (let [[v c] (alts! (keys chan-to-path-map))
+                path (get chan-to-path-map c)]
+            (condp = (second path)
+              :score (handle-score-update report-match path v)
+              nil)
+            (recur)))))
+
+    om/IRenderState
+    (render-state [_ {:keys [team1 team2]}]
       (let [active-players (filterv :active players)
             _  (debug (map (fn [p]  (str "'" (:name p) "'")) (selected-players report-match)))
             __ (debug (map (fn [kw] (get-in report-match [kw :score])) [:team1 :team2]))
@@ -135,9 +170,9 @@
 
           [:div.form-horizontal
            [:div.form-group.col-lg-12
-            (render-team 1)
+            (render-team 1 team1)
             [:div.col-lg-2]
-            (render-team 2)]
+            (render-team 2 team2)]
 
            (render-match-date (:matchdate report-match))
 

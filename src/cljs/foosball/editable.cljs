@@ -6,17 +6,21 @@
             [sablono.core :as html :refer-macros [html]]
             [foosball.console :refer-macros [debug error]]))
 
-(defn display [show]
-  (if show
-    {}
-    {:display "none"}))
+(defn notify-change [chan type val]
+  (put! chan [type val]))
 
-(defn handle-change [e data edit-key value-fn owner]
-  (om/transact! data edit-key (fn [_] (-> e .-target .-value value-fn))))
+(defn on-change [chan owner e]
+  (let [val (-> e .-target .-value)]
+    (om/set-state! owner :current-value val)
+    (notify-change chan ::change val)))
 
-(defn end-edit [data edit-key text owner]
+(defn begin-edit [chan owner val]
+  (om/set-state! owner :editing true)
+  (notify-change chan ::focus val))
+
+(defn end-edit [chan owner val]
   (om/set-state! owner :editing false)
-  (om/transact! data edit-key (fn [_] text) :update))
+  (notify-change chan ::blur val))
 
 (defn component-keyboard-event [ev data]
   (let [keycode (.-keyCode ev)
@@ -32,37 +36,34 @@
     (when key-kw {:key key-kw :modifiers modifiers :data @data})))
 
 (defn editable
-  [data owner {:keys [edit-key         ;; key in data to create editable for
+  [data owner {:keys [value-fn         ;; fn to apply editable data to get str (default: identity)
                       placeholder      ;; placeholder text in input field
                       input-classes    ;; additional classes for input (seq of kw or str)
                       input-props      ;; additional properties for the input element
-                      change-chan      ;; channel where changes are put to, special values :editable/focus
-                                        ; and :editable/blur are put for these events
+                      change-ch        ;; channel where changes are put to, as [type value] tuples,
+                                        ; where type in #{:editable/focus :editable/change :editable/blur}
                       ] :as opts}]
   (reify
     om/IInitState
     (init-state [_]
-      {:editing false})
+      {:editing false
+       :current-value ((or value-fn identity) data)})
 
     om/IRenderState
-    (render-state [_ {:keys [editing]}]
-      (let [text       (get data edit-key)
-            value-fn   (or value-fn identity)
-            defaults   {:type "text"
+    (render-state [_ {:keys [editing current-value]}]
+      (let [defaults   {:type "text"
                         :ref  "input"}
             must-haves {:class       (mapv name input-classes)
-                        :value       text
+                        :value       current-value
                         :placeholder placeholder
-                        :on-change   (fn [e] (handle-change e data edit-key value-fn owner))
+                        :on-change   (fn [e] (on-change change-ch owner e))
                         :on-key-down (fn [e] (when (om/get-state owner :editing)
                                               (let [comp-kb-ev (component-keyboard-event e data)]
                                                 (when (= (:key comp-kb-ev) :enter)
                                                   (.blur (om/get-node owner "input"))))))
-                        :on-blur     (fn [e]
-                                       (debug "blur")
-                                       (when (om/get-state owner :editing)
-                                         (end-edit data edit-key text owner)))
-                        :on-focus    (fn [e] (om/set-state! owner :editing true))}]
+                        :on-blur     (fn [e] (when (om/get-state owner :editing)
+                                              (end-edit change-ch owner current-value)))
+                        :on-focus    (fn [e] (begin-edit change-ch owner current-value))}]
         (html [:input.form-control
                (merge defaults
                       input-props
