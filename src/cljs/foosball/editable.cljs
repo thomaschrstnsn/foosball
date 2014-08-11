@@ -32,27 +32,17 @@
     (when key-kw {:key key-kw :modifiers modifiers :data @data})))
 
 (defn editable
-  [data owner {:keys [edit-key value-fn key-chan placeholder input-classes input-props
-                      fn-broadcast-sub on-unmount-fn autofocus] :as opts}]
+  [data owner {:keys [edit-key         ;; key in data to create editable for
+                      placeholder      ;; placeholder text in input field
+                      input-classes    ;; additional classes for input (seq of kw or str)
+                      input-props      ;; additional properties for the input element
+                      change-chan      ;; channel where changes are put to, special values :editable/focus
+                                        ; and :editable/blur are put for these events
+                      ] :as opts}]
   (reify
     om/IInitState
     (init-state [_]
       {:editing false})
-
-    om/IWillMount
-    (will-mount [_]
-      (if fn-broadcast-sub
-        (go-loop []
-          (try
-            (let [{:keys [fn]} (<! fn-broadcast-sub)]
-              (fn data owner))
-            (catch js/Error e
-              (error "wrong things happened: " e)))
-          (recur))))
-
-    om/IWillUnmount
-    (will-unmount [_]
-      (if on-unmount-fn (on-unmount-fn)))
 
     om/IRenderState
     (render-state [_ {:keys [editing]}]
@@ -63,19 +53,17 @@
             must-haves {:class       (mapv name input-classes)
                         :value       text
                         :placeholder placeholder
-                        :on-change   #(handle-change % data edit-key value-fn owner)
-                        :on-key-down #(when (om/get-state owner :editing)
-                                        (let [comp-kb-ev (component-keyboard-event % data)]
-                                          (when (= (:key comp-kb-ev) :enter)
-                                            (.blur (om/get-node owner "input")))
-                                          (when (and key-chan comp-kb-ev)
-                                            (put! key-chan comp-kb-ev))))
+                        :on-change   (fn [e] (handle-change e data edit-key value-fn owner))
+                        :on-key-down (fn [e] (when (om/get-state owner :editing)
+                                              (let [comp-kb-ev (component-keyboard-event e data)]
+                                                (when (= (:key comp-kb-ev) :enter)
+                                                  (.blur (om/get-node owner "input"))))))
                         :on-blur     (fn [e]
+                                       (debug "blur")
                                        (when (om/get-state owner :editing)
                                          (end-edit data edit-key text owner)))
-                        :on-focus    #(om/set-state! owner :editing true)}]
+                        :on-focus    (fn [e] (om/set-state! owner :editing true))}]
         (html [:input.form-control
                (merge defaults
                       input-props
-                      must-haves
-                      (when autofocus {:auto-focus "autofocus"}))])))))
+                      must-haves)])))))

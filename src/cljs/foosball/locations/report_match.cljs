@@ -73,14 +73,13 @@
         other-score      (get-in report-match [other-team-path :score])
         invalid-score-fn (complement nil=zero-valid-score?)
         invalid?         (invalid-score-fn team-score other-score)]
-    [:div.form-group
+    [:div.form-group (when invalid? {:class "has-error"})
      [:label.control-label.col-lg-4 "Score"]
      [:div.controls.col-lg-8
       (om/build e/editable team {:opts {:edit-key :score
                                         :value-fn c/->int
                                         :placeholder "0"
-                                        :input-props {:type "number"}
-                                        :input-classes (when invalid? ["error"])}})]]))
+                                        :input-props {:type "number"}}})]]))
 
 (defn render-team-player [report-match players team-path num]
   (let [player-selector (keyword (str "player" num))
