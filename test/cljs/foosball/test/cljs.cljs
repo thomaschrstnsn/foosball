@@ -6,10 +6,10 @@
             [foosball.format :as format]
             [foosball.convert :as convert]
             [foosball.routes :as routes]
-  ;          [foosball.locations.report-match :as report-match]
+            [foosball.locations.report-match :as report-match]
             [cljs-uuid-utils :as uuid]))
 
-#_ (deftest valid-score?
+(deftest valid-score?
   (are [t1 t2 exp]
     (= exp (report-match/valid-score? t1 t2))
     nil nil nil

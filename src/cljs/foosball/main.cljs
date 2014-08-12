@@ -32,9 +32,10 @@
              [:div.container
               (loc/render-location app)]]))))
 
-(debug "initializing application")
-(let [app         (atom {})
-      route-setup (routes/init!)]
-  (om/root app-root app {:target     (. js/document (getElementById "app"))
-                         :init-state {:req-location-chan (:req-location-chan route-setup)}
-                         :opts       {:menu (select-keys route-setup [:home-location :menu-locations])}}))
+(when-not js/skipRootBind
+  (debug "initializing application")
+  (let [app         (atom {})
+        route-setup (routes/init!)]
+    (om/root app-root app {:target     (. js/document (getElementById "app"))
+                           :init-state {:req-location-chan (:req-location-chan route-setup)}
+                           :opts       {:menu (select-keys route-setup [:home-location :menu-locations])}})))
