@@ -1,34 +1,10 @@
-(ns foosball.test.cljs
-  "for now I cannot make clojurescript.test run on more than one file"
+(ns foosball.test.format
   (:require-macros [cemerick.cljs.test
                     :refer (is are deftest testing)])
   (:require [cemerick.cljs.test :as t]
             [foosball.format :as format]
-            [foosball.convert :as convert]
             [foosball.routes :as routes]
-            [foosball.locations.report-match :as report-match]
             [cljs-uuid-utils :as uuid]))
-
-(deftest valid-score?
-  (are [t1 t2 exp]
-    (= exp (report-match/valid-score? t1 t2))
-    nil nil nil
-    1   nil true) )
-
-(deftest str->int
-  (are [x expected]
-    (= expected (convert/str->int x))
-    "1"   1
-    "0"   0
-    "-1" -1
-    "not a number" nil))
-
-(deftest ->int
-  (are [x expected]
-    (= expected (convert/->int x))
-    "123" 123
-    123   123
-    "abc" nil))
 
 (deftest style-value
   (is (= [:div nil "0"] (format/style-value 0)))

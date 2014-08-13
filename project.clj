@@ -32,18 +32,14 @@
                                         :optimizations :none
                                         :source-map true}}
                        :testable {:source-paths ["src/cljs" "test/cljs"]
-                                  :notify-command ["pwd" "-L"]
+                                  :notify-command ["run-cljs-phantom.sh"]
                                   :compiler {:output-to     "target/cljs/testable.js"
                                              :source-map    "target/cljs/testable.js.map"
                                              :output-dir    "target/cljs/test"
                                              :optimizations :none
                                              :pretty-print  true}}}
-              :test-commands {"unit"
-                              ["phantomjs" "extern/test/runner-none.js"
-                               "target/cljs/test" "target/cljs/testable.js"
-                               "extern/test/bind-shim.js"
-                               "resources/public/js/extern/react-0.9.0.js"
-                               "skipRootBind=true"]}}
+              :test-commands {"unit" ["run-cljs-phantom.sh"]}}
+
 
   :ring {:handler foosball.servlet-lifecycle/handler,
          :init    foosball.servlet-lifecycle/init,
