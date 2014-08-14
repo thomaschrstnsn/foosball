@@ -67,20 +67,30 @@
                                            :placeholder "0"
                                            :input-props {:type "number"}}})]]))))
 
-(defn render-team-player [report-match players team-path num change-ch]
-  (let [player-selector (keyword (str "player" num))
-        team            (get-in report-match team-path)]
-    [:div.form-group
-     [:label.control-label.col-lg-4 (str "Player " num)]
-     [:div.controls.col-lg-8
-      (render-players-select report-match players (conj team-path player-selector) change-ch)]]))
+(defn team-player-component [{:keys [active-players player-num] :as team} owner {:keys [change-ch]}]
+  (reify
+    om/IRender
+    (render [_]
+      (html
+       (let [player-selector (keyword (str "player" player-num))]
+         [:div.form-group
+          [:label.control-label.col-lg-4 (str "Player " player-num)]
+          [:div.controls.col-lg-8
+           (render-players-select team active-players [player-selector] change-ch)]])))))
 
 (defn team-selector [team-num]
   (keyword (str "team" team-num)))
 
-(defn- render-team-controls [report-match players team-num {:keys [score player1 player2] :as chans}]
+(defn- render-team-controls [{:keys [report-match active-players] :as app}
+                             team-num
+                             {:keys [score player1 player2] :as chans}]
   (let [team          ((team-selector team-num) report-match)
-        render-player (partial render-team-player report-match players [team-selector])]
+        render-player (fn [num change-ch]
+                        (om/build team-player-component team
+                                  {:opts      {:change-ch change-ch}
+                                   :react-key (str team-selector "-" num)
+                                   :fn        (fn [t] (merge t {:active-players active-players
+                                                               :player-num num}))}))]
     (debug "render team" team)
     [:div.col-lg-5.well.well-lg
      [:h2 (str "Team " team-num ":")]
@@ -125,9 +135,9 @@
 
 (defn handle-player-update [report-match path player]
   (debug "handle update" path player)
-  (om/update! report-match path player))
+  (om/update! @report-match path player))
 
-(defn report-match-component [{:keys [players report-match] :as app} owner]
+(defn report-match-component [{:keys [active-players report-match] :as app} owner]
   (reify
     om/IInitState
     (init-state [_]
@@ -153,10 +163,9 @@
 
     om/IRenderState
     (render-state [_ {:keys [team1 team2]}]
-      (let [active-players (filterv :active players)
-            _  (debug (map (fn [p]  (str "'" (:name p) "'")) (selected-players report-match)))
+      (let [_  (debug (map (fn [p]  (str "'" (:name p) "'")) (selected-players report-match)))
             __ (debug (map (fn [kw] (get-in report-match [kw :score])) [:team1 :team2]))
-            render-team (partial render-team-controls report-match active-players)]
+            render-team (partial render-team-controls app)]
         (html
          [:div
           [:h1 "Report Match Result"]
@@ -180,5 +189,8 @@
 
 (defn render [app]
   (if (:auth app)
-    (om/build report-match-component app)
+    (om/build report-match-component app
+              {:fn (fn [{:keys [report-match players]}]
+                     {:report-match   report-match
+                      :active-players (filterv :active players)})})
     (spinner)))
