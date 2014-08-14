@@ -49,11 +49,8 @@
                                            :placeholder "0"
                                            :input-props {:type "number"}}})]]))))
 
-(defn- render-players-select [{:keys [team other-team active-players]}
-                              selected-player-path
-                              change-ch]
-  (let [selected-player  (get-in team selected-player-path)
-        other-selected   (disj (selected-players team other-team) selected-player)
+(defn- render-players-select [selected-player team other-team active-players change-ch]
+  (let [other-selected   (disj (selected-players team other-team) selected-player)
         possible-options (->> active-players
                               (filter (complement (partial contains? other-selected))))]
     [:select.form-control
@@ -68,21 +65,23 @@
             [:option {:value id} name])
           possible-options)]))
 
-(defn team-player-component [{:keys [team other-team active-players player-num] :as teams}
+(defn team-player-component [{:keys [selected-player team other-team active-players player-num]}
                              owner
                              {:keys [change-ch]}]
   (reify
     om/IRender
     (render [_]
       (html
-       (let [player-selector (keyword (str "player" player-num))]
-         [:div.form-group
-          [:label.control-label.col-lg-4 (str "Player " player-num)]
-          [:div.controls.col-lg-8
-           (render-players-select teams [player-selector] change-ch)]])))))
+       [:div.form-group
+        [:label.control-label.col-lg-4 (str "Player " player-num)]
+        [:div.controls.col-lg-8
+         (render-players-select selected-player team other-team active-players change-ch)]]))))
 
 (defn team-selector [team-num]
   (keyword (str "team" team-num)))
+
+(defn player-selector [player-num]
+  (keyword (str "player" player-num)))
 
 (defn other-team [this-team]
   (let [difference (disj #{:team1 :team2} this-team)]
@@ -94,14 +93,18 @@
                              {:keys [score player1 player2] :as chans}]
   (let [team-sel       (team-selector team-num)
         other-team-sel (other-team team-sel)
+        team           (team-sel report-match)
+        other-team     (other-team-sel report-match)
         render-player  (fn [num change-ch]
-                         (om/build team-player-component (team-sel report-match)
-                                   {:opts      {:change-ch change-ch}
-                                    :react-key (str team-selector "-" num)
-                                    :fn        (fn [t] {:team t
-                                                       :other-team (other-team-sel report-match)
-                                                       :active-players active-players
-                                                       :player-num num})}))]
+                         (let [selected-player ((player-selector num) team)]
+                           (om/build team-player-component team
+                                     {:opts      {:change-ch change-ch}
+                                      :react-key (str team-selector "-" num)
+                                      :fn        (fn [t] {:selected-player selected-player
+                                                         :team t
+                                                         :other-team other-team
+                                                         :active-players active-players
+                                                         :player-num num})})))]
     [:div.col-lg-5.well.well-lg
      [:h2 (str "Team " team-num ":")]
      (render-player 1 player1)
