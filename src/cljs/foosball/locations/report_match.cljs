@@ -48,6 +48,7 @@
       :on-change (fn [e]
                    (let [player-id (-> e .-target .-value uuid/make-uuid-from)
                          player    (first (get player-lookup player-id))]
+                     (debug "select player" selected-player-path player)
                      (om/update! report-match selected-player-path player)))}
      [:option {:value "nil" :disabled "disabled"} "Pick a player"]
      (map (fn [{:keys [id name]}]
@@ -81,6 +82,7 @@
 (defn- render-team-controls [report-match players team-num {:keys [score] :as chans}]
   (let [team          ((team-selector team-num) report-match)
         render-player (partial render-team-player report-match players [team-selector])]
+    (debug "render team" team)
     [:div.col-lg-5.well.well-lg
      [:h2 (str "Team " team-num ":")]
      (render-player 1)
@@ -103,26 +105,6 @@
   (let [difference (disj #{:team1 :team2} this-team)]
     (when (= 1 (count difference))
       (first difference))))
-
-;; (def truthy? (comp not not))
-
-;; (defn valid-score? [this other]
-;;   (when this
-;;     (let [losing-to-ten-scores    (range 9)
-;;           losing-to-eleven-scores [9]
-;;           winning-to-any          (range 12)
-;;           winning-to-<=8          (range 11)
-;;           winning-to-9            winning-to-any
-;;           other                   (or other 0)
-;;           valid-range             (cond
-;;                                    (= other 11)  losing-to-eleven-scores
-;;                                    (= other 10)  losing-to-ten-scores
-;;                                    (= other 9)   winning-to-9
-;;                                    (<= other 8)  winning-to-<=8
-;;                                    :else         winning-to-any)]
-;;       (truthy? ((set valid-range) this)))))
-
-;; (def nil=zero-valid-score? (fnil valid-score? 0 0))
 
 (defn valid-score? [this other]
   (:team1score (vm/validate-scores [this other])))
