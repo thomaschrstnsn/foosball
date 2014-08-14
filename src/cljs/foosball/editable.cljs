@@ -22,7 +22,7 @@
   (om/set-state! owner :editing false)
   (notify-change chan ::blur val))
 
-(defn component-keyboard-event [ev data]
+(defn component-keyboard-event [ev]
   (let [keycode (.-keyCode ev)
         codes   {13 :enter
                  38 :up
@@ -33,10 +33,10 @@
                             [:ctrl :shift :alt :meta])
                        (filter identity)
                        set)]
-    (when key-kw {:key key-kw :modifiers modifiers :data @data})))
+    (when key-kw {:key key-kw :modifiers modifiers})))
 
 (defn editable
-  [data owner {:keys [value-fn         ;; fn to apply editable data to get str (default: identity)
+  [data owner {:keys [value-fn         ;; fn to apply on editable data to get str (default: identity)
                       placeholder      ;; placeholder text in input field
                       input-classes    ;; additional classes for input (seq of kw or str)
                       input-props      ;; additional properties for the input element
@@ -58,7 +58,7 @@
                         :placeholder placeholder
                         :on-change   (fn [e] (on-change change-ch owner e))
                         :on-key-down (fn [e] (when (om/get-state owner :editing)
-                                              (let [comp-kb-ev (component-keyboard-event e data)]
+                                              (let [comp-kb-ev (component-keyboard-event e)]
                                                 (when (= (:key comp-kb-ev) :enter)
                                                   (.blur (om/get-node owner "input"))))))
                         :on-blur     (fn [e] (when (om/get-state owner :editing)

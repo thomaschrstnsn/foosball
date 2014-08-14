@@ -113,15 +113,19 @@
                (get report-match (team-selector team-num))
                {:opts {:score-ch score}})]))
 
-(defn render-match-date [matchdate]
-  (let [formated-date (f/format-date matchdate)]
-    [:div.form-group.col-lg-12
-     [:div.form-group.pull-right.col-lg-6
-      [:label.control-label.col-lg-6 {:for "matchdate"} "Date played"]
-      [:div.controls.col-lg-5
-       [:input.input-medium.form-control {:id "matchdate"
-                                          :type "date"
-                                          :value formated-date}]]]]))
+(defn match-date-component [matchdate owner {:keys [change-ch]}]
+  (reify
+    om/IRender
+    (render [_]
+      (html
+       [:div.form-group.col-lg-12
+        [:div.form-group.pull-right.col-lg-6
+         [:label.control-label.col-lg-6 "Date played"]
+         [:div.controls.col-lg-5
+          (om/build e/editable matchdate {:opts {:value-fn      f/format-date
+                                                 :input-classes [:input-medium]
+                                                 :input-props   {:type "date"}
+                                                 :change-ch     change-ch}})]]]))))
 
 (defn valid-score? [this other]
   (:team1score (vm/validate-scores [this other])))
@@ -144,6 +148,15 @@
 (defn handle-player-update [report-match path player]
   (om/update! report-match path player))
 
+(defn handle-matchdate-update [report-match path [type date-str]]
+  (when (= :foosball.editable/blur type)
+    (if-let [matchdate date-str ;(c/->date val)
+             ]
+      (debug "handle matchdate " (str "'" matchdate "'"))
+;      (om/transact! report-match path (fn [v] ()))
+      )
+))
+
 (defn report-match-component [{:keys [active-players report-match] :as app} owner]
   (reify
     om/IInitState
@@ -151,30 +164,35 @@
       (letfn [(team-chans-fact [] {:score (chan)
                                    :player1 (chan)
                                    :player2 (chan)})]
-        {:team1 (team-chans-fact)
-         :team2 (team-chans-fact)}))
+        {:team1     (team-chans-fact)
+         :team2     (team-chans-fact)
+         :matchdate (chan)}))
 
     om/IWillMount
     (will-mount [_]
-      (let [chan-to-path-map (apply merge
-                                    (for [team [:team1 :team2]
-                                          chan [:score :player1 :player2]]
-                                      {(om/get-state owner [team chan]) [team chan]}))]
+      (let [team-paths (for [team [:team1 :team2]
+                             chan [:score :player1 :player2]]
+                         [team chan])
+            all-paths  (conj team-paths [:matchdate])
+            chan-to-path-map (apply merge
+                                    (map (fn [p] {(om/get-state owner p) p})
+                                         all-paths))]
         (go-loop []
           (let [[v c] (alts! (keys chan-to-path-map))
                 path (get chan-to-path-map c)]
             (condp some (-> path)
-              #{:score}   (handle-score-update report-match path v)
-              #{:player1
-                :player2} (handle-player-update report-match path v)
+              #{:score} (handle-score-update report-match path v)
+              #{:player1 :player2} (handle-player-update report-match path v)
+              #{:matchdate} (handle-matchdate-update report-match path v)
               nil)
             (recur)))))
 
     om/IRenderState
-    (render-state [_ {:keys [team1 team2]}]
-      (let [_  (debug (map (fn [p]  (str "'" (:name p) "'")) (selected-players (:team1 report-match)
-                                                                              (:team2 report-match))))
-            __ (debug (map (fn [kw] (get-in report-match [kw :score])) [:team1 :team2]))
+    (render-state [_ {:keys [team1 team2 matchdate]}]
+      (let [_  (debug "players" (map (fn [p] (str "'" (:name p) "'"))
+                                     (selected-players (:team1 report-match)
+                                                       (:team2 report-match))))
+            __ (debug "scores" (map (fn [kw] (get-in report-match [kw :score])) [:team1 :team2]))
             render-team (partial render-team-controls app)]
         (html
          [:div
@@ -190,7 +208,9 @@
             [:div.col-lg-2]
             (render-team 2 team2)]
 
-           (render-match-date (:matchdate report-match))
+           (om/build match-date-component
+                     (:matchdate report-match)
+                     {:opts {:change-ch matchdate}})
 
            [:div.form-group.col-lg-12
             [:div.form-group.col-lg-5.pull-right
