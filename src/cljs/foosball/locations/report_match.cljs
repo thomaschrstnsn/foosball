@@ -28,31 +28,13 @@
         (loc/set-location app (:id v)))
       (.back js/history))))
 
-(defn selected-players [report-match]
-  (let [paths (for [team   [:team1 :team2]
-                    player [:player1 :player2]]
-                [team player])]
-    (->> paths
-         (map (fn [p] (get-in report-match p)))
+(defn selected-players [team other-team]
+  (let [players (for [t      [team other-team]
+                      player [:player1 :player2]]
+                  (get t player))]
+    (->> players
          (filter identity)
          set)))
-
-(defn- render-players-select [report-match players selected-player-path change-ch]
-  (let [selected-player  (get-in report-match selected-player-path)
-        other-selected   (disj (selected-players report-match) selected-player)
-        player-lookup    (group-by :id players)
-        possible-options (->> players
-                              (filter (complement (partial contains? other-selected))))]
-    [:select.form-control
-     {:value     (or (:id selected-player) "nil")
-      :on-change (fn [e]
-                   (let [player-id (-> e .-target .-value uuid/make-uuid-from)
-                         player    (first (get player-lookup player-id))]
-                     (put! change-ch player)))}
-     [:option {:value "nil" :disabled "disabled"} "Pick a player"]
-     (map (fn [{:keys [id name]}]
-            [:option {:value id} name])
-          possible-options)]))
 
 (defn team-score-component [team owner {:keys [score-ch]}]
   (reify
@@ -67,7 +49,28 @@
                                            :placeholder "0"
                                            :input-props {:type "number"}}})]]))))
 
-(defn team-player-component [{:keys [active-players player-num] :as team} owner {:keys [change-ch]}]
+(defn- render-players-select [{:keys [team other-team active-players]}
+                              selected-player-path
+                              change-ch]
+  (let [selected-player  (get-in team selected-player-path)
+        other-selected   (disj (selected-players team other-team) selected-player)
+        possible-options (->> active-players
+                              (filter (complement (partial contains? other-selected))))]
+    [:select.form-control
+     {:value     (or (:id selected-player) "nil")
+      :on-change (fn [e]
+                   (let [player-lookup (group-by :id active-players)
+                         player-id     (-> e .-target .-value uuid/make-uuid-from)
+                         player        (first (get player-lookup player-id))]
+                     (put! change-ch player)))}
+     [:option {:value "nil" :disabled "disabled"} "Pick a player"]
+     (map (fn [{:keys [id name]}]
+            [:option {:value id} name])
+          possible-options)]))
+
+(defn team-player-component [{:keys [team other-team active-players player-num] :as teams}
+                             owner
+                             {:keys [change-ch]}]
   (reify
     om/IRender
     (render [_]
@@ -76,22 +79,29 @@
          [:div.form-group
           [:label.control-label.col-lg-4 (str "Player " player-num)]
           [:div.controls.col-lg-8
-           (render-players-select team active-players [player-selector] change-ch)]])))))
+           (render-players-select teams [player-selector] change-ch)]])))))
 
 (defn team-selector [team-num]
   (keyword (str "team" team-num)))
 
+(defn other-team [this-team]
+  (let [difference (disj #{:team1 :team2} this-team)]
+    (when (= 1 (count difference))
+      (first difference))))
+
 (defn- render-team-controls [{:keys [report-match active-players] :as app}
                              team-num
                              {:keys [score player1 player2] :as chans}]
-  (let [team          ((team-selector team-num) report-match)
-        render-player (fn [num change-ch]
-                        (om/build team-player-component team
-                                  {:opts      {:change-ch change-ch}
-                                   :react-key (str team-selector "-" num)
-                                   :fn        (fn [t] (merge t {:active-players active-players
-                                                               :player-num num}))}))]
-    (debug "render team" team)
+  (let [team-sel       (team-selector team-num)
+        other-team-sel (other-team team-sel)
+        render-player  (fn [num change-ch]
+                         (om/build team-player-component (team-sel report-match)
+                                   {:opts      {:change-ch change-ch}
+                                    :react-key (str team-selector "-" num)
+                                    :fn        (fn [t] {:team t
+                                                       :other-team (other-team-sel report-match)
+                                                       :active-players active-players
+                                                       :player-num num})}))]
     [:div.col-lg-5.well.well-lg
      [:h2 (str "Team " team-num ":")]
      (render-player 1 player1)
@@ -109,11 +119,6 @@
        [:input.input-medium.form-control {:id "matchdate"
                                           :type "date"
                                           :value formated-date}]]]]))
-
-(defn other-team [this-team]
-  (let [difference (disj #{:team1 :team2} this-team)]
-    (when (= 1 (count difference))
-      (first difference))))
 
 (defn valid-score? [this other]
   (:team1score (vm/validate-scores [this other])))
@@ -134,8 +139,7 @@
           (update-score! report-match other other-score score))))))
 
 (defn handle-player-update [report-match path player]
-  (debug "handle update" path player)
-  (om/update! @report-match path player))
+  (om/update! report-match path player))
 
 (defn report-match-component [{:keys [active-players report-match] :as app} owner]
   (reify
@@ -144,8 +148,8 @@
       (letfn [(team-chans-fact [] {:score (chan)
                                    :player1 (chan)
                                    :player2 (chan)})]
-              {:team1 (team-chans-fact)
-               :team2 (team-chans-fact)}))
+        {:team1 (team-chans-fact)
+         :team2 (team-chans-fact)}))
 
     om/IWillMount
     (will-mount [_]
@@ -156,14 +160,17 @@
         (go-loop []
           (let [[v c] (alts! (keys chan-to-path-map))
                 path (get chan-to-path-map c)]
-            (condp = (second path)
-              :score   (handle-score-update report-match path v)
-              (handle-player-update report-match path v))
+            (condp some (-> path)
+              #{:score}   (handle-score-update report-match path v)
+              #{:player1
+                :player2} (handle-player-update report-match path v)
+              nil)
             (recur)))))
 
     om/IRenderState
     (render-state [_ {:keys [team1 team2]}]
-      (let [_  (debug (map (fn [p]  (str "'" (:name p) "'")) (selected-players report-match)))
+      (let [_  (debug (map (fn [p]  (str "'" (:name p) "'")) (selected-players (:team1 report-match)
+                                                                              (:team2 report-match))))
             __ (debug (map (fn [kw] (get-in report-match [kw :score])) [:team1 :team2]))
             render-team (partial render-team-controls app)]
         (html
