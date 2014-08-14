@@ -10,7 +10,7 @@
             [foosball.format :as f]
             [foosball.location :as loc]
             [foosball.spinners :refer [spinner]]
-            [foosball.table :as table]
+            [foosball.validation.match :as vm]
             [om.core :as om :include-macros true]
             [sablono.core :as html :refer-macros [html]]))
 
@@ -104,21 +104,31 @@
     (when (= 1 (count difference))
       (first difference))))
 
-(defn valid-score? [this other]
-  (when this
-    (let [losing-to-ten-scores    (range 9)
-          losing-to-eleven-scores [9]
-          winning-scores          (range 12)
-          valid-range             (set (cond
-                                        (= other 11)  losing-to-eleven-scores
-                                        (= other 10)  losing-to-ten-scores
-                                        :else         winning-scores))]
-      (valid-range this))))
+;; (def truthy? (comp not not))
 
-(def nil=zero-valid-score? (fnil valid-score? 0 0))
+;; (defn valid-score? [this other]
+;;   (when this
+;;     (let [losing-to-ten-scores    (range 9)
+;;           losing-to-eleven-scores [9]
+;;           winning-to-any          (range 12)
+;;           winning-to-<=8          (range 11)
+;;           winning-to-9            winning-to-any
+;;           other                   (or other 0)
+;;           valid-range             (cond
+;;                                    (= other 11)  losing-to-eleven-scores
+;;                                    (= other 10)  losing-to-ten-scores
+;;                                    (= other 9)   winning-to-9
+;;                                    (<= other 8)  winning-to-<=8
+;;                                    :else         winning-to-any)]
+;;       (truthy? ((set valid-range) this)))))
+
+;; (def nil=zero-valid-score? (fnil valid-score? 0 0))
+
+(defn valid-score? [this other]
+  (:team1score (vm/validate-scores [this other])))
 
 (defn update-score! [report-match team score other-score]
-  (let [valid-score? (nil=zero-valid-score? score other-score)]
+  (let [valid-score? (valid-score? score other-score)]
     (om/transact! report-match team (fn [v] (merge v
                                                   {:score score}
                                                   {:valid-score? valid-score?})))))
