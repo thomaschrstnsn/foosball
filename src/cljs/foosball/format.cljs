@@ -1,8 +1,6 @@
 (ns foosball.format
   (:require [goog.string :as gstring]
             [goog.string.format]
-            [cljs-time.format :as tf]
-            [cljs-time.coerce :as tc]
             [foosball.routes :as routes]))
 
 (defn format
@@ -16,9 +14,6 @@
 
 (defn format-rating [r]
   (format "%.1f" (double r)))
-
-(defn format-date [d]
-  (tf/unparse (tf/formatter "dd-MM-yyyy") (tc/to-date-time d)))
 
 (defn format-player-link [players playername]
   (let [player (->> players

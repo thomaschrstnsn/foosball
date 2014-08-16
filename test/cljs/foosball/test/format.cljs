@@ -36,9 +36,6 @@
     (is (= [:div {:class "text-danger"}  "51.0%"] (format/style-match-percentage false 51.001)))
     (is (= [:div {:class "text-success"} "49.9%"] (format/style-match-percentage false 49.9)))))
 
-(deftest format-date
-  (is (= "24-11-2003" (format/format-date #inst "2003-11-24"))))
-
 (deftest format-player-link
   (let [my-player-id (uuid/make-random-uuid)
         players [{:id (uuid/make-random-uuid) :name "Other player"}

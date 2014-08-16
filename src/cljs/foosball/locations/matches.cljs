@@ -1,6 +1,7 @@
 (ns foosball.locations.matches
   (:require [om.core :as om :include-macros true]
             [foosball.data :as data]
+            [foosball.date :as d]
             [foosball.table :as table]
             [foosball.format :as f]
             [foosball.location :as loc]))
@@ -17,7 +18,7 @@
     (let [players-from-team (fn [{:keys [player1 player2]}] [player1 player2])
           date-column {:heading "Date played"
                        :key :matchdate
-                       :printer f/format-date
+                       :printer d/->str
                        :align :left
                        :sort-fn identity}
           columns  [date-column

@@ -1,6 +1,7 @@
 (ns foosball.locations.player-log
   (:require [om.core :as om :include-macros true]
             [foosball.data :as data]
+            [foosball.date :as d]
             [foosball.table :as table]
             [foosball.format :as f]
             [foosball.location :as loc]
@@ -40,7 +41,7 @@
        (when player-log
          (let [columns      [{:heading "Match date"
                               :key     :matchdate
-                              :printer (fn [d] (when d (f/format-date d)))}
+                              :printer (fn [d] (when d (d/->str d)))}
                              {:heading "Team mate"
                               :key     :team-mate
                               :printer (fn [tm] (when tm (f/format-player-link players tm)))}
