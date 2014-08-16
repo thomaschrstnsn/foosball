@@ -7,6 +7,7 @@
             [foosball.convert :as c]
             [foosball.data :as data]
             [foosball.date :as d]
+            [foosball.datepicker :as dp]
             [foosball.editable :as e]
             [foosball.format :as f]
             [foosball.location :as loc]
@@ -123,7 +124,9 @@
         [:div.form-group.pull-right.col-lg-6
          [:label.control-label.col-lg-6 "Date played"]
          [:div.controls.col-lg-5
-          (om/build e/editable matchdate {:opts {:value-fn      d/->str
+          (om/build dp/daterange-component matchdate {:opts {:to-key :to :from-key :from}
+                                                      :fn (fn [x] {:to x :from nil})})
+#_          (om/build e/editable matchdate {:opts {:value-fn      d/->str
                                                  :input-classes [:input-medium]
                                                  :input-props   {:type "date"}
                                                  :change-ch     change-ch}})]]]))))
