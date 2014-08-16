@@ -155,10 +155,8 @@
   (om/update! report-match path player))
 
 (defn handle-matchdate-update [report-match path js-date]
-  (if-let [matchdate (dc/to-date-time js-date)]
-    (debug "handle matchdate " matchdate)
-                                        ;      (om/transact! report-match path (fn [v] ()))
-    ))
+  (let [matchdate (dc/to-date-time js-date)]
+    (om/update! report-match path matchdate)))
 
 (defn report-match-component [{:keys [active-players report-match] :as app} owner]
   (reify
@@ -196,6 +194,7 @@
                                      (selected-players (:team1 report-match)
                                                        (:team2 report-match))))
             __ (debug "scores" (map (fn [kw] (get-in report-match [kw :score])) [:team1 :team2]))
+            ___ (debug "matchdate" (-> report-match :matchdate d/->str))
             render-team (partial render-team-controls app)]
         (html
          [:div
