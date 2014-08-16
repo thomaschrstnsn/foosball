@@ -6,7 +6,7 @@ function notify {
 
 function phantom_test_runner {
     CLJSTEST="clojurescript.test"
-    phantomjs extern/test/runner-none.js target/cljs/test target/cljs/testable.js extern/test/bind-shim.js resources/public/js/extern/react-0.9.0.js skipRootBind=true
+    time phantomjs extern/test/runner-none.js target/cljs/test target/cljs/testable.js extern/test/bind-shim.js resources/public/js/extern/react-0.9.0.js skipRootBind=true
     if [[ $? -eq 0 ]];
     then
         notify $CLJSTEST "success"
@@ -27,3 +27,5 @@ then
 else
     phantom_test_runner
 fi;
+
+date "+Finished at: %H:%M:%S"

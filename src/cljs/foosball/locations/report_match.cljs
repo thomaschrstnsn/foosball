@@ -2,6 +2,8 @@
   (:require-macros [cljs.core.async.macros :refer [go-loop go]])
   (:require [clojure.string :as str]
             [cljs.core.async :refer [chan <! put!]]
+            [cljs-time.coerce :as dc]
+            [cljs-time.core :as tc]
             [cljs-uuid-utils :as uuid]
             [foosball.console :refer-macros [debug debug-js info log trace error]]
             [foosball.convert :as c]
@@ -26,7 +28,7 @@
         (let [empty-team {:player1 nil :player2 nil :score nil :valid-score? true}]
           (om/update! app [:report-match] {:team1 empty-team
                                            :team2 empty-team
-                                           :matchdate (js/Date.)}))
+                                           :matchdate (tc/now)}))
         (loc/set-location app (:id v)))
       (.back js/history))))
 
@@ -115,7 +117,7 @@
                (get report-match (team-selector team-num))
                {:opts {:score-ch score}})]))
 
-(defn match-date-component [matchdate owner {:keys [change-ch]}]
+(defn matchdate-component [matchdate owner {:keys [change-ch]}]
   (reify
     om/IRender
     (render [_]
@@ -124,12 +126,12 @@
         [:div.form-group.pull-right.col-lg-6
          [:label.control-label.col-lg-6 "Date played"]
          [:div.controls.col-lg-5
-          (om/build dp/daterange-component matchdate {:opts {:to-key :to :from-key :from}
-                                                      :fn (fn [x] {:to x :from nil})})
-#_          (om/build e/editable matchdate {:opts {:value-fn      d/->str
-                                                 :input-classes [:input-medium]
-                                                 :input-props   {:type "date"}
-                                                 :change-ch     change-ch}})]]]))))
+          (om/build dp/date-component matchdate {:opts {:value-key     :date
+                                                        :max-value-key :today
+                                                        :str-fn    d/->str
+                                                        :change-ch change-ch}
+                                                 :fn   (fn [x] {:date  x
+                                                               :today (tc/now)})})]]]))))
 
 (defn valid-score? [this other]
   (:team1score (vm/validate-scores [this other])))
@@ -152,14 +154,11 @@
 (defn handle-player-update [report-match path player]
   (om/update! report-match path player))
 
-(defn handle-matchdate-update [report-match path [type date-str]]
-  (when (= :foosball.editable/blur type)
-    (if-let [matchdate date-str ;(c/->date val)
-             ]
-      (debug "handle matchdate " (str "'" matchdate "'"))
-;      (om/transact! report-match path (fn [v] ()))
-      )
-))
+(defn handle-matchdate-update [report-match path js-date]
+  (if-let [matchdate (dc/to-date-time js-date)]
+    (debug "handle matchdate " matchdate)
+                                        ;      (om/transact! report-match path (fn [v] ()))
+    ))
 
 (defn report-match-component [{:keys [active-players report-match] :as app} owner]
   (reify
@@ -212,7 +211,7 @@
             [:div.col-lg-2]
             (render-team 2 team2)]
 
-           (om/build match-date-component
+           (om/build matchdate-component
                      (:matchdate report-match)
                      {:opts {:change-ch matchdate}})
 

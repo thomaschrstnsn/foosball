@@ -10,4 +10,5 @@
   (df/parse formatter s))
 
 (defn ->str [d]
-  (df/unparse formatter (dc/to-date-time d)))
+  (when d
+    (df/unparse formatter (dc/to-date-time d))))
