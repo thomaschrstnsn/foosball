@@ -26,9 +26,10 @@
         (when-not (@app :players)
           (data/go-update-data! "/api/players" app :players))
         (let [empty-team {:player1 nil :player2 nil :score nil :valid-score? true}]
-          (om/update! app [:report-match] {:team1 empty-team
-                                           :team2 empty-team
-                                           :matchdate (tc/now)}))
+          (om/transact! app [:report-match] (fn [rm] (merge rm
+                                                           {:team1 empty-team
+                                                            :team2 empty-team
+                                                            :matchdate (tc/now)}))))
         (loc/set-location app (:id v)))
       (.back js/history))))
 
@@ -158,7 +159,27 @@
   (let [matchdate (dc/to-date-time js-date)]
     (om/update! report-match path matchdate)))
 
-(defn report-match-component [{:keys [active-players report-match] :as app} owner]
+(defn valid-team-to-report? [{:keys [player1 player2 valid-score?]}]
+  (and player1 player2 valid-score?))
+
+(defn valid-report? [{:keys [team1 team2 matchdate] :as report-match}]
+  (and (valid-team-to-report? team1)
+       (valid-team-to-report? team2)
+       matchdate))
+
+(defn submit-report! [{:keys [team1 team2 matchdate] :as report-match}]
+  (let [id (uuid/make-random-uuid)
+        report {:team1 team1
+                :team2 team2
+                :matchdate matchdate
+                :id id
+                :status :pending}]
+    (debug "submitting" report)
+    (om/transact! report-match :submits (fn [s] (if s
+                                                 (conj s report)
+                                                 [report])))))
+
+(defn report-match-component [{:keys [active-players report-match submits] :as app} owner]
   (reify
     om/IInitState
     (init-state [_]
@@ -190,12 +211,14 @@
 
     om/IRenderState
     (render-state [_ {:keys [team1 team2 matchdate]}]
-      (let [_  (debug "players" (map (fn [p] (str "'" (:name p) "'"))
+      (let [_   (debug "players" (map (fn [p] (str "'" (:name p) "'"))
                                      (selected-players (:team1 report-match)
                                                        (:team2 report-match))))
-            __ (debug "scores" (map (fn [kw] (get-in report-match [kw :score])) [:team1 :team2]))
+            __  (debug "scores" (map (fn [kw] (get-in report-match [kw :score])) [:team1 :team2]))
             ___ (debug "matchdate" (-> report-match :matchdate d/->str))
-            render-team (partial render-team-controls app)]
+            ____ (debug "submits" submits)
+            render-team (partial render-team-controls app)
+            enabled? (valid-report? report-match)]
         (html
          [:div
           [:h1 "Report Match Result"]
@@ -217,7 +240,9 @@
            [:div.form-group.col-lg-12
             [:div.form-group.col-lg-5.pull-right
              [:button.btn.btn-primary.btn-lg.btn-block
-              {:type "submit" :value "Report"} "Report Match Result " [:span.glyphicon.glyphicon-ok]]]]]])))))
+              (merge {:on-click (fn [e] (submit-report! @report-match))}
+                     (when-not enabled? {:disabled "disabled"}))
+              "Report Match Result " [:span.glyphicon.glyphicon-ok]]]]]])))))
 
 (defn render [app]
   (if (:auth app)
