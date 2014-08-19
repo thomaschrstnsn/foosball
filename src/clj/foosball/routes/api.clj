@@ -18,7 +18,7 @@
              (json/-write (str obj) out))})
 
 ;; media types
-(def edn-type "application/edn")
+(def edn-type  "application/edn")
 (def json-type "application/json")
 (def media-types [edn-type "text/html" json-type])
 (def body-media-types [edn-type json-type])
@@ -134,8 +134,9 @@
      [false {:message "Unsupported Content-Type"}])
     true))
 
+;; TODO authentication and authorization
 (defresource match-report-resource [db id]
-  :allowed-methods [:get :put :delete]
+  :allowed-methods [:get :post :delete]
   :available-media-types media-types
   :known-content-type? (partial check-content-type body-media-types)
   :exists? (fn [_]
@@ -144,11 +145,9 @@
                  {::entry e})))
   :existed? (fn [_] (nil? (or (d/get-match db id) ::sentinel)))
   :handle-ok ::entry
-  :delete! (fn [_] false #_ (dosync (alter entries assoc id nil)))
+  :delete! (fn [_] (d/delete-match! db id))
   :malformed? #(parse-json % ::data)
-  :can-put-to-missing? false
-  :put! true #_ #(dosync (alter entries assoc id (::data %)))
-  :new? true #_ (fn [_] (nil? (get @entries id ::sentinel))))
+  :post! (fn [ctx] (d/create-match! db (::data ctx))))
 
 (defn routes [{:keys [db project]}]
   (let [player-route (GET "/api/players" [] (players db))]
@@ -159,6 +158,7 @@
                                                #{auth/user}))
      player-route
      (GET "/api/matches" [] (matches db))
+     (ANY "/api/match/:id" [id] (match-report-resource db id))
      (GET "/api/ratings/leaderboard/:n" [n] (leaderboard db (or (util/parse-int n) 5)))
      (GET "/api/ratings/log/:playerid" [playerid] (player-log db (util/uuid-from-string playerid)))
      (GET "/api/ratings/player-stats" [] (player-stats db))
