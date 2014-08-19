@@ -61,6 +61,8 @@
   ==>/Matches
   (get-matches [this]
     (matches/get-all (db connection)))
+  (get-match [this id]
+    (matches/get-by-id (db connection) id))
   (create-match! [this {:keys [matchdate team1 team2 reported-by] :as match}]
     (matches/create! connection match))
   (delete-match! [this id]

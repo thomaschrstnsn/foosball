@@ -12,6 +12,7 @@
 
 (defprotocol Matches
   (get-matches [this])
+  (get-match [this id])
   (create-match! [this match])
   (delete-match! [this id]))
 

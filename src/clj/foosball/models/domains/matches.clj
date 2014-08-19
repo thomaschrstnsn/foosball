@@ -32,41 +32,61 @@
                                       {:db/id match-id :match/id id}]]
     @(d/transact conn transaction)))
 
+(defn match-query [by-id?]
+  (let [find     '[:find ?m ?mid ?mt
+                   ?t1id ?t1p1 ?t1p2 ?t1score
+                   ?t2id ?t2p1 ?t2p2 ?t2score
+                   ?tx]
+        in       (if by-id?
+                   '[:in $ ?id]
+                   '[:in $])
+        where    '[:where
+                   [?m :match/time  ?mt ?tx]
+                   [?m :match/id    ?mid]
+                   [?m :match/team1 ?t1id]
+                   [?m :match/team2 ?t2id]
+
+                   [?t1id :team/player1 ?t1p1id]
+                   [?t1p1id :player/name ?t1p1]
+                   [?t1id :team/player2 ?t1p2id]
+                   [?t1p2id :player/name ?t1p2]
+                   [?t1id :team/score   ?t1score]
+
+                   [?t2id :team/player1 ?t2p1id]
+                   [?t2p1id :player/name ?t2p1]
+                   [?t2id :team/player2 ?t2p2id]
+                   [?t2p2id :player/name ?t2p2]
+                   [?t2id :team/score   ?t2score]]
+        id-query (when by-id? '[[?m :match/id ?id]])]
+    (vec (concat find in where id-query))))
+
+(defn map-match-query-results [dbc rs]
+  (map (fn [[mid id mt
+            t1id t1p1 t1p2 t1score
+            t2id t2p1 t2p2 t2score
+            tx]]
+         (let [match (d/entity dbc mid)
+               reporter (d/entity dbc (get-in match [:match/reported-by :db/id] ))]
+           {:match/id id :matchdate mt :tx tx
+            :team1 {:id t1id :player1 t1p1 :player2 t1p2 :score t1score}
+            :team2 {:id t2id :player1 t2p1 :player2 t2p2 :score t2score}
+            :reported-by (:player/name reporter)}))
+       rs))
+
+(defn chronologically-order-matches [ms]
+  (sort-by (juxt :matchdate :tx) ms))
+
 (s/defn get-all :- [e/Match]
   [dbc]
-  (->> (d/q '[:find ?m ?mid ?mt
-              ?t1id ?t1p1 ?t1p2 ?t1score
-              ?t2id ?t2p1 ?t2p2 ?t2score
-              ?tx
-              :in $
-              :where
-              [?m :match/time  ?mt ?tx]
-              [?m :match/id    ?mid]
-              [?m :match/team1 ?t1id]
-              [?m :match/team2 ?t2id]
+  (->> (d/q (match-query false) dbc)
+       (map-match-query-results dbc)
+       chronologically-order-matches))
 
-              [?t1id :team/player1 ?t1p1id]
-              [?t1p1id :player/name ?t1p1]
-              [?t1id :team/player2 ?t1p2id]
-              [?t1p2id :player/name ?t1p2]
-              [?t1id :team/score   ?t1score]
-
-              [?t2id :team/player1 ?t2p1id]
-              [?t2p1id :player/name ?t2p1]
-              [?t2id :team/player2 ?t2p2id]
-              [?t2p2id :player/name ?t2p2]
-              [?t2id :team/score   ?t2score]] dbc)
-       (map (fn [[mid id mt
-                 t1id t1p1 t1p2 t1score
-                 t2id t2p1 t2p2 t2score
-                 tx]]
-              (let [match (d/entity dbc mid)
-                    reporter (d/entity dbc (get-in match [:match/reported-by :db/id] ))]
-                {:match/id id :matchdate mt :tx tx
-                 :team1 {:id t1id :player1 t1p1 :player2 t1p2 :score t1score}
-                 :team2 {:id t2id :player1 t2p1 :player2 t2p2 :score t2score}
-                 :reported-by (:player/name reporter)})))
-       (sort-by (juxt :matchdate :tx))))
+(s/defn get-by-id :- (s/maybe e/Match)
+  [dbc id]
+  (->> (d/q (match-query true) dbc id)
+       (map-match-query-results dbc)
+       first))
 
 (s/defn delete!
   [conn

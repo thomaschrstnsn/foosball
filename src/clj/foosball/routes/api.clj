@@ -9,14 +9,19 @@
             [foosball.util :as util]
             [foosball.software :as sw]
             [foosball.auth :as auth]
-            [clojure.data.json :as json]))
+            [clojure.data.json :as json]
+            [clojure.java.io :as io]))
 
 (extend java.util.UUID
   json/JSONWriter
   {:-write (fn [obj out]
              (json/-write (str obj) out))})
 
-(def media-types ["application/edn" "text/html" "application/json"])
+;; media types
+(def edn-type "application/edn")
+(def json-type "application/json")
+(def media-types [edn-type "text/html" json-type])
+(def body-media-types [edn-type json-type])
 
 (defresource players [db]
   :available-media-types media-types
@@ -95,6 +100,56 @@
   :available-media-types media-types
   :handle-ok (fn [_]
                (sw/software-dependencies project)))
+
+;; convert the body to a reader. Useful for testing in the repl
+;; where setting the body to a string is much simpler.
+(defn body-as-string [ctx]
+  (if-let [body (get-in ctx [:request :body])]
+    (condp instance? body
+      java.lang.String body
+      (slurp (io/reader body)))))
+
+;; For PUT and POST parse the body as json and store in the context
+;; under the given key.
+(defn parse-json [context key]
+  (when (#{:put :post} (get-in context [:request :request-method]))
+    (try
+      (if-let [body (body-as-string context)]
+        (let [data (json/read-str body)]
+          [false {key data}])
+        {:message "No body"})
+      (catch Exception e
+        (.printStackTrace e)
+        {:message (format "IOException: %s" (.getMessage e))}))))
+
+(defn parse-edn [context key]
+  nil)
+
+;; For PUT and POST check if the content type is json.
+(defn check-content-type [content-types ctx]
+  (if (#{:put :post} (get-in ctx [:request :request-method]))
+    (or
+     (some #{(get-in ctx [:request :headers "content-type"])}
+           content-types)
+     [false {:message "Unsupported Content-Type"}])
+    true))
+
+(defresource match-report-resource [id]
+  :allowed-methods [:get :put :delete]
+  :available-media-types media-types
+  :known-content-type? (partial check-content-type body-media-types)
+  :exists? (fn [_]
+             false
+             #_ (let [e (get @entries id)]
+                    (if-not (nil? e)
+                      {::entry e})))
+  :existed? (fn [_] false #_ (nil? (get @entries id ::sentinel)))
+  :handle-ok ::entry
+  :delete! (fn [_] false #_ (dosync (alter entries assoc id nil)))
+  :malformed? #(parse-json % ::data)
+  :can-put-to-missing? false
+  :put! true #_ #(dosync (alter entries assoc id (::data %)))
+  :new? true #_ (fn [_] (nil? (get @entries id ::sentinel))))
 
 (defn routes [{:keys [db project]}]
   (let [player-route (GET "/api/players" [] (players db))]

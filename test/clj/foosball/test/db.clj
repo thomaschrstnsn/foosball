@@ -29,7 +29,7 @@
 
           (testing "we can get the player be his openid"
             (is (h/diff-with-first-is-nil? {:playername name
-                                       :playerid id} (d/get-player-with-given-openid db openid))))
+                                            :playerid id} (d/get-player-with-given-openid db openid))))
 
           (testing "we can inactivate him,"
             (is (not= nil (d/deactivate-player! db id)))
@@ -53,27 +53,35 @@
           team1score    10
           team2score    5
           reporter      (h/create-dummy-player db "reporter")
-          create-match  (fn [] (d/create-match! db {:matchdate match-date
-                                                   :team1 {:player1 (:id p1) :player2 (:id p2) :score team1score}
-                                                   :team2 {:player1 (:id p3) :player2 (:id p4) :score team2score}
-                                                   :reported-by (:id reporter)}))]
+          match-id      (h/make-uuid)
+          create-match  (fn [& {:keys [id]}]
+                          (d/create-match! db {:matchdate match-date
+                                               :id id
+                                               :team1 {:player1 (:id p1) :player2 (:id p2) :score team1score}
+                                               :team2 {:player1 (:id p3) :player2 (:id p4) :score team2score}
+                                               :reported-by (:id reporter)}))]
       (testing "We can create a match with our four players,"
-        (is (not= nil (create-match)))
-        (testing "then we can get it out again"
-          (let [result (d/get-matches db)]
-            (is (h/diff-with-first-is-nil? {:matchdate match-date
-                                       :team1 {:player1 (:name p1) :player2 (:name p2) :score team1score}
-                                       :team2 {:player1 (:name p3) :player2 (:name p4) :score team2score}
-                                       :reported-by (:name reporter)}
-                                      (first result)))
-            (is (= 1 (count result)))))
+        (is (not= nil (create-match :id match-id)))
+        (let [expected-match {:matchdate match-date
+                              :team1 {:player1 (:name p1) :player2 (:name p2) :score team1score}
+                              :team2 {:player1 (:name p3) :player2 (:name p4) :score team2score}
+                              :reported-by (:name reporter)}]
+          (testing "then we can get it out again using get-matches"
+            (let [result (d/get-matches db)]
+              (is (h/diff-with-first-is-nil? expected-match
+                                             (first result)))
+              (is (= 1 (count result)))))
+
+          (testing "then we can get it out again using get-by-id"
+            (let [result (d/get-match db match-id)]
+              (is (h/diff-with-first-is-nil? expected-match result)))))
 
         (testing "; and we can delete it again"
-          (let [matchid (->> (d/get-matches db) first :match/id)]
-            (is (not= nil matchid))
-            (is (not= nil (d/delete-match! db matchid))))
+          (is (not= nil match-id))
+          (is (not= nil (d/delete-match! db match-id)))
           (testing ", and we cannot get it out again."
-            (is (empty? (d/get-matches db)))))
+            (is (empty? (d/get-matches db)))
+            (is (nil? (d/get-match db match-id)))))
 
         (testing "Creation of multiple matches"
           (let [num-matches 100
