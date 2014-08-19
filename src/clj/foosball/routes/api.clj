@@ -134,16 +134,15 @@
      [false {:message "Unsupported Content-Type"}])
     true))
 
-(defresource match-report-resource [id]
+(defresource match-report-resource [db id]
   :allowed-methods [:get :put :delete]
   :available-media-types media-types
   :known-content-type? (partial check-content-type body-media-types)
   :exists? (fn [_]
-             false
-             #_ (let [e (get @entries id)]
-                    (if-not (nil? e)
-                      {::entry e})))
-  :existed? (fn [_] false #_ (nil? (get @entries id ::sentinel)))
+             (let [e (d/get-match db id)]
+               (if-not (nil? e)
+                 {::entry e})))
+  :existed? (fn [_] (nil? (or (d/get-match db id) ::sentinel)))
   :handle-ok ::entry
   :delete! (fn [_] false #_ (dosync (alter entries assoc id nil)))
   :malformed? #(parse-json % ::data)
