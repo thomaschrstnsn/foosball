@@ -140,9 +140,11 @@
   :available-media-types media-types
   :known-content-type? (partial check-content-type body-media-types)
   :exists? (fn [_]
-             (let [e (d/get-match db id)]
+             (let [uuid (util/uuid-from-string id)
+                   e    (d/get-match db uuid)]
                (if-not (nil? e)
-                 {::entry e})))
+                 {::entry e
+                  ::id    uuid})))
   :existed? (fn [_] (nil? (or (d/get-match db id) ::sentinel)))
   :handle-ok ::entry
   :delete! (fn [_] (d/delete-match! db id))
