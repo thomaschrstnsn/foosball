@@ -107,7 +107,7 @@
                   "test,"
                   "build-war"]
             "auto-cljs" ["do"
-                         "cljsbuild" "clean,"
-                         "cljsbuild" "auto" "dev" "testable"]}
+                         "cljsbuild" "clean" "testable,"
+                         "cljsbuild" "auto" "testable"]}
 
   :min-lein-version "2.0.0")
