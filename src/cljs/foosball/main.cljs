@@ -7,7 +7,8 @@
             [foosball.menu :as menu]
             [foosball.locations :as loc]
             [foosball.data :as data]
-            [foosball.console :refer-macros [debug debug-js info log trace error]]))
+            [foosball.console :refer-macros [debug debug-js info log trace error]]
+            [figwheel.client :as fw :include-macros true]))
 
 (defn app-root [app owner {:keys [menu] :as opts}]
   (reify
@@ -32,10 +33,20 @@
              [:div.container
               (loc/render-location app)]]))))
 
-(when-not js/skipRootBind
+(defonce app (atom {}))
+
+(defn init-app [reload?]
   (debug "initializing application")
-  (let [app         (atom {})
-        route-setup (routes/init!)]
+  (let [route-setup (routes/init! reload?)]
     (om/root app-root app {:target     (. js/document (getElementById "app"))
                            :init-state {:req-location-chan (:req-location-chan route-setup)}
                            :opts       {:menu (select-keys route-setup [:home-location :menu-locations])}})))
+
+(when-not js/skipRootBind
+  (init-app false)
+  (fw/watch-and-reload
+   :websocket-url   "ws://localhost:3449/figwheel-ws"
+   :jsload-callback (fn []
+              ;;        (routes/unlisten)
+                      (debug "reload:" (. js/document (getElementById "app")))
+                      (init-app true))))

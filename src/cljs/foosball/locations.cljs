@@ -9,8 +9,7 @@
             [foosball.locations.matchup :as matchup]
             [foosball.locations.report-match :as report-match]
             [foosball.locations.about :as about]
-            [foosball.spinners :refer [loading]]
-            [foosball.console :refer-macros [debug debug-js info log trace error]]))
+            [foosball.spinners :refer [loading]]))
 
 (defmulti request-new-location (fn [app req] (-> @app :current-location)))
 

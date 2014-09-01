@@ -1,5 +1,12 @@
 (defproject foosball "1.4.0-SNAPSHOT"
   :jvm-opts ["-Xmx1g" "-server" "-XX:MaxPermSize=128M"]
+
+  :url "https://foosball.chrstnsn.dk/"
+  :description "Foosball result tracking and statistics site."
+
+  :source-paths ["src/clj"]
+  :test-paths  ["test/clj"]
+
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [com.datomic/datomic-free "0.9.4724" :exclusions [com.amazonaws/aws-java-sdk]]
                  [ring/ring-core "1.2.0" :exclusions [org.clojure/tools.reader]]
@@ -18,40 +25,6 @@
                  [org.clojure/tools.nrepl "0.2.3"]
                  [prismatic/schema "0.2.2"]]
 
-  :hooks [configleaf.hooks]
-  :configleaf {:verbose false}
-
-  :lein-release {:deploy-via :shell
-                 :build-via  :lein-ring-uberwar
-                 :shell ["echo" "built: " :build-artifact]}
-
-  :cljsbuild {:builds {:dev {:source-paths ["src/cljs"]
-                             :compiler {:pretty-print false
-                                        :output-to "resources/public/js/dev/foosball.js"
-                                        :output-dir "resources/public/js/dev"
-                                        :optimizations :none
-                                        :source-map true}}
-                       :testable {:source-paths ["src/cljs" "test/cljs"]
-                                  :notify-command ["run-cljs-phantom.sh"]
-                                  :compiler {:output-to     "target/cljs/testable.js"
-                                             :source-map    "target/cljs/testable.js.map"
-                                             :output-dir    "target/cljs/test"
-                                             :optimizations :none
-                                             :pretty-print  true}}}
-              :test-commands {"unit" ["run-cljs-phantom.sh"]}}
-
-
-  :ring {:handler foosball.servlet-lifecycle/handler,
-         :init    foosball.servlet-lifecycle/init,
-         :destroy foosball.servlet-lifecycle/destroy
-         :open-browser? false
-         :auto-reload? false}
-
-  :repl-options {:port 1234}
-
-  :source-paths ["src/clj"]
-  :test-paths ["test/clj"]
-
   :profiles {:production {:ring {:stacktraces? false}
                           :dependencies []
                           :aot :all}
@@ -67,11 +40,12 @@
                                   [org.clojars.runa/conjure "2.1.3"]
                                   [server-socket "1.0.0"]
                                   [http-kit "2.1.18"]
+                                  [figwheel "0.1.4-SNAPSHOT"]
                                   ;; clojurescript deps
                                   [org.clojure/clojurescript "0.0-2202"]
                                   [org.clojure/core.async "0.1.298.0-2a82a1-alpha"]
-                                  [om "0.6.2"]
-                                  [sablono "0.2.17"]
+                                  [om "0.7.1"]
+                                  [sablono "0.2.22"]
                                   [secretary "1.0.2"]
                                   [cljs-http "0.1.10" :exclusions [commons-codec]]
                                   [com.andrewmcveigh/cljs-time "0.1.4"]
@@ -80,13 +54,48 @@
                    :injections [(require 'pjstadig.humane-test-output)
                                 (pjstadig.humane-test-output/activate!)]}}
 
-  :url "https://foosball.chrstnsn.dk/"
-
   :plugins [[lein-ring "0.8.3"]
             [lein-cljsbuild "1.0.3"]
             [configleaf "0.4.6"]
             [lein-release "1.0.4"]
-            [com.cemerick/clojurescript.test "0.3.1"]]
+            [com.cemerick/clojurescript.test "0.3.1"]
+            [lein-figwheel "0.1.4-SNAPSHOT"]]
+
+  :hooks [configleaf.hooks]
+
+  :cljsbuild {:builds [{:id "dev"
+                        :source-paths ["src/cljs"]
+                        :compiler {:pretty-print false
+                                   :output-to "resources/public/js/dev/foosball.js"
+                                   :output-dir "resources/public/js/dev"
+                                   :optimizations :none
+                                   :source-map true}}
+                       {:id "testable" :source-paths ["src/cljs" "test/cljs"]
+                        :notify-command ["run-cljs-phantom.sh"]
+                        :compiler {:output-to     "target/cljs/testable.js"
+                                   :source-map    "target/cljs/testable.js.map"
+                                   :output-dir    "target/cljs/test"
+                                   :optimizations :none
+                                   :pretty-print  true}}]
+              :test-commands {"unit" ["run-cljs-phantom.sh"]}}
+
+  :configleaf {:verbose false}
+
+  :lein-release {:deploy-via :shell
+                 :build-via  :lein-ring-uberwar
+                 :shell ["echo" "built: " :build-artifact]}
+
+  :figwheel {:http-server-root "public"
+             :server-port 3449
+             :css-dirs ["resources/public/css"]}
+
+  :ring {:handler foosball.servlet-lifecycle/handler,
+         :init    foosball.servlet-lifecycle/init,
+         :destroy foosball.servlet-lifecycle/destroy
+         :open-browser? false
+         :auto-reload? false}
+
+  :repl-options {:port 1234}
 
   :aliases {"deps-tree-prod" ["with-profile" "production" "deps" ":tree"]
             "deps-tree-dev" ["with-profile" "dev" "deps" ":tree"]
@@ -101,5 +110,4 @@
                          "cljsbuild" "clean,"
                          "cljsbuild" "auto" "dev" "testable"]}
 
-  :description "Foosball result tracking and statistics site."
   :min-lein-version "2.0.0")

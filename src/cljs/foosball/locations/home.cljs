@@ -5,7 +5,8 @@
             [foosball.format :as f]
             [foosball.location :as loc]
             [foosball.routes :as routes]
-            [foosball.auth :as auth]))
+            [foosball.auth :as auth]
+            [foosball.console :refer-macros [debug debug-js info log trace error]]))
 
 (defn handle [app v]
   (om/update! app :leaderboard nil)
