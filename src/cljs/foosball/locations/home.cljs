@@ -53,7 +53,8 @@
                     {:heading "Rating"
                      :key :rating
                      :printer f/style-rating}]]
-       (om/build table/table leaderboard {:opts {:columns       columns
-                                                 :caption       [:h1 "Current leaderboard"]
-                                                 :default-container :h3
-                                                 :class         ["table-hover" "table-condensed"]}})))))
+       (om/build table/table leaderboard
+                 {:opts {:columns           columns
+                         :caption           [:h1 "Current leaderboard"]
+                         :default-container :h3
+                         :class             ["table-hover" "table-condensed"]}})))))

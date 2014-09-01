@@ -20,25 +20,30 @@
                   row]
   [:tr {:class (row-class-fn row)} (map (partial render-column-in-row opts row) columns)])
 
-(defn render-header-cell [owner
-                          {:keys [default-container] :as opts}
-                          {:keys [heading sort-fn key] :as column}]
-  (let [sort      (om/get-state owner :sort)
-        sort-chan (om/get-state owner :sort-chan)
-        attrs     (when sort-fn {:on-click (fn [_] (put! sort-chan column))
-                                 :style    {:cursor "pointer"}})
-        sort-elem (when (= column (:column sort))
-                    [:span.pull-right.text-info.glyphicon {:class (if (= :asc (:dir sort))
-                                                                    "glyphicon-sort-by-attributes"
-                                                                    "glyphicon-sort-by-attributes-alt")} ])]
-    [:th attrs
-     (if default-container
-       [default-container heading]
-       heading)
-     sort-elem]))
+(defn header-cell-component
+  [{:keys [heading sort-fn key] :as column}
+   owner
+   {:keys [default-container] :as opts}]
+  (reify
+    om/IRender
+    (render [_]
+      (let [sort      (om/get-state owner :sort)
+            sort-chan (om/get-state owner :sort-chan)
+            attrs     (when sort-fn {:on-click (fn [_] (put! sort-chan column))
+                                     :style    {:cursor "pointer"}})
+            sort-elem (when (= column (:column sort))
+                        [:span.pull-right.text-info.glyphicon {:class (if (= :asc (:dir sort))
+                                                                        "glyphicon-sort-by-attributes"
+                                                                        "glyphicon-sort-by-attributes-alt")} ])]
+        (html
+         [:th attrs
+          (if default-container
+            [default-container heading]
+            heading)
+          sort-elem])))))
 
 (defn render-header-row [owner opts columns]
-  [:thead [:tr (map (partial render-header-cell owner opts) columns)]])
+  [:thead [:tr (om/build-all header-cell-component columns {:opts opts})]])
 
 (defn make-sort-fn [dir sort-column]
   (if sort-column
