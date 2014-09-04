@@ -40,34 +40,35 @@
          (map (fn [{:keys [id name]}] [:option {:value id} name]) players)]]
        (when player-log
          (let [columns      [{:heading "Match date"
-                              :key     :matchdate
+                              :fn      :matchdate
                               :printer (fn [d] (when d (d/->str d)))}
                              {:heading "Team mate"
-                              :key     :team-mate
+                              :fn      :team-mate
                               :printer (fn [tm] (when tm (f/format-player-link players tm)))}
                              {:heading "Opponents"
-                              :key     :opponents
+                              :fn      :opponents
                               :printer (fn [ops] (when ops (f/format-team-links players ops)))}
                              {:heading "Expected"
-                              :key     :expected
+                              :fn      :expected
                               :printer (fn [v] (when v (f/style-match-percentage true (* 100 v))))}
                              {:heading "Actual"
-                              :key     :win?
+                              :fn      :win?
                               :printer (fn [v] (f/style-value v
                                                              :class?  nil
                                                              :printer {true "Won" false "Lost"}
                                                              :checker true?))}
                              {:heading "Inactive matches"
-                              :key     :inactivity}
+                              :fn     :inactivity}
                              {:heading "Diff rating"
-                              :key     :delta
+                              :fn      :delta
                               :printer (fn [v] (when v (f/style-value v :printer f/format-rating)))}
                              {:heading "New rating"
-                              :key     :new-rating
+                              :fn      :new-rating
                               :printer f/style-rating}]
                row-class-fn (fn [{:keys [log-type]}] (when (= :inactivity log-type) "danger"))]
-           (om/build table/table player-log {:opts {:columns       columns
-                                                    :caption       [:h1 (str "Player Log: " (:name player))]
-                                                    :default-align :right
-                                                    :class         ["table-hover" "table-bordered"]
-                                                    :row-class-fn  row-class-fn}})))))))
+           (om/build table/table player-log
+                     {:opts {:columns       columns
+                             :caption       [:h1 (str "Player Log: " (:name player))]
+                             :default-align :right
+                             :class         ["table-hover" "table-bordered"]
+                             :row-class-fn  row-class-fn}})))))))

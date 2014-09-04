@@ -10,36 +10,40 @@
   (om/update! app :matches nil)
   (when-not (@app :players)
     (data/go-update-data! "/api/players" app :players))
-  (data/go-update-data! "/api/matches" app :matches)
+  (data/go-update-data! "/api/matches" app :matches data/add-uuid-key)
   (loc/set-location app (:id v)))
 
 (defn render [{:keys [matches players]}]
   (when players
     (let [players-from-team (fn [{:keys [player1 player2]}] [player1 player2])
           date-column {:heading "Date played"
-                       :key :matchdate
+                       :fn :matchdate
                        :printer d/->str
                        :align :left
                        :sort-fn identity}
           columns  [date-column
                     {:heading "Team 1"
-                     :key (comp players-from-team :team1)
+                     :key :team1-players
+                     :fn (comp players-from-team :team1)
                      :align :left
                      :printer (partial f/format-team-links players)}
                     {:heading "Score"
-                     :key (comp :score :team1)
+                     :key :team1-score
+                     :fn (comp :score :team1)
                      :sort-fn identity
                      :printer f/style-score}
                     {:heading "Team 1"
-                     :key (comp players-from-team :team2)
+                     :key :team2-players
+                     :fn (comp players-from-team :team2)
                      :align :left
                      :printer (partial f/format-team-links players)}
                     {:heading "Score"
-                     :key (comp :score :team2)
+                     :key :team2-score
+                     :fn (comp :score :team2)
                      :sort-fn identity
                      :printer f/style-score}
                     {:heading "Reported by"
-                     :key :reported-by
+                     :fn :reported-by
                      :align :left}]]
       (om/build table/table matches {:opts {:columns       columns
                                             :caption       [:h1 "Played Matches"]

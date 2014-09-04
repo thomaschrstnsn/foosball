@@ -2,6 +2,7 @@
   (:require-macros [cljs.core.async.macros :refer [go-loop go]])
   (:require [om.core :as om :include-macros true]
             [sablono.core :as html :refer-macros [html]]
+            [schema.core :as s]
             [cljs.core.async :refer [chan <!]]
             [foosball.routes :as routes]
             [foosball.menu :as menu]
@@ -37,16 +38,18 @@
 
 (defn init-app [reload?]
   (debug "initializing application")
+  (s/set-fn-validation! true)
   (let [route-setup (routes/init! reload?)]
     (om/root app-root app {:target     (. js/document (getElementById "app"))
                            :init-state {:req-location-chan (:req-location-chan route-setup)}
-                           :opts       {:menu (select-keys route-setup [:home-location :menu-locations])}})))
+                           :opts       {:menu (select-keys route-setup
+                                                           [:home-location :menu-locations])}})))
 
 (when-not js/skipRootBind
   (init-app false)
   (fw/watch-and-reload
    :websocket-url   "ws://localhost:3449/figwheel-ws"
    :jsload-callback (fn []
-              ;;        (routes/unlisten)
-                      (debug "reload:" (. js/document (getElementById "app")))
-                      (init-app true))))
+                      (debug "figwheel reload")
+                      (try (init-app true)
+                           (catch :default e (error "giving up!" e))))))

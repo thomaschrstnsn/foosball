@@ -12,7 +12,7 @@
   (om/update! app :leaderboard nil)
   (when-not (@app :players)
     (data/go-update-data! "/api/players" app :players))
-  (data/go-update-data! "/api/ratings/leaderboard/5" app :leaderboard)
+  (data/go-update-data! "/api/ratings/leaderboard/5" app :leaderboard data/add-uuid-key)
   (loc/set-location app (:id v)))
 
 (defn- nav-button [url label]
@@ -40,18 +40,18 @@
                                                     :button-class "btn-lg btn-block"
                                                     :button-text "Login or create a new player")])])]
      (let [columns [{:heading "Position"
-                     :key :position
+                     :fn      :position
                      :printer (fn [p] (str p "."))}
                     {:heading "Player"
-                     :key :player/name
+                     :fn      :player/name
                      :printer (partial f/format-player-link players)
-                     :align :left}
+                     :align   :left}
                     {:heading "Form"
-                     :key :form
+                     :fn      :form
                      :printer (partial f/style-form :won :lost)
-                     :align :left}
+                     :align   :left}
                     {:heading "Rating"
-                     :key :rating
+                     :fn      :rating
                      :printer f/style-rating}]]
        (om/build table/table leaderboard
                  {:opts {:columns           columns

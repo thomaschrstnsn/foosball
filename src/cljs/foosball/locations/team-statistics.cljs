@@ -9,35 +9,35 @@
   (om/update! app :team-statistics nil)
   (when-not (@app :players)
     (data/go-update-data! "/api/players" app :players))
-  (data/go-update-data! "/api/ratings/team-stats" app :team-statistics)
+  (data/go-update-data! "/api/ratings/team-stats" app :team-statistics data/add-uuid-key)
   (loc/set-location app (:id v)))
 
 (defn render [{:keys [team-statistics players]}]
   (when players
     (let [wins-col {:heading "Wins"
-                    :key :wins
+                    :fn :wins
                     :sort-fn identity}
           columns  [{:heading "Team"
-                     :key :team
+                     :fn :team
                      :align :left
                      :printer (partial f/format-team-links players)}
                     wins-col
                     {:heading "Losses"
-                     :key :losses
+                     :fn :losses
                      :sort-fn identity}
                     {:heading "Played"
-                     :key :total
+                     :fn :total
                      :sort-fn identity}
                     {:heading "Wins %"
-                     :key :win-perc
+                     :fn :win-perc
                      :printer (partial f/style-match-percentage true)
                      :sort-fn identity}
                     {:heading "Losses %"
-                     :key :loss-perc
+                     :fn :loss-perc
                      :printer (partial f/style-match-percentage false)
                      :sort-fn identity}
                     {:heading "Score diff."
-                     :key :score-delta
+                     :fn :score-delta
                      :printer f/style-value
                      :sort-fn identity}]]
       (om/build table/table team-statistics {:opts {:columns       columns

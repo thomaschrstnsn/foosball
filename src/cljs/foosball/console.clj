@@ -20,9 +20,14 @@
     `(when foosball.console/*enable-console*
        (.apply js/console.debug js/console (into-array ~av)))))
 
+(defmacro warn [& args]
+  (let [av (vec args)]
+    `(.applay js/console.warn js/console (stringify ~av))))
+
 (defmacro error [& args]
   (let [av (vec args)]
     `(.apply js/console.error js/console (stringify ~av))))
 
-(defmacro trace []
-  `(when foosball.console/*enable-console* (.trace js/console)))
+(defmacro trace [& args]
+  (let [av (vec args)]
+    `(.apply js/console.trace js/console (stringify ~av))))

@@ -23,7 +23,7 @@
                  [clj-time "0.6.0"]
                  [com.stuartsierra/component "0.2.1"]
                  [org.clojure/tools.nrepl "0.2.3"]
-                 [prismatic/schema "0.2.2"]]
+                 [prismatic/schema "0.2.6"]]
 
   :profiles {:production {:ring {:stacktraces? false}
                           :dependencies []
@@ -45,6 +45,7 @@
                                   [org.clojure/clojurescript "0.0-2202"]
                                   [org.clojure/core.async "0.1.298.0-2a82a1-alpha"]
                                   [om "0.7.1"]
+                                  [prismatic/om-tools "0.3.2" :exclusions [org.clojure/clojure]]
                                   [sablono "0.2.22"]
                                   [secretary "1.0.2"]
                                   [cljs-http "0.1.10" :exclusions [commons-codec]]
