@@ -8,7 +8,15 @@
 (defn navigate-to [fragment]
   (set! (.-hash js/location) fragment))
 
-(defn init! [& [reload?]]
+;; defonce'd to not interfere with figwheel reloading
+(defonce history
+  (let [history   (History.)
+        listen-fn (fn [e] (secretary/dispatch! (.-token e)))]
+    (goog.events/listen history EventType/NAVIGATE listen-fn)
+    (doto history (.setEnabled true))
+    (debug "history listener has been setup")))
+
+(defn init! []
   (let [req-location-chan (chan)
         set-active-menu   (fn [menu-id & args]
                             (put! req-location-chan {:id menu-id :args args}))]
@@ -44,8 +52,7 @@
     (defroute "*" []
       (navigate-to (home-path)))
 
-    (when-not reload?
-      (set-active-menu :location/home))
+    (secretary/dispatch! (.substring window.location.hash 1))
 
     ;; hierarchy
     (let [home-location  {:id    :location/home
@@ -79,11 +86,3 @@
       {:home-location     home-location
        :menu-locations    menu-locations
        :req-location-chan req-location-chan})))
-
-;; defonce'd to not interfere with figwheel reloading
-(defonce history
-  (let [history   (History.)
-        listen-fn (fn [e] (secretary/dispatch! (.-token e)))]
-    (goog.events/listen history EventType/NAVIGATE listen-fn)
-    (doto history (.setEnabled true))
-    (debug "history listener has been setup")))

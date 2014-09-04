@@ -36,10 +36,10 @@
 
 (defonce app (atom {}))
 
-(defn init-app [reload?]
+(defn init-app []
   (debug "initializing application")
   (s/set-fn-validation! true)
-  (let [route-setup (routes/init! reload?)]
+  (let [route-setup (routes/init!)]
     (om/root app-root app {:target     (. js/document (getElementById "app"))
                            :init-state {:req-location-chan (:req-location-chan route-setup)}
                            :opts       {:menu (select-keys route-setup
@@ -51,5 +51,5 @@
    :websocket-url   "ws://localhost:3449/figwheel-ws"
    :jsload-callback (fn []
                       (debug "figwheel reload")
-                      (try (init-app true)
+                      (try (init-app)
                            (catch :default e (error "giving up!" e))))))
