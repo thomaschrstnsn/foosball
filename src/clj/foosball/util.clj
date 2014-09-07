@@ -9,14 +9,8 @@
 (defn uuid-from-string [s]
   (when s (java.util.UUID/fromString s)))
 
-(defmacro symbols-as-map
-  "Inverse of descructuring as {:keys [a b c]} -
-  This macro maps the symbols passed to it as keys (keyworded) with the symbols' values as value."
-  [& symbols]
-  (if (empty? symbols)
-    {}
-    (apply assoc {} (interleave (map (fn [s] (keyword (name s))) symbols)
-                                (map (fn [s] s) symbols)))))
+(defmacro identity-map [& args]
+  (zipmap (map keyword args) args))
 
 (defn link-to-player-log [{:keys [id name active]}]
   [:span

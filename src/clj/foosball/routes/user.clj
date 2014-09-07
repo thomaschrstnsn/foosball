@@ -107,7 +107,7 @@
         (d/add-openid-to-player! db id openid)
         (friend/logout* (response/redirect (str "/user/created/" id))))
       (do
-        (error ["cannot claim player" (util/symbols-as-map openid id current-playername players-openids player)])
+        (error ["cannot claim player" (util/identity-map openid id current-playername players-openids player)])
         (response/status (response/response "cannot claim player") 405)))))
 
 (defn create-player [{:keys [db]}]
@@ -123,7 +123,7 @@
         (d/create-player! db id playername openid)
         (friend/logout* (response/redirect (str "/user/created/" id))))
       (do
-        (error ["cannot create player" (util/symbols-as-map openid playername current-playername)])
+        (error ["cannot create player" (util/identity-map openid playername current-playername)])
         (response/status (response/response "cannot create player") 405)))))
 
 (defn created-page [{:keys [config-options db]} id]

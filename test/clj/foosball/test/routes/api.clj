@@ -350,7 +350,7 @@
 
       (let [firstname "James"
             lastname "Brown"]
-        (with-redefs [foosball.auth/current-auth (constantly (util/symbols-as-map firstname lastname))]
+        (with-redefs [foosball.auth/current-auth (constantly (util/identity-map firstname lastname))]
           (with-redefs [foosball.auth/has-role? (fn [r?] (= :foosball.auth/user r?))]
             (let [response (-> request handler :body edn/read-string)]
               (testing "with auth as user"

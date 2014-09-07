@@ -11,7 +11,7 @@
               [?pe :player/id ?pid]
               [?pe :user/openids _]]
             dbc)
-       (map (fn [[id name]] (util/symbols-as-map id name)))))
+       (map (fn [[id name]] (util/identity-map id name)))))
 
 (defn get-all-without-openid [dbc]
   (let [playerids-with-openid (->> (get-all-with-openid dbc)
@@ -49,5 +49,5 @@
               [?ent :user/openids ?openid]
               [?ent :user/role ?role]]
             dbc openid)
-       (map (fn [[playerid playername playerrole]] (util/symbols-as-map playerid playername playerrole)))
+       (map (fn [[playerid playername playerrole]] (util/identity-map playerid playername playerrole)))
        first))

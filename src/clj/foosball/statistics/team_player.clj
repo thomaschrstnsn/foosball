@@ -1,6 +1,6 @@
 (ns foosball.statistics.team-player
   (:require [foosball.statistics.core :refer :all]
-            [foosball.util :refer :all]))
+            [foosball.util :refer [identity-map]]))
 
 (defn player-stats [matches player]
   (let [games-won          (filter (partial player-is-winner? player) matches)
@@ -24,7 +24,7 @@
                                 (filter (fn [[t s]] (contains? t player)))
                                 (map (fn [[t s]] s))
                                 (reduce + 0))]
-    (symbols-as-map player wins losses total win-perc loss-perc score-delta latest-matchdate matches-after-last)))
+    (identity-map player wins losses total win-perc loss-perc score-delta latest-matchdate matches-after-last)))
 
 (defn team-stats [matches team]
   (let [wins        (->> (map :winners matches) (filter (partial = team)) count)

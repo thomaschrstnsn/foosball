@@ -15,7 +15,7 @@
                                                      (d/get-matches db))))
 
 (defn rename-player [{:keys [db]} playerid newplayername]
-  (info {:rename-player (util/symbols-as-map playerid newplayername)})
+  (info {:rename-player (util/identity-map playerid newplayername)})
   (d/rename-player! db (util/uuid-from-string playerid) newplayername)
   (response/redirect-after-post "/admin"))
 

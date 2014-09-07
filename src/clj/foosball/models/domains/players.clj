@@ -20,7 +20,7 @@
               [?pe :player/name ?n]
               [?pe :player/active ?a]
               [?pe :user/role ?role]] dbc)
-       (map (fn [[id name active role]] (util/symbols-as-map id name active role)))
+       (map (fn [[id name active role]] (util/identity-map id name active role)))
        (sort-by :name)))
 
 (s/defn create!

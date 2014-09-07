@@ -20,7 +20,7 @@
                       :content (match/form (d/get-players db)))))
 
   ([{:keys [config-options db]} team1player1 team1player2 team2player1 team2player2]
-     (let [params   (util/symbols-as-map team1player1 team1player2 team2player1 team2player2)
+     (let [params   (util/identity-map team1player1 team1player2 team2player1 team2player2)
            parsed   (match/parse-form params)
            playerid (auth/current-auth :playerid)]
        (layout/common config-options
@@ -36,8 +36,8 @@
         reported-by      (auth/current-auth :playerid)]
     (if valid-report?
       (do
-        (info (util/symbols-as-map parsed-form reported-by))
-        (d/create-match! db (merge parsed-form (util/symbols-as-map reported-by)))
+        (info (util/identity-map parsed-form reported-by))
+        (d/create-match! db (merge parsed-form (util/identity-map reported-by)))
         (response/redirect-after-post "/stats/players"))
       (layout/common config-options
                      :title report-match-title

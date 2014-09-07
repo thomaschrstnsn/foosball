@@ -68,4 +68,4 @@
         name (str "name-" seed)
         openid (str "openid-" seed)]
     (d/create-player! db id name openid )
-    (util/symbols-as-map id name openid)))
+    (util/identity-map id name openid)))

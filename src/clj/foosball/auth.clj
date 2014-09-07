@@ -29,7 +29,7 @@
     (merge credentials
            {:roles [({:admin ::admin
                       :user  ::user} playerrole)]}
-           (util/symbols-as-map playername playerid))
+           (util/identity-map playername playerid))
     credentials))
 
 (defn wrap-friend-openid [db handler]
