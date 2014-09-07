@@ -15,34 +15,36 @@
 (defn render [{:keys [team-statistics players]}]
   (when players
     (let [wins-col {:heading "Wins"
-                    :fn :wins
+                    :fn      :wins
                     :sort-fn identity}
           columns  [{:heading "Team"
-                     :fn :team
-                     :align :left
+                     :fn      :team
+                     :align   :left
                      :printer (partial f/format-team-links players)}
                     wins-col
                     {:heading "Losses"
-                     :fn :losses
+                     :fn      :losses
                      :sort-fn identity}
                     {:heading "Played"
-                     :fn :total
+                     :fn      :total
                      :sort-fn identity}
                     {:heading "Wins %"
-                     :fn :win-perc
+                     :fn      :win-perc
                      :printer (partial f/style-match-percentage true)
                      :sort-fn identity}
                     {:heading "Losses %"
-                     :fn :loss-perc
+                     :fn      :loss-perc
                      :printer (partial f/style-match-percentage false)
                      :sort-fn identity}
                     {:heading "Score diff."
-                     :fn :score-delta
+                     :fn      :score-delta
                      :printer f/style-value
                      :sort-fn identity}]]
-      (om/build table/table team-statistics {:opts {:columns       columns
-                                                    :caption       [:h1 "Team Statistics"]
-                                                    :default-align :right
-                                                    :class         ["table-hover" "table-bordered"]}
-                                             :state {:sort {:column wins-col
-                                                            :dir    :desc}}}))))
+      (om/build table/table
+                {:rows          team-statistics
+                 :columns       columns
+                 :caption       [:h1 "Team Statistics"]
+                 :default-align :right
+                 :class         ["table-hover" "table-bordered"]}
+                {:state {:sort {:column wins-col
+                                :dir    :desc}}}))))

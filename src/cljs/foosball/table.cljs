@@ -1,15 +1,16 @@
 (ns foosball.table
-  (:require-macros [cljs.core.async.macros :refer [go-loop go]])
+  (:require-macros [cljs.core.async.macros :refer [go-loop go]]
+                   [foosball.macros :refer [identity-map]])
   (:require [foosball.console :refer-macros [debug debug-js info log trace error warn]]
             [om.core :as om :include-macros true]
-            [om-tools.core :refer-macros [defcomponent]]
+            [om-tools.core :refer-macros [defcomponentk]]
             [cljs.core.async :refer [chan <! put!]]
             [sablono.core :as html :refer-macros [html]]
             [schema.core :as s]))
 
-(defcomponent datacell-component [{:keys [row column] :as data}
-                                  owner
-                                  {:keys [default-container default-align] :as opts}]
+(defcomponentk datacell-component
+  [[:data row column default-container default-align :as data]
+   owner]
   (render [_]
     (html
      (let [{:keys [key printer fn align]
@@ -21,10 +22,9 @@
           [default-container value]
           value)]))))
 
-(defcomponent row-component
-  [{:keys [columns row key] :as data}
-   owner
-   {:keys [row-class-fn] :as opts :or {row-class-fn (constantly nil)}}]
+(defcomponentk row-component
+  [[:data columns row key row-class-fn default-container default-align :as data]
+   owner]
   (render
       [_]
     (html
@@ -39,18 +39,17 @@
                    __             (when-not (keyword? col-key)
                                     (error "non-kw column key for column: " col-key))
                    col-key-str    (name col-key)]
-               (om/build datacell-component col {:opts      opts
-                                                 :fn        (fn [c]
-                                                              {:row row
-                                                               :column c
-                                                               :key col-key-str})
-                                                 :react-key col-key-str})))
+               (om/build datacell-component col
+                         {:fn        (fn [column]
+                                       (merge {:key col-key-str}
+                                              (identity-map row column default-align default-container)))
+                          :react-key col-key-str})))
            columns)])))
 
-(defcomponent header-cell-component
-  [{:keys [heading sort-fn key] :as column}
-   owner
-   {:keys [default-container] :as opts}]
+(defcomponentk header-cell-component
+  [[:data default-container
+    [:column heading {sort-fn nil} :as column]]
+   owner]
   (render-state [_ {:keys [sort sort-chan] :as state}]
     (let [attrs     (when sort-fn {:on-click (fn [_] (put! sort-chan column))
                                    :style    {:cursor "pointer"}})
@@ -66,10 +65,14 @@
           heading)
         sort-elem]))))
 
-(defcomponent header-row-component [columns owner opts]
+(defcomponentk header-row-component [[:data columns default-container] owner]
   (render-state [_ {:keys [sort-chan]}]
-    (html [:tr (om/build-all header-cell-component columns {:opts opts
-                                                            :state {:sort-chan sort-chan}})])))
+    (html [:tr
+           (om/build-all header-cell-component
+                         columns
+                         {:state {:sort-chan sort-chan}
+                          :fn    (fn [column]
+                                   (identity-map column default-container))})])))
 
 (defn make-sort-fn [dir sort-column]
   (if sort-column
@@ -95,16 +98,21 @@
 
 (def TableOpts
   {:columns [Column]
+   :rows    [s/Any]
    (s/optional-key :default-align) Alignment
    (s/optional-key :class) s/Any                 ;; class property for the table
    (s/optional-key :default-container) s/Keyword ;; hiccup keyword to put values and header into
    (s/optional-key :row-class-fn) Fny            ;; applied to each row, result is used as :class prop
    (s/optional-key :caption) Hiccup})
 
-(defcomponent table
-  [data
-   owner
-   {:keys [columns caption default-align default-container class] :as opts} :- TableOpts]
+(defcomponentk table
+  [[:data columns rows
+    {caption nil}
+    {default-align :left}
+    {default-container nil}
+    {class nil}
+    {row-class-fn (constantly nil)}] :- TableOpts
+   owner]
   (init-state [_]
     {:sort      {:column nil
                  :dir    :desc}
@@ -131,18 +139,18 @@
 
   (render-state [_ {:keys [sort sort-chan] :as state}]
     (let [sort-fn (make-sort-fn (:dir sort) (:column sort))]
-      (html [:table.table (when class {:class class})
-             [:caption caption]
-             [:thead (om/build header-row-component columns {:opts opts
-                                                             :react-key "headerrow"
-                                                             :state {:sort-chan sort-chan}})]
+      (html [:table.table
+             (when class {:class class})
+             (when caption [:caption caption])
+             [:thead (om/build header-row-component columns
+                               {:react-key "headerrow"
+                                :fn        (fn [columns] (identity-map columns default-container row-class-fn))
+                                :state     {:sort-chan sort-chan}})]
              [:tbody
               (map (fn [{:keys [key] :as row}]
                      (let [key (when key (str key))]
-                       (om/build row-component row (merge {:opts opts
-                                                           :fn (fn [d] {:row d
-                                                                       :columns columns
-                                                                       :key key})}
-                                                          (when key
-                                                            {:react-key key})))))
-                   (sort-fn data))]]))))
+                       (om/build row-component row
+                                 (merge {:fn (fn [row] (identity-map row columns key row-class-fn
+                                                                    default-container default-align))}
+                                        (when key {:react-key key})))))
+                   (sort-fn rows))]]))))

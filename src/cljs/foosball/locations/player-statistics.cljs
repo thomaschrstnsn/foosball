@@ -28,21 +28,21 @@
                     :fn      :wins
                     :sort-fn identity}
                    {:heading "Losses"
-                    :fn :losses
+                    :fn      :losses
                     :sort-fn identity}
                    {:heading "Played"
-                    :fn :total
+                    :fn      :total
                     :sort-fn identity}
                    {:heading "Wins %"
-                    :fn :win-perc
+                    :fn      :win-perc
                     :printer (partial f/style-match-percentage true)
                     :sort-fn identity}
                    {:heading "Losses %"
-                    :fn :loss-perc
+                    :fn      :loss-perc
                     :printer (partial f/style-match-percentage false)
                     :sort-fn identity}
                    {:heading "Score diff."
-                    :fn :score-delta
+                    :fn      :score-delta
                     :printer f/style-value
                     :sort-fn identity}
                    {:heading [:div "Inactive" [:br] "Days/Matches"]
@@ -52,16 +52,18 @@
                                (list days-since-latest-match "/" matches-after-last))
                     :align   :left}
                    {:heading "Form"
-                    :fn :form
+                    :fn      :form
                     :printer (partial f/style-form true false)
-                    :align :left}
+                    :align   :left}
                    {:heading "Rating"
-                    :fn :rating
+                    :fn      :rating
                     :printer f/style-rating
                     :sort-fn identity}]]
-      (om/build table/table player-statistics {:opts {:columns       columns
-                                                      :caption       [:h1 "Player Statistics"]
-                                                      :default-align :right
-                                                      :class         ["table-hover" "table-bordered"]}
-                                               :state {:sort {:column position-col
-                                                              :dir    :asc}}}))))
+      (om/build table/table
+                {:rows          player-statistics
+                 :columns       columns
+                 :caption       [:h1 "Player Statistics"]
+                 :default-align :right
+                 :class         ["table-hover" "table-bordered"]}
+                {:state {:sort {:column position-col
+                                :dir    :asc}}}))))

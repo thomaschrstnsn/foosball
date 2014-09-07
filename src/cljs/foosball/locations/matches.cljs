@@ -17,37 +17,39 @@
   (when players
     (let [players-from-team (fn [{:keys [player1 player2]}] [player1 player2])
           date-column {:heading "Date played"
-                       :fn :matchdate
+                       :fn      :matchdate
                        :printer d/->str
-                       :align :left
+                       :align   :left
                        :sort-fn identity}
           columns  [date-column
                     {:heading "Team 1"
-                     :key :team1-players
-                     :fn (comp players-from-team :team1)
-                     :align :left
+                     :key     :team1-players
+                     :fn      (comp players-from-team :team1)
+                     :align   :left
                      :printer (partial f/format-team-links players)}
                     {:heading "Score"
-                     :key :team1-score
-                     :fn (comp :score :team1)
+                     :key     :team1-score
+                     :fn      (comp :score :team1)
                      :sort-fn identity
                      :printer f/style-score}
                     {:heading "Team 1"
-                     :key :team2-players
-                     :fn (comp players-from-team :team2)
-                     :align :left
+                     :key     :team2-players
+                     :fn      (comp players-from-team :team2)
+                     :align   :left
                      :printer (partial f/format-team-links players)}
                     {:heading "Score"
-                     :key :team2-score
-                     :fn (comp :score :team2)
+                     :key     :team2-score
+                     :fn      (comp :score :team2)
                      :sort-fn identity
                      :printer f/style-score}
                     {:heading "Reported by"
-                     :fn :reported-by
-                     :align :left}]]
-      (om/build table/table matches {:opts {:columns       columns
-                                            :caption       [:h1 "Played Matches"]
-                                            :default-align :right
-                                            :class         ["table-hover" "table-bordered"]}
-                                             :state {:sort {:column date-column
-                                                            :dir    :desc}}}))))
+                     :fn      :reported-by
+                     :align   :left}]]
+      (om/build table/table
+                {:rows          matches
+                 :columns       columns
+                 :caption       [:h1 "Played Matches"]
+                 :default-align :right
+                 :class         ["table-hover" "table-bordered"]}
+                {:state {:sort {:column date-column
+                                :dir    :desc}}}))))

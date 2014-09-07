@@ -53,12 +53,14 @@
                               :printer (fn [v] (when v (f/style-match-percentage true (* 100 v))))}
                              {:heading "Actual"
                               :fn      :win?
-                              :printer (fn [v] (f/style-value v
-                                                             :class?  nil
-                                                             :printer {true "Won" false "Lost"}
-                                                             :checker true?))}
+                              :printer (fn [v]
+                                         (f/style-value
+                                          v
+                                          :class?  nil
+                                          :printer {true "Won" false "Lost"}
+                                          :checker true?))}
                              {:heading "Inactive matches"
-                              :fn     :inactivity}
+                              :fn      :inactivity}
                              {:heading "Diff rating"
                               :fn      :delta
                               :printer (fn [v] (when v (f/style-value v :printer f/format-rating)))}
@@ -66,9 +68,10 @@
                               :fn      :new-rating
                               :printer f/style-rating}]
                row-class-fn (fn [{:keys [log-type]}] (when (= :inactivity log-type) "danger"))]
-           (om/build table/table player-log
-                     {:opts {:columns       columns
-                             :caption       [:h1 (str "Player Log: " (:name player))]
-                             :default-align :right
-                             :class         ["table-hover" "table-bordered"]
-                             :row-class-fn  row-class-fn}})))))))
+           (om/build table/table
+                     {:rows          player-log
+                      :columns       columns
+                      :caption       [:h1 (str "Player Log: " (:name player))]
+                      :default-align :right
+                      :class         ["table-hover" "table-bordered"]
+                      :row-class-fn  row-class-fn})))))))
