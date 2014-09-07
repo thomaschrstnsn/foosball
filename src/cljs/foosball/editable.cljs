@@ -3,6 +3,7 @@
   (:require [cljs.core.async :as async :refer [put! chan alts!]]
             [goog.dom :as gdom]
             [om.core :as om :include-macros true]
+            [om-tools.core :refer-macros [defcomponentk]]
             [sablono.core :as html :refer-macros [html]]
             [foosball.console :refer-macros [debug error]]))
 
@@ -35,36 +36,35 @@
                        set)]
     (when key-kw {:key key-kw :modifiers modifiers})))
 
-(defn editable
-  [data owner {:keys [value-fn         ;; fn to apply on editable data to get str (default: identity)
-                      placeholder      ;; placeholder text in input field
-                      input-classes    ;; additional classes for input (seq of kw or str)
-                      input-props      ;; additional properties for the input element
-                      change-ch        ;; channel where changes are put to, as [type value] tuples,
-                                        ; where type in #{:editable/focus :editable/change :editable/blur}
-                      ] :as opts}]
-  (reify
-    om/IInitState
-    (init-state [_]
-      {:editing false
-       :current-value ((or value-fn identity) data)})
+(defcomponentk editable
+  [data owner
+   [:opts
+    {value-fn identity} ;; fn to apply on editable data to get str
+    {placeholder nil}   ;; placeholder text in input field
+    {input-classes nil} ;; additional classes for input (seq of kw or str)
+    {input-props nil}   ;; additional properties for the input element
+    change-ch           ;; channel where changes are put to, as [type value] tuples,
+                        ;; where type in #{:editable/focus :editable/change :editable/blur}
+    :as opts]]
+  (init-state [_]
+    {:editing false
+     :current-value ((or value-fn identity) data)})
 
-    om/IRenderState
-    (render-state [_ {:keys [editing current-value]}]
-      (let [defaults   {:type "text"
-                        :ref  "input"}
-            must-haves {:class       (mapv name input-classes)
-                        :value       current-value
-                        :placeholder placeholder
-                        :on-change   (fn [e] (on-change change-ch owner e))
-                        :on-key-down (fn [e] (when (om/get-state owner :editing)
-                                              (let [comp-kb-ev (component-keyboard-event e)]
-                                                (when (= (:key comp-kb-ev) :enter)
-                                                  (.blur (om/get-node owner "input"))))))
-                        :on-blur     (fn [e] (when (om/get-state owner :editing)
-                                              (end-edit change-ch owner current-value)))
-                        :on-focus    (fn [e] (begin-edit change-ch owner current-value))}]
-        (html [:input.form-control
-               (merge defaults
-                      input-props
-                      must-haves)])))))
+  (render-state [_ {:keys [editing current-value]}]
+    (let [defaults   {:type "text"
+                      :ref  "input"}
+          must-haves {:class       (mapv name input-classes)
+                      :value       current-value
+                      :placeholder placeholder
+                      :on-change   (fn [e] (on-change change-ch owner e))
+                      :on-key-down (fn [e] (when (om/get-state owner :editing)
+                                            (let [comp-kb-ev (component-keyboard-event e)]
+                                              (when (= (:key comp-kb-ev) :enter)
+                                                (.blur (om/get-node owner "input"))))))
+                      :on-blur     (fn [e] (when (om/get-state owner :editing)
+                                            (end-edit change-ch owner current-value)))
+                      :on-focus    (fn [e] (begin-edit change-ch owner current-value))}]
+      (html [:input.form-control
+             (merge defaults
+                    input-props
+                    must-haves)]))))
