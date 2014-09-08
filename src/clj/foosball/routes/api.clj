@@ -19,11 +19,10 @@
   {:-write (fn [obj out]
              (json/-write (str obj) out))})
 
-;; TODO this is *most* likely not correct
 (extend java.util.Date
   json/JSONWriter
   {:-write (fn [obj out]
-             (json/-write (str obj) out))})
+             (json/-write (util/iso8601-from-date obj) out))})
 
 ;; media types
 (def edn-type  "application/edn")

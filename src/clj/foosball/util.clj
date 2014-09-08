@@ -1,7 +1,9 @@
 (ns foosball.util
   (:require [clojure.edn :as edn]
             [datomic.api :as d]
-            [hiccup.element :refer [link-to]]))
+            [hiccup.element :refer [link-to]]
+            [clj-time.format :as tf]
+            [clj-time.coerce :as tc]))
 
 (defn create-uuid []
   (d/squuid))
@@ -53,6 +55,11 @@
      (if (parsable-date? s)
        (.parse (new java.text.SimpleDateFormat date-format) s)
        failure-value)))
+
+(defn iso8601-from-date [d]
+  (->> d
+       tc/from-date
+       (tf/unparse (tf/formatters :date-time))))
 
 (defn parse-id [s]
   (try
