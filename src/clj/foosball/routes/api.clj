@@ -149,7 +149,6 @@
      [false {:message "Unsupported Content-Type"}])
     true))
 
-;; TODO authentication and authorization
 (defresource match-report-resource [db id]
   :allowed-methods [:get :post :delete]
   :available-media-types media-types
@@ -166,13 +165,17 @@
   :delete! (fn [ctx] (d/delete-match! db (::id ctx)))
   :malformed? (partial parse-body ::data)
   :post! (fn [ctx]
-           (let [data    (::data ctx)
-                 data-id (:id data)
-                 req-id  (::id ctx)]
+           (let [data        (::data ctx)
+                 data-id     (:id data)
+                 req-id      (::id ctx)
+                 reported-by (-> ctx ::auth :playerid)]
              (assert (= req-id data-id))
              (assert (not= nil data))
-             (d/create-match! db data)
-             :ok)))
+             (d/create-match! db (merge data (util/identity-map reported-by)))
+             :ok))
+  :authorized? (fn [_] (let [auth (auth/current-auth)]
+                        [(:logged-in? auth) {::auth auth}]))
+  :allowed?   (fn [ctx] (-> ctx ::auth :playerid)))
 
 (defn routes [{:keys [db project]}]
   (let [player-route (GET "/api/players" [] (players db))]

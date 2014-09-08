@@ -1,5 +1,6 @@
 (ns foosball.test.routes.api
   (:require [foosball.models.domains :as d]
+            [foosball.auth :refer [current-auth]]
             [foosball.test.helpers :as h]
             [foosball.test.response-helpers :as rh]
             [foosball.util :as util]
@@ -7,6 +8,7 @@
             [ring.mock.request :as mockr]
             [clojure.edn :as edn]
             [clojure.data.json :as json]
+            [conjure.core :refer [stubbing]]
             [liberator.dev :as libdev]
             [clj-time.core :as time]
             [clj-time.coerce :as time-coerce]
@@ -217,7 +219,6 @@
     (let [app     (h/app-with-memory-db)
           handler (:ring-handler app)
           build-request (fn [op id] (mockr/request op (str "/api/match/" id)))]
-
       (testing "with players and matches in the database"
         (let [db (:database app)
               [p1 p2 p3 p4 reporter] (map (partial h/create-dummy-player db) ["p1" "p2" "p3" "p4" "rep"])
@@ -234,65 +235,82 @@
                                 :team2 {:player1 (:id t2p1) :player2 (:id t2p2) :score team2score}
                                 :reported-by (:id reporter)
                                 :id (h/make-uuid)}))]
-          (testing "getting db-created match"
+          (testing "without valid auth GET/DELETE is 401"
             (let [expected-match (new-match-fn)
                   _              (d/create-match! db expected-match)
-                  match-id       (:id expected-match)
-                  request        (build-request :get match-id)
-                  response       (-> request handler)
-                  response-body  (-> response :body edn/read-string)]
-              (is (= 200 (:status response)))
-              (let [{:keys [team1 team2 matchdate]} response-body]
-                (is (= true (every? identity [team1 team2 matchdate]))))
-              (test-route-for-supported-media-types handler request)
-              (let [expected-team-fn (fn [expected-match team-key [p1 p2]]
-                                       (let [team (team-key expected-match)]
-                                         {:score (:score team)
-                                          :player1 (:name p1)
-                                          :player2 (:name p2)}))
-                    actual-team-fn (fn [response team-key]
-                                     (select-keys (team-key response) [:score :player1 :player2]))]
-                (testing "first team match expected"
-                  (is (= (expected-team-fn expected-match :team1 [p1 p2])
-                         (actual-team-fn response-body :team1))))
-                (testing "second team match expected"
-                  (is (= (expected-team-fn expected-match :team2 [p3 p4])
-                         (actual-team-fn response-body :team2))))
-                (testing "match data match expected"
-                  (let [expected-match-fn  (fn [{:keys [id matchdate]}]
-                                             {:match/id match-id
-                                              :reported-by (:name reporter)
-                                              :matchdate matchdate})
-                        actual-match-fn   (fn [response]
-                                            (select-keys response
-                                                         [:match/id :reported-by :matchdate]))]
-                    (is (= (expected-match-fn expected-match)
-                           (actual-match-fn response-body))))))))
+                  match-id       (:id expected-match)]
+              (are [method]
+                (= 401 (:status (-> (build-request method match-id) handler)))
+                :get :delete)))
+          (testing "with valid auth, without allowed GET/DELETE is 403"
+            (stubbing [current-auth {:logged-in? true}]
+                      (let [expected-match (new-match-fn)
+                            _              (d/create-match! db expected-match)
+                            match-id       (:id expected-match)]
+                        (are [method]
+                          (= 403 (:status (-> (build-request method match-id) handler)))
+                          :get :delete))))
+          (stubbing
+           [current-auth {:logged-in? true :playerid (:id reporter)}]
+           (testing "with valid-auth"
+             (testing "getting db-created match"
+               (let [expected-match (new-match-fn)
+                     _              (d/create-match! db expected-match)
+                     match-id       (:id expected-match)
+                     request        (build-request :get match-id)
+                     response       (-> request handler)
+                     response-body  (-> response :body edn/read-string)]
+                 (is (= 200 (:status response)))
+                 (let [{:keys [team1 team2 matchdate]} response-body]
+                   (is (= true (every? identity [team1 team2 matchdate]))))
+                 (test-route-for-supported-media-types handler request)
+                 (let [expected-team-fn (fn [expected-match team-key [p1 p2]]
+                                          (let [team (team-key expected-match)]
+                                            {:score (:score team)
+                                             :player1 (:name p1)
+                                             :player2 (:name p2)}))
+                       actual-team-fn (fn [response team-key]
+                                        (select-keys (team-key response) [:score :player1 :player2]))]
+                   (testing "first team match expected"
+                     (is (= (expected-team-fn expected-match :team1 [p1 p2])
+                            (actual-team-fn response-body :team1))))
+                   (testing "second team match expected"
+                     (is (= (expected-team-fn expected-match :team2 [p3 p4])
+                            (actual-team-fn response-body :team2))))
+                   (testing "match data match expected"
+                     (let [expected-match-fn  (fn [{:keys [id matchdate]}]
+                                                {:match/id match-id
+                                                 :reported-by (:name reporter)
+                                                 :matchdate matchdate})
+                           actual-match-fn   (fn [response]
+                                               (select-keys response
+                                                            [:match/id :reported-by :matchdate]))]
+                       (is (= (expected-match-fn expected-match)
+                              (actual-match-fn response-body))))))))
+             (testing "POST/GET/DELETE/GET a match with edn: "
+               (let [expected-match (new-match-fn)
+                     match-id       (:id expected-match)
+                     post-request   (-> (build-request :post match-id)
+                                        (mockr/header :content-type "application/edn")
+                                        (update-in [:body]
+                                                   (fn [_] (prn-str expected-match))))
+                     get-request    (build-request :get match-id)
 
-          (testing "POST/GET/DELETE/GET a match with edn: "
-            (let [expected-match (new-match-fn)
-                  match-id       (:id expected-match)
-                  post-request   (-> (build-request :post match-id)
-                                     (mockr/header :content-type "application/edn")
-                                     (update-in [:body]
-                                                (fn [_] (prn-str expected-match))))
-                  get-request    (build-request :get match-id)
-
-                  handler        (-> handler (liberator.dev/wrap-trace :header))
-                  post-response  (-> post-request handler)
-                  get-response   (-> get-request handler)
-                  actual-match   (-> get-response :body edn/read-string)
-                  del-response   (-> (build-request :delete match-id) handler)
-                  get-after-del  (-> get-request handler)]
-              (testing "POST succeed"
-                (is (= 201 (:status post-response))))
-              (testing "GET after POST"
-                (is (= 200 (:status get-response)))
-                (is (= match-id (:match/id actual-match))))
-              (testing "DELETE"
-                (is (= 204 (:status del-response))))
-              (testing "GET after DELETE"
-                (is (= 404 (:status get-after-del))))))))))
+                     handler        (-> handler (liberator.dev/wrap-trace :header))
+                     post-response  (-> post-request handler)
+                     get-response   (-> get-request handler)
+                     actual-match   (-> get-response :body edn/read-string)
+                     del-response   (-> (build-request :delete match-id) handler)
+                     get-after-del  (-> get-request handler)]
+                 (testing "POST succeed"
+                   (is (= 201 (:status post-response))))
+                 (testing "GET after POST"
+                   (is (= 200 (:status get-response)))
+                   (is (= match-id (:match/id actual-match))))
+                 (testing "DELETE"
+                   (is (= 204 (:status del-response))))
+                 (testing "GET after DELETE"
+                   (is (= 404 (:status get-after-del))))))))))))
 
   (testing "GET '/api/matchup':"
     (let [app (h/app-with-memory-db)
