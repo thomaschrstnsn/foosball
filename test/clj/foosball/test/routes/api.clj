@@ -16,15 +16,15 @@
 (use-fixtures :once schema.test/validate-schemas)
 
 (defn test-route-for-supported-media-types [handler request]
-  (testing "Accept header decides result"
-            (are [mime-type]
-              (= 200 (-> request
-                         (mockr/header :accept mime-type)
-                         handler
-                         :status))
-              "application/edn"
-              "text/html"
-              "application/json")))
+  (testing "Accept header decides result:"
+    (let [valid-mime-request? (fn [mime-type]
+                                (= 200 (-> request
+                                           (mockr/header :accept mime-type)
+                                           handler
+                                           :status)))]
+      (is (valid-mime-request? "application/edn"))
+      (is (valid-mime-request? "text/html"))
+      (is (valid-mime-request? "application/json")))))
 
 (deftest api-route-tests
   (testing "GET '/api/players':"
@@ -193,20 +193,20 @@
               response (-> request handler :body edn/read-string)]
           (testing "first teams match expected"
             (let [expected-team1s (vec (map (fn [{:keys [team1]}] {:score (:score team1)
-                                                                   :player1 (:name p1)
-                                                                   :player2 (:name p2)})
+                                                                  :player1 (:name p1)
+                                                                  :player2 (:name p2)})
                                             matches))]
               (is (h/seq-diff-with-first-is-nil? expected-team1s (map :team1 response)))))
           (testing "second teams match expected"
             (let [expected-team2s (vec (map (fn [{:keys [team2]}] {:score (:score team2)
-                                                                   :player1 (:name p3)
-                                                                   :player2 (:name p4)})
+                                                                  :player1 (:name p3)
+                                                                  :player2 (:name p4)})
                                             matches))]
               (is (h/seq-diff-with-first-is-nil? expected-team2s (map :team2 response)))))
           (testing "match data match expected"
             (let [expected-matches (vec (map  (fn [{:keys [id matchdate]}] {:match/id id
-                                                                            :reported-by (:name reporter)
-                                                                            :matchdate matchdate})
+                                                                           :reported-by (:name reporter)
+                                                                           :matchdate matchdate})
                                               matches))]
               (is (h/seq-diff-with-first-is-nil? expected-matches
                                                  (map (fn [m] (select-keys m [:match/id
@@ -216,61 +216,83 @@
   (testing "RESOURCE '/api/match/{guid}':"
     (let [app     (h/app-with-memory-db)
           handler (:ring-handler app)
-          build-request (fn [op id] (mockr/request :get (str "/api/match/" id)))]
+          build-request (fn [op id] (mockr/request op (str "/api/match/" id)))]
 
       (testing "with players and matches in the database"
         (let [db (:database app)
               [p1 p2 p3 p4 reporter] (map (partial h/create-dummy-player db) ["p1" "p2" "p3" "p4" "rep"])
-              matches (vec (for [index (range 8)
-                                 :let [team1score 10
-                                       team2score index
-                                       match-date (java.util.Date.)
-                                       t1p1 p1
-                                       t1p2 p2
-                                       t2p1 p3
-                                       t2p2 p4]]
-                             {:matchdate match-date
-                              :team1 {:player1 (:id t1p1) :player2 (:id t1p2) :score team1score}
-                              :team2 {:player1 (:id t2p1) :player2 (:id t2p2) :score team2score}
-                              :reported-by (:id reporter)
-                              :id (h/make-uuid)}))
-
-              _ (doall (map (fn [m] (d/create-match! db m)) matches))
-              match-ids (mapv :id matches)]
-          (testing "getting created match"
-            (let [match-id (first match-ids)
-                  request  (build-request :get match-id)
-                  expected-match (select-keys (first matches) [:team1 :team2 :matchdate])
-                  response (-> request handler)
-                  response-body (-> response :body edn/read-string)]
+              new-match-fn (fn []
+                             (let [team1score 10
+                                   team2score 4
+                                   match-date (java.util.Date.)
+                                   t1p1 p1
+                                   t1p2 p2
+                                   t2p1 p3
+                                   t2p2 p4]
+                               {:matchdate match-date
+                                :team1 {:player1 (:id t1p1) :player2 (:id t1p2) :score team1score}
+                                :team2 {:player1 (:id t2p1) :player2 (:id t2p2) :score team2score}
+                                :reported-by (:id reporter)
+                                :id (h/make-uuid)}))]
+          (testing "getting db-created match"
+            (let [expected-match (new-match-fn)
+                  _              (d/create-match! db expected-match)
+                  match-id       (:id expected-match)
+                  request        (build-request :get match-id)
+                  response       (-> request handler)
+                  response-body  (-> response :body edn/read-string)]
               (is (= 200 (:status response)))
               (let [{:keys [team1 team2 matchdate]} response-body]
                 (is (= true (every? identity [team1 team2 matchdate]))))
-              (test-route-for-supported-media-types handler request)))
+              (test-route-for-supported-media-types handler request)
+              (let [expected-team-fn (fn [expected-match team-key [p1 p2]]
+                                       (let [team (team-key expected-match)]
+                                         {:score (:score team)
+                                          :player1 (:name p1)
+                                          :player2 (:name p2)}))
+                    actual-team-fn (fn [response team-key]
+                                     (select-keys (team-key response) [:score :player1 :player2]))]
+                (testing "first team match expected"
+                  (is (= (expected-team-fn expected-match :team1 [p1 p2])
+                         (actual-team-fn response-body :team1))))
+                (testing "second team match expected"
+                  (is (= (expected-team-fn expected-match :team2 [p3 p4])
+                         (actual-team-fn response-body :team2))))
+                (testing "match data match expected"
+                  (let [expected-match-fn  (fn [{:keys [id matchdate]}]
+                                             {:match/id match-id
+                                              :reported-by (:name reporter)
+                                              :matchdate matchdate})
+                        actual-match-fn   (fn [response]
+                                            (select-keys response
+                                                         [:match/id :reported-by :matchdate]))]
+                    (is (= (expected-match-fn expected-match)
+                           (actual-match-fn response-body))))))))
 
-          (comment
+          (testing "POST/GET/DELETE/GET a match with edn: "
+            (let [expected-match (new-match-fn)
+                  match-id       (:id expected-match)
+                  post-request   (-> (build-request :post match-id)
+                                     (mockr/header :content-type "application/edn")
+                                     (update-in [:body]
+                                                (fn [_] (prn-str expected-match))))
+                  get-request    (build-request :get match-id)
 
-            (testing "first teams match expected"
-              (let [expected-team1s (vec (map (fn [{:keys [team1]}] {:score (:score team1)
-                                                                    :player1 (:name p1)
-                                                                    :player2 (:name p2)})
-                                              matches))]
-                (is (h/seq-diff-with-first-is-nil? expected-team1s (map :team1 response)))))
-            (testing "second teams match expected"
-              (let [expected-team2s (vec (map (fn [{:keys [team2]}] {:score (:score team2)
-                                                                    :player1 (:name p3)
-                                                                    :player2 (:name p4)})
-                                              matches))]
-                (is (h/seq-diff-with-first-is-nil? expected-team2s (map :team2 response)))))
-            (testing "match data match expected"
-              (let [expected-matches (vec (map  (fn [{:keys [id matchdate]}] {:match/id id
-                                                                             :reported-by (:name reporter)
-                                                                             :matchdate matchdate})
-                                                matches))]
-                (is (h/seq-diff-with-first-is-nil? expected-matches
-                                                   (map (fn [m] (select-keys m [:match/id
-                                                                                :reported-by
-                                                                                :matchdate])) response))))))))))
+                  handler        (-> handler (liberator.dev/wrap-trace :header))
+                  post-response  (-> post-request handler)
+                  get-response   (-> get-request handler)
+                  actual-match   (-> get-response :body edn/read-string)
+                  del-response   (-> (build-request :delete match-id) handler)
+                  get-after-del  (-> get-request handler)]
+              (testing "POST succeed"
+                (is (= 201 (:status post-response))))
+              (testing "GET after POST"
+                (is (= 200 (:status get-response)))
+                (is (= match-id (:match/id actual-match))))
+              (testing "DELETE"
+                (is (= 204 (:status del-response))))
+              (testing "GET after DELETE"
+                (is (= 404 (:status get-after-del))))))))))
 
   (testing "GET '/api/matchup':"
     (let [app (h/app-with-memory-db)
@@ -333,39 +355,39 @@
         (is (= 400 (-> (build-request-with-players p1 p2 p3) handler :status))))
 
       (testing "with no query, 400"
-        (is (= 400 (-> base-request handler :status))))))
+        (is (= 400 (-> base-request handler :status)))))))
 
-  (testing "GET '/api/auth':"
-    (let [app  (h/app-with-memory-db)
-          handler (:ring-handler app)
-          request (mockr/request :get "/api/auth")]
-      (test-route-for-supported-media-types handler request)
+(testing "GET '/api/auth':"
+  (let [app  (h/app-with-memory-db)
+        handler (:ring-handler app)
+        request (mockr/request :get "/api/auth")]
+    (test-route-for-supported-media-types handler request)
 
-      (with-redefs [foosball.auth/current-auth (constantly nil)]
-        (testing "with no auth"
+    (with-redefs [foosball.auth/current-auth (constantly nil)]
+      (testing "with no auth"
+        (let [response (-> request handler :body edn/read-string)]
+          (is (= {:logged-in? false
+                  :provider   foosball.auth/provider}
+                 response)))))
+
+    (let [firstname "James"
+          lastname "Brown"]
+      (with-redefs [foosball.auth/current-auth (constantly (util/identity-map firstname lastname))]
+        (with-redefs [foosball.auth/has-role? (fn [r?] (= :foosball.auth/user r?))]
           (let [response (-> request handler :body edn/read-string)]
-            (is (= {:logged-in? false
-                    :provider   foosball.auth/provider}
-                   response)))))
+            (testing "with auth as user"
+              (is (= {:logged-in? true
+                      :user?      true
+                      :admin?     false
+                      :username   (str firstname " " lastname)}
+                     response))
+              (is (nil? (:login-form response))))))
 
-      (let [firstname "James"
-            lastname "Brown"]
-        (with-redefs [foosball.auth/current-auth (constantly (util/identity-map firstname lastname))]
-          (with-redefs [foosball.auth/has-role? (fn [r?] (= :foosball.auth/user r?))]
-            (let [response (-> request handler :body edn/read-string)]
-              (testing "with auth as user"
-                (is (= {:logged-in? true
-                        :user?      true
-                        :admin?     false
-                        :username   (str firstname " " lastname)}
-                       response))
-                (is (nil? (:login-form response))))))
-
-          (with-redefs [foosball.auth/has-role? (constantly true)]
-            (let [response (-> request handler :body edn/read-string)]
-              (testing "with auth as admin"
-                (is (= {:logged-in? true
-                        :user?      true
-                        :admin?     true
-                        :username   (str firstname " " lastname)}
-                       response))))))))))
+        (with-redefs [foosball.auth/has-role? (constantly true)]
+          (let [response (-> request handler :body edn/read-string)]
+            (testing "with auth as admin"
+              (is (= {:logged-in? true
+                      :user?      true
+                      :admin?     true
+                      :username   (str firstname " " lastname)}
+                     response)))))))))

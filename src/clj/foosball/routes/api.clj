@@ -10,9 +10,17 @@
             [foosball.software :as sw]
             [foosball.auth :as auth]
             [clojure.data.json :as json]
-            [clojure.java.io :as io]))
+            [clojure.edn :as edn]
+            [clojure.java.io :as io]
+            [taoensso.timbre :as t]))
 
 (extend java.util.UUID
+  json/JSONWriter
+  {:-write (fn [obj out]
+             (json/-write (str obj) out))})
+
+;; TODO this is *most* likely not correct
+(extend java.util.Date
   json/JSONWriter
   {:-write (fn [obj out]
              (json/-write (str obj) out))})
@@ -21,7 +29,7 @@
 (def edn-type  "application/edn")
 (def json-type "application/json")
 (def media-types [edn-type "text/html" json-type])
-(def body-media-types [edn-type json-type])
+(def body-media-types [edn-type])
 
 (defresource players [db]
   :available-media-types media-types
@@ -109,21 +117,29 @@
       java.lang.String body
       (slurp (io/reader body)))))
 
+(defmulti parse-data (fn [mime-type data] mime-type))
+
+(defmethod parse-data edn-type [_ data]
+  (edn/read-string data))
+
+(defmethod parse-data json-type [_ data]
+  (json/read-str data))
+
+(defmethod parse-data :default [mime _] nil)
+
 ;; For PUT and POST parse the body as json and store in the context
 ;; under the given key.
-(defn parse-json [context key]
+(defn parse-body [key context]
   (when (#{:put :post} (get-in context [:request :request-method]))
     (try
       (if-let [body (body-as-string context)]
-        (let [data (json/read-str body)]
+        (let [mime-type (get-in context [:request :headers "content-type"])
+              data (parse-data mime-type body)]
           [false {key data}])
         {:message "No body"})
       (catch Exception e
         (.printStackTrace e)
         {:message (format "IOException: %s" (.getMessage e))}))))
-
-(defn parse-edn [context key]
-  nil)
 
 ;; For PUT and POST check if the content type is json.
 (defn check-content-type [content-types ctx]
@@ -142,14 +158,22 @@
   :exists? (fn [_]
              (let [uuid (util/uuid-from-string id)
                    e    (d/get-match db uuid)]
-               (if-not (nil? e)
-                 {::entry e
-                  ::id    uuid})))
+               [e (merge (when e    {::entry e})
+                         (when uuid {::id uuid}))]))
   :existed? (fn [_] (nil? (or (d/get-match db id) ::sentinel)))
   :handle-ok ::entry
-  :delete! (fn [_] (d/delete-match! db id))
-  :malformed? #(parse-json % ::data)
-  :post! (fn [ctx] (d/create-match! db (::data ctx))))
+  :handle-exception (fn [{:keys [exception] :as ctx}]
+                      (t/error exception :data (::data ctx)))
+  :delete! (fn [ctx] (d/delete-match! db (::id ctx)))
+  :malformed? (partial parse-body ::data)
+  :post! (fn [ctx]
+           (let [data    (::data ctx)
+                 data-id (:id data)
+                 req-id  (::id ctx)]
+             ;(assert (= req-id data-id))
+             (assert (not= nil data))
+             (d/create-match! db data)
+             :ok)))
 
 (defn routes [{:keys [db project]}]
   (let [player-route (GET "/api/players" [] (players db))]
