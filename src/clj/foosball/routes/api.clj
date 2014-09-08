@@ -169,7 +169,7 @@
            (let [data    (::data ctx)
                  data-id (:id data)
                  req-id  (::id ctx)]
-             ;(assert (= req-id data-id))
+             (assert (= req-id data-id))
              (assert (not= nil data))
              (d/create-match! db data)
              :ok)))
