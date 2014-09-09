@@ -46,7 +46,7 @@
                                                            [:home-location :menu-locations])}})))
 
 (when-not js/skipRootBind
-  (init-app false)
+  (init-app)
   (fw/watch-and-reload
    :websocket-url   "ws://localhost:3449/figwheel-ws"
    :jsload-callback (fn []
