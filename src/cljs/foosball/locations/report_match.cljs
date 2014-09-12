@@ -179,8 +179,16 @@
                 :status :pending}]
     (debug "doing submit" report)
     (go
-      (let [resp (<! (data/post! (str "/api/match/" id) report))]
-          (debug :submit resp)))
+      (let [player-id-fixer (fn [{:keys [id]}] id)
+            fixed-report (-> report
+                             (update-in [:team1 :player1] player-id-fixer)
+                             (update-in [:team1 :player2] player-id-fixer)
+                             (update-in [:team2 :player1] player-id-fixer)
+                             (update-in [:team2 :player2] player-id-fixer))
+            resp (<! (data/post! (str "/api/match/" id) fixed-report))]
+        (debug :submit resp)
+        (om/transact! match-report
+                      (fn [mr] (merge mr {:submitting nil})))))
     (om/transact! match-report
                   (fn [mr] (merge mr {:submitting report})))))
 

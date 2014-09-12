@@ -133,9 +133,7 @@
     (try
       (if-let [body (body-as-string context)]
         (let [mime-type (get-in context [:request :headers "content-type"])
-              _ (t/info :body body :mime mime-type)
-              data (parse-data mime-type body)
-              _ (t/info :parsed data)]
+              data (parse-data mime-type body)]
           [false {key data}])
         {:message "No body"})
       (catch Exception e
