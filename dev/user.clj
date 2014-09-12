@@ -15,15 +15,25 @@
             [taoensso.timbre.appenders (socket :as socket-appender)]
             [org.httpkit.client :as http]
             [clojure.edn :as edn]
-            [com.stuartsierra.component :as component]))
+            [com.stuartsierra.component :as component]
+            [liberator.dev :as libdev]))
+
+(def dev-wrapper
+  (let [use-liberator-trace true
+        stacktrace-wrapper  stacktrace/wrap-stacktrace]
+    (if use-liberator-trace
+      (fn [h]
+        (libdev/wrap-trace (stacktrace-wrapper h) :header))
+      stacktrace-wrapper)))
 
 (def system nil)
 
 (defn init
   "Constructs the current development system."
   []
-  (alter-var-root #'system (constantly (system/system system/dev-system-components
-                                        :handler-wrapper stacktrace/wrap-stacktrace
+  (alter-var-root #'system (constantly (system/system
+                                        system/dev-system-components
+                                        :handler-wrapper dev-wrapper
                                         :cljs-optimized? false
                                         :repl-port 12345))))
 

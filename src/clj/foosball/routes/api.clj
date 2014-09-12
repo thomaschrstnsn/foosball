@@ -133,7 +133,9 @@
     (try
       (if-let [body (body-as-string context)]
         (let [mime-type (get-in context [:request :headers "content-type"])
-              data (parse-data mime-type body)]
+              _ (t/info :body body :mime mime-type)
+              data (parse-data mime-type body)
+              _ (t/info :parsed data)]
           [false {key data}])
         {:message "No body"})
       (catch Exception e
@@ -173,8 +175,8 @@
              (assert (not= nil data))
              (d/create-match! db (merge data (util/identity-map reported-by)))
              :ok))
-  :authorized? (fn [_] (let [auth (auth/current-auth)]
-                        [(:logged-in? auth) {::auth auth}]))
+  :authorized? (fn [_] (if-let [auth (auth/current-auth)]
+                        {::auth auth}))
   :allowed?   (fn [ctx] (-> ctx ::auth :playerid)))
 
 (defn routes [{:keys [db project]}]

@@ -45,13 +45,13 @@
           (is (= {:role :user
                   :active true
                   :name name
-                  :id id} (-> request handler :body edn/read-string first)))
+                  :player/id id} (-> request handler :body edn/read-string first)))
           (test-route-for-supported-media-types handler request)
           (testing "JSON output is parsable into something similar"
             (is  (= {:role "user"
                      :name name
                      :active true
-                     :id (str id)} (-> request
+                     :player/id (str id)} (-> request
                      (mockr/header :accept "application/json")
                      handler
                      :body

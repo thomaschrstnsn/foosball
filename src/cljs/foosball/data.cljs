@@ -13,3 +13,6 @@
 
 (defn add-uuid-key [ds]
   (mapv (fn [d] (merge d {:key (uuid/make-random-uuid)})) ds))
+
+(defn post! [url data]
+  (http/post url {:edn-params data}))

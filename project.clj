@@ -48,7 +48,7 @@
                                   [prismatic/om-tools "0.3.2" :exclusions [org.clojure/clojure]]
                                   [sablono "0.2.22"]
                                   [secretary "1.0.2"]
-                                  [cljs-http "0.1.10" :exclusions [commons-codec]]
+                                  [cljs-http "0.1.15" :exclusions [commons-codec]]
                                   [com.andrewmcveigh/cljs-time "0.1.4"]
                                   [org.clojars.franks42/cljs-uuid-utils "0.1.3"]]
 

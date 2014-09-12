@@ -3,7 +3,8 @@
             [foosball.models.domains.helpers :as h]
             [foosball.util :as util]
             [foosball.entities :as e]
-            [schema.core :as s]))
+            [schema.core :as s]
+            [taoensso.timbre :as t]))
 
 (defn create! [conn {:keys [matchdate team1 team2 reported-by id]}]
   (let [[match-id team1-id team2-id] (repeatedly #(d/tempid :db.part/user))
@@ -29,7 +30,8 @@
                                       {:db/id match-id :match/team2 team2-id}
                                       {:db/id match-id :match/time matchdate}
                                       {:db/id match-id :match/reported-by reporter-entity}
-                                      {:db/id match-id :match/id id}]]
+                                      {:db/id match-id :match/id id}]
+        _ (t/info :transaction transaction)]
     @(d/transact conn transaction)))
 
 (defn match-query [by-id?]

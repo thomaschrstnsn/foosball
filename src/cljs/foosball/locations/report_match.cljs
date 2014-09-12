@@ -16,6 +16,7 @@
             [foosball.spinners :refer [spinner]]
             [foosball.validation.match :as vm]
             [om.core :as om :include-macros true]
+            [om-tools.core :refer-macros [defcomponentk]]
             [sablono.core :as html :refer-macros [html]]))
 
 (defn handle [app v]
@@ -41,18 +42,19 @@
          (filter identity)
          set)))
 
-(defn team-score-component [team owner {:keys [score-ch]}]
-  (reify
-    om/IRender
-    (render [_]
-      (html
-       [:div.form-group (when-not (:valid-score? team) {:class "has-error"})
-        [:label.control-label.col-lg-4 "Score"]
-        [:div.controls.col-lg-8
-         (om/build e/editable team {:opts {:value-fn  (comp str :score)
-                                           :change-ch score-ch
-                                           :placeholder "0"
-                                           :input-props {:type "number"}}})]]))))
+(defcomponentk team-score-component
+  [[:data :as team]
+   owner
+   [:opts score-ch]]
+  (render [_]
+    (html
+     [:div.form-group (when-not (:valid-score? team) {:class "has-error"})
+      [:label.control-label.col-lg-4 "Score"]
+      [:div.controls.col-lg-8
+       (om/build e/editable team {:opts {:value-fn  (comp str :score)
+                                         :change-ch score-ch
+                                         :placeholder "0"
+                                         :input-props {:type "number"}}})]])))
 
 (defn- render-players-select [selected-player team other-team active-players change-ch]
   (let [other-selected   (disj (selected-players team other-team) selected-player)
@@ -70,17 +72,16 @@
             [:option {:value id} name])
           possible-options)]))
 
-(defn team-player-component [{:keys [selected-player team other-team active-players player-num]}
-                             owner
-                             {:keys [change-ch]}]
-  (reify
-    om/IRender
-    (render [_]
-      (html
-       [:div.form-group
-        [:label.control-label.col-lg-4 (str "Player " player-num)]
-        [:div.controls.col-lg-8
-         (render-players-select selected-player team other-team active-players change-ch)]]))))
+(defcomponentk team-player-component
+  [[:data selected-player team other-team active-players player-num]
+   owner
+   [:opts change-ch]]
+  (render [_]
+    (html
+     [:div.form-group
+      [:label.control-label.col-lg-4 (str "Player " player-num)]
+      [:div.controls.col-lg-8
+       (render-players-select selected-player team other-team active-players change-ch)]])))
 
 (defn team-selector [team-num]
   (keyword (str "team" team-num)))
@@ -118,21 +119,22 @@
                (get match-report (team-selector team-num))
                {:opts {:score-ch score}})]))
 
-(defn matchdate-component [matchdate owner {:keys [change-ch]}]
-  (reify
-    om/IRender
-    (render [_]
-      (html
-       [:div.form-group.col-lg-12
-        [:div.form-group.pull-right.col-lg-6
-         [:label.control-label.col-lg-6 "Date played"]
-         [:div.controls.col-lg-5
-          (om/build dp/date-component matchdate {:opts {:value-key     :date
-                                                        :max-value-key :today
-                                                        :str-fn    d/->str
-                                                        :change-ch change-ch}
-                                                 :fn   (fn [x] {:date  x
-                                                               :today (tc/now)})})]]]))))
+(defcomponentk matchdate-component
+  [[:data :as matchdate]
+   owner
+   [:opts change-ch]]
+  (render [_]
+    (html
+     [:div.form-group.col-lg-12
+      [:div.form-group.pull-right.col-lg-6
+       [:label.control-label.col-lg-6 "Date played"]
+       [:div.controls.col-lg-5
+        (om/build dp/date-component matchdate {:opts {:value-key     :date
+                                                      :max-value-key :today
+                                                      :str-fn    d/->str
+                                                      :change-ch change-ch}
+                                               :fn   (fn [x] {:date  x
+                                                             :today (tc/now)})})]]])))
 
 (defn valid-score? [this other]
   (:team1score (vm/validate-scores [this other])))
@@ -156,7 +158,7 @@
   (om/update! match-report path player))
 
 (defn handle-matchdate-update [match-report path js-date]
-  (let [matchdate (dc/to-date-time js-date)]
+  (let [matchdate (dc/to-date js-date)]
     (om/update! match-report path matchdate)))
 
 (defn valid-team-to-report? [{:keys [player1 player2 valid-score?]}]
@@ -176,77 +178,78 @@
                 :id id
                 :status :pending}]
     (debug "doing submit" report)
+    (go
+      (let [resp (<! (data/post! (str "/api/match/" id) report))]
+          (debug :submit resp)))
     (om/transact! match-report
                   (fn [mr] (merge mr {:submitting report})))))
 
-(defn match-report-component [{:keys [active-players match-report] :as app} owner]
-  (reify
-    om/IInitState
-    (init-state [_]
-      (letfn [(team-chans-fact [] {:score (chan)
-                                   :player1 (chan)
-                                   :player2 (chan)})]
-        {:team1     (team-chans-fact)
-         :team2     (team-chans-fact)
-         :matchdate (chan)}))
+(defcomponentk match-report-component
+  [[:data active-players match-report :as app]
+   owner]
+  (init-state [_]
+    (letfn [(team-chans-fact [] {:score (chan)
+                                 :player1 (chan)
+                                 :player2 (chan)})]
+      {:team1     (team-chans-fact)
+       :team2     (team-chans-fact)
+       :matchdate (chan)}))
 
-    om/IWillMount
-    (will-mount [_]
-      (let [team-paths (for [team [:team1 :team2]
-                             chan [:score :player1 :player2]]
-                         [team chan])
-            all-paths  (conj team-paths [:matchdate])
-            chan-to-path-map (apply merge
-                                    (map (fn [p] {(om/get-state owner p) p})
-                                         all-paths))]
-        (go-loop []
-          (let [[v c] (alts! (keys chan-to-path-map))
-                path (get chan-to-path-map c)]
-            (condp some (-> path)
-              #{:score} (handle-score-update match-report path v)
-              #{:player1 :player2} (handle-player-update match-report path v)
-              #{:matchdate} (handle-matchdate-update match-report path v)
-              nil)
-            (recur)))))
+  (will-mount [_]
+    (let [team-paths (for [team [:team1 :team2]
+                           chan [:score :player1 :player2]]
+                       [team chan])
+          all-paths  (conj team-paths [:matchdate])
+          chan-to-path-map (apply merge
+                                  (map (fn [p] {(om/get-state owner p) p})
+                                       all-paths))]
+      (go-loop []
+        (let [[v c] (alts! (keys chan-to-path-map))
+              path (get chan-to-path-map c)]
+          (condp some (-> path)
+            #{:score} (handle-score-update match-report path v)
+            #{:player1 :player2} (handle-player-update match-report path v)
+            #{:matchdate} (handle-matchdate-update match-report path v)
+            nil)
+          (recur)))))
 
-    om/IRenderState
-    (render-state [_ {:keys [team1 team2 matchdate]}]
-      (let [submitting (:submitting match-report)
-            _    (debug "players" (map (fn [p] (str "'" (:name p) "'"))
+  (render-state [_ {:keys [team1 team2 matchdate]}]
+    (let [submitting (:submitting match-report)
+          _    (debug "players" (map (fn [p] (str "'" (:name p) "'"))
                                      (selected-players (:team1 match-report)
                                                        (:team2 match-report))))
-            __   (debug "scores" (map (fn [kw] (get-in match-report [kw :score])) [:team1 :team2]))
-            ___  (debug "matchdate" (-> match-report :matchdate d/->str))
-            ____ (debug "submitting" submitting)
-            render-team (partial render-team-controls app)
-            enabled? (and (not submitting)
-                          (valid-report? match-report))]
-        (html
-         [:div
-          [:h1 "Report Match Result"]
-          [:p.lead
-           "A match winner is the first team to reach ten goals while atleast two goals ahead of the opposing team."
-           [:br]
-           "In case of tie-break, report 11-9 or 9-11."]
+          __   (debug "scores" (map (fn [kw] (get-in match-report [kw :score])) [:team1 :team2]))
+          ___  (debug "matchdate" (-> match-report :matchdate d/->str))
+          ____ (debug "submitting" submitting)
+          render-team (partial render-team-controls app)
+          enabled? (and (not submitting)
+                        (valid-report? match-report))]
+      (html
+       [:div
+        [:h1 "Report Match Result"]
+        [:p.lead
+         "A match winner is the first team to reach ten goals while atleast two goals ahead of the opposing team."
+         [:br]
+         "In case of tie-break, report 11-9 or 9-11."]
 
-          [:div.form-horizontal
-           [:div.form-group.col-lg-12
-            (render-team 1 team1)
-            [:div.col-lg-2]
-            (render-team 2 team2)]
+        [:div.form-horizontal
+         [:div.form-group.col-lg-12
+          (render-team 1 team1)
+          [:div.col-lg-2]
+          (render-team 2 team2)]
 
-           (om/build matchdate-component
-                     (:matchdate match-report)
-                     {:opts {:change-ch matchdate}})
+         (om/build matchdate-component
+                   (:matchdate match-report)
+                   {:opts {:change-ch matchdate}})
 
-           [:div.form-group.col-lg-12
-            [:div.form-group.col-lg-5.pull-right
-             [:button.btn.btn-primary.btn-lg.btn-block
-              (merge {:on-click (fn [e] (submit-report! match-report))}
-                     (when-not enabled? {:disabled "disabled"}))
-              "Report Match Result " (if submitting
-                                       [:span.glyphicon.glyphicon-time]
-                                       [:span.glyphicon.glyphicon-ok])]]]]])))))
+         [:div.form-group.col-lg-12
+          [:div.form-group.col-lg-5.pull-right
+           [:button.btn.btn-primary.btn-lg.btn-block
+            (merge {:on-click (fn [e] (submit-report! match-report))}
+                   (when-not enabled? {:disabled "disabled"}))
+            "Report Match Result " (if submitting
+                                     [:span.glyphicon.glyphicon-time]
+                                     [:span.glyphicon.glyphicon-ok])]]]]]))))
 
 (defn render [app]
   (if (:auth app)
@@ -254,4 +257,4 @@
               {:fn (fn [{:keys [match-report players]}]
                      {:match-report   match-report
                       :active-players (filterv :active players)})})
-    (spinner)))
+      (spinner)))
