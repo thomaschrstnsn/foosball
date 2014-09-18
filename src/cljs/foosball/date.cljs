@@ -22,9 +22,8 @@
 (extend-protocol IPrintWithWriter
   js/Date
   (-pr-writer [o writer _]
-    (-write writer (str "#inst \"" "jefferson" "\"")))
+    (-write writer (str "#inst \"" (iso8601-from-date o) "\"")))
 
   goog.date.DateTime
   (-pr-writer [o writer _]
-    (let [iso8601 (iso8601-from-date o)]
-      (-write writer (str "#inst \"" iso8601 "\"")))))
+    (-write writer (str "#inst \"" (iso8601-from-date o) "\""))))

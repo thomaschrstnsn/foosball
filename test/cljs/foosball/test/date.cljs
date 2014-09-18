@@ -44,3 +44,9 @@
     #inst "2003-11-24" "24/11/2003"
     #inst "2014-01-01" "01/01/2014"
     #inst "1970-01-01" "01/01/1970"))
+
+(deftest pr-str-works
+  (testing "js/Date"
+    (is (= "#inst \"2014-01-07T00:00:00.000Z\"" (pr-str (dc/to-date (dt/date-time 2014 01 07))))))
+  (testing "goog/Date"
+    (is (= "#inst \"2010-09-08T00:00:00.000Z\"" (pr-str (dt/date-time 2010 9 8))))))
