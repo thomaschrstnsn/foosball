@@ -262,27 +262,27 @@
                    {:opts {:change-ch matchdate}})
 
          [:div.form-group.col-lg-12
+          (when status
+            (let [[alert-class
+                   content] (if (= :ok status)
+                   [:alert-success
+                    [:p
+                     [:strong "Success! "]
+                     [:span "Match reported successfully. "]
+                     [:a {:href (routes/player-statistics-path)} "Player statistics"]]]
+                   [:alert-danger
+                    [:p [:strong "Error! "] [:span "Oh oh! Something went wrong."]]])]
+              [:div.form-group.col-lg-7.alert
+               {:class alert-class}
+               content]))
+
           [:div.form-group.col-lg-5.pull-right
            [:button.btn.btn-primary.btn-lg.btn-block
             (merge {:on-click (fn [e] (submit-report! match-report))}
                    (when-not enabled? {:disabled "disabled"}))
             "Report Match Result " (if submitting
                                      [:span.glyphicon.glyphicon-time]
-                                     [:span.glyphicon.glyphicon-ok])]]]
-         (when status
-           (let [[alert-class
-                  content] (if (= :ok status)
-                             [:alert-success
-                              [:p
-                               [:strong "Success! "]
-                               [:span "Match reported successfully. "]
-                               [:a {:href (routes/player-statistics-path)} "Player statistics"]]]
-                             [:alert-danger
-                              [:p [:strong "Error! "] [:span "Oh oh! Something went wrong"]]])]
-             [:div.form-group.col-lg-12
-              [:div.form-group.col-lg-5.pull-right.alert
-               {:class alert-class}
-               content]]))]]))))
+                                     [:span.glyphicon.glyphicon-ok])]]]]]))))
 
 (defn render [app]
   (if (:auth app)
