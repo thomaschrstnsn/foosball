@@ -1,7 +1,6 @@
 (ns foosball.editable
   (:require-macros [cljs.core.async.macros :refer [go-loop]])
   (:require [cljs.core.async :as async :refer [put! chan alts!]]
-            [goog.dom :as gdom]
             [om.core :as om :include-macros true]
             [om-tools.core :refer-macros [defcomponentk]]
             [sablono.core :as html :refer-macros [html]]
@@ -47,8 +46,11 @@
                         ;; where type in #{:editable/focus :editable/change :editable/blur}
     :as opts]]
   (init-state [_]
-    {:editing false
-     :current-value ((or value-fn identity) data)})
+    {:editing       false
+     :current-value (value-fn data)})
+
+  (will-receive-props [_ next-props]
+    (om/set-state! owner :current-value (value-fn next-props)))
 
   (render-state [_ {:keys [editing current-value]}]
     (let [defaults   {:type "text"

@@ -13,6 +13,7 @@
             [foosball.editable :as e]
             [foosball.format :as f]
             [foosball.location :as loc]
+            [foosball.routes :as routes]
             [foosball.spinners :refer [spinner]]
             [foosball.validation.match :as vm]
             [om.core :as om :include-macros true]
@@ -177,18 +178,27 @@
                 :matchdate matchdate
                 :id id
                 :status :pending}]
-    (debug "doing submit" report)
     (go
       (let [player-id-fixer (fn [{:keys [id]}] id)
-            fixed-report (-> report
-                             (update-in [:team1 :player1] player-id-fixer)
-                             (update-in [:team1 :player2] player-id-fixer)
-                             (update-in [:team2 :player1] player-id-fixer)
-                             (update-in [:team2 :player2] player-id-fixer))
-            resp (<! (data/post! (str "/api/match/" id) fixed-report))]
-        (debug :submit resp)
-        (om/transact! match-report
-                      (fn [mr] (merge mr {:submitting nil})))))
+            score-fixer     (fn [score] (or score 0))
+            fixed-report    (-> report
+                                (update-in [:team1 :player1] player-id-fixer)
+                                (update-in [:team1 :player2] player-id-fixer)
+                                (update-in [:team1 :score] score-fixer)
+                                (update-in [:team2 :player1] player-id-fixer)
+                                (update-in [:team2 :player2] player-id-fixer)
+                                (update-in [:team2 :score] score-fixer))
+            resp            (<! (data/post! (str "/api/match/" id) fixed-report))]
+        (if (= 201 (:status resp))
+          (do
+            (om/transact! match-report
+                          (fn [mr] (-> mr
+                                      (merge {:submitting nil})
+                                      (merge {:status :ok})
+                                      (update-in [:team1 :score] (constantly nil))
+                                      (update-in [:team2 :score] (constantly nil))))))
+          (do (debug :error (:status resp))
+              (om/transact! match-report (fn [mr] (merge mr {:status :error})))))))
     (om/transact! match-report
                   (fn [mr] (merge mr {:submitting report})))))
 
@@ -223,6 +233,7 @@
 
   (render-state [_ {:keys [team1 team2 matchdate]}]
     (let [submitting (:submitting match-report)
+          status     (:status match-report)
           _    (debug "players" (map (fn [p] (str "'" (:name p) "'"))
                                      (selected-players (:team1 match-report)
                                                        (:team2 match-report))))
@@ -257,7 +268,21 @@
                    (when-not enabled? {:disabled "disabled"}))
             "Report Match Result " (if submitting
                                      [:span.glyphicon.glyphicon-time]
-                                     [:span.glyphicon.glyphicon-ok])]]]]]))))
+                                     [:span.glyphicon.glyphicon-ok])]]]
+         (when status
+           (let [[alert-class
+                  content] (if (= :ok status)
+                             [:alert-success
+                              [:p
+                               [:strong "Success! "]
+                               [:span "Match reported successfully. "]
+                               [:a {:href (routes/player-statistics-path)} "Player statistics"]]]
+                             [:alert-danger
+                              [:p [:strong "Error! "] [:span "Oh oh! Something went wrong"]]])]
+             [:div.form-group.col-lg-12
+              [:div.form-group.col-lg-5.pull-right.alert
+               {:class alert-class}
+               content]]))]]))))
 
 (defn render [app]
   (if (:auth app)
