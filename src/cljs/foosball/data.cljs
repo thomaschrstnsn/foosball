@@ -16,3 +16,7 @@
 
 (defn post! [url data]
   (http/post url {:edn-params data}))
+
+(defn throw-err [e]
+  (when (instance? js/Error e) (throw e))
+  e)

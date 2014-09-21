@@ -42,13 +42,13 @@
                                   [http-kit "2.1.18"]
                                   [figwheel "0.1.4-SNAPSHOT"]
                                   ;; clojurescript deps
-                                  [org.clojure/clojurescript "0.0-2202"]
+                                  [org.clojure/clojurescript "0.0-2268"]
                                   [org.clojure/core.async "0.1.298.0-2a82a1-alpha"]
                                   [om "0.7.1"]
                                   [prismatic/om-tools "0.3.2" :exclusions [org.clojure/clojure]]
                                   [sablono "0.2.22"]
                                   [secretary "1.0.2"]
-                                  [cljs-http "0.1.15" :exclusions [commons-codec]]
+                                  [cljs-http "0.1.16" :exclusions [commons-codec]]
                                   [com.andrewmcveigh/cljs-time "0.1.4"]
                                   [org.clojars.franks42/cljs-uuid-utils "0.1.3"]]
 

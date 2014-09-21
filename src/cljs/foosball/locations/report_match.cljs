@@ -179,26 +179,28 @@
                 :id id
                 :status :pending}]
     (go
-      (let [player-id-fixer (fn [{:keys [id]}] id)
-            score-fixer     (fn [score] (or score 0))
-            fixed-report    (-> report
-                                (update-in [:team1 :player1] player-id-fixer)
-                                (update-in [:team1 :player2] player-id-fixer)
-                                (update-in [:team1 :score] score-fixer)
-                                (update-in [:team2 :player1] player-id-fixer)
-                                (update-in [:team2 :player2] player-id-fixer)
-                                (update-in [:team2 :score] score-fixer))
-            resp            (<! (data/post! (str "/api/match/" id) fixed-report))]
-        (if (= 201 (:status resp))
-          (do
-            (om/transact! match-report
-                          (fn [mr] (-> mr
-                                      (merge {:submitting nil})
-                                      (merge {:status :ok})
-                                      (update-in [:team1 :score] (constantly nil))
-                                      (update-in [:team2 :score] (constantly nil))))))
-          (do (debug :error (:status resp))
-              (om/transact! match-report (fn [mr] (merge mr {:status :error})))))))
+      (try
+        (let [player-id-fixer (fn [{:keys [id]}] id)
+              score-fixer     (fn [score] (or score 0))
+              fixed-report    (-> report
+                                  (update-in [:team1 :player1] player-id-fixer)
+                                  (update-in [:team1 :player2] player-id-fixer)
+                                  (update-in [:team1 :score] score-fixer)
+                                  (update-in [:team2 :player1] player-id-fixer)
+                                  (update-in [:team2 :player2] player-id-fixer)
+                                  (update-in [:team2 :score] score-fixer))
+              resp            (data/throw-err (<! (data/post! (str "/api/match/" id) fixed-report)))]
+          (assert (= 201 (:status resp)))
+          (om/transact! match-report
+                        (fn [mr] (-> mr
+                                    (merge {:submitting nil})
+                                    (merge {:status :ok})
+                                    (update-in [:team1 :score] (constantly nil))
+                                    (update-in [:team2 :score] (constantly nil))))))
+        (catch js/Object e
+          (do (debug :error e)
+              (om/transact! match-report (fn [mr] (merge mr {:status     :error
+                                                            :submitting nil})))))))
     (om/transact! match-report
                   (fn [mr] (merge mr {:submitting report})))))
 
@@ -268,7 +270,7 @@
                    [:alert-success
                     [:p
                      [:strong "Success! "]
-                     [:span "Match reported successfully. "]
+                     [:span "Result reported successfully. "]
                      [:a {:href (routes/player-statistics-path)} "Player statistics"]]]
                    [:alert-danger
                     [:p [:strong "Error! "] [:span "Oh oh! Something went wrong."]]])]
