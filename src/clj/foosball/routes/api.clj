@@ -48,8 +48,7 @@
   :available-media-types media-types
   :handle-ok (fn [_]
                (let [matches             (d/get-matches db)
-                     playername          (d/get-player db playerid)
-                     log                 (ratings/calculate-reduced-log-for-player playername matches)
+                     log                 (ratings/calculate-reduced-log-for-player playerid matches)
                      activity-log-keys   [:log-type :matchdate :team-mate :opponents
                                           :expected :win? :delta :new-rating]
                      inactivity-log-keys [:log-type :inactivity :delta :new-rating]]
@@ -72,7 +71,9 @@
                            players          (d/get-players db)
                            request-players  (set playerids)
                            selected-players (filter (fn [{:keys [id]}] (contains? request-players id)) players)]
-                       (ratings/calculate-matchup matches selected-players))))
+                       (ratings/calculate-matchup matches selected-players)))
+  :handle-exception (fn [{:keys [exception] :as ctx}]
+                      (t/error exception)))
 
 (defresource player-stats [db]
   :available-media-types media-types

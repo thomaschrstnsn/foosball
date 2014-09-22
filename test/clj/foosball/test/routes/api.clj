@@ -195,14 +195,14 @@
               response (-> request handler :body edn/read-string)]
           (testing "first teams match expected"
             (let [expected-team1s (vec (map (fn [{:keys [team1]}] {:score (:score team1)
-                                                                  :player1 (:name p1)
-                                                                  :player2 (:name p2)})
+                                                                  :player1 (select-keys p1 [:id :name])
+                                                                  :player2 (select-keys p2 [:id :name])})
                                             matches))]
               (is (h/seq-diff-with-first-is-nil? expected-team1s (map :team1 response)))))
           (testing "second teams match expected"
-            (let [expected-team2s (vec (map (fn [{:keys [team2]}] {:score (:score team2)
-                                                                  :player1 (:name p3)
-                                                                  :player2 (:name p4)})
+            (let [expected-team2s (vec (map (fn [{:keys [team2]}] {:score   (:score team2)
+                                                                  :player1 (select-keys p3 [:id :name])
+                                                                  :player2 (select-keys p4 [:id :name])})
                                             matches))]
               (is (h/seq-diff-with-first-is-nil? expected-team2s (map :team2 response)))))
           (testing "match data match expected"
@@ -267,8 +267,8 @@
                  (let [expected-team-fn (fn [expected-match team-key [p1 p2]]
                                           (let [team (team-key expected-match)]
                                             {:score (:score team)
-                                             :player1 (:name p1)
-                                             :player2 (:name p2)}))
+                                             :player1 (select-keys p1 [:id :name])
+                                             :player2 (select-keys p2 [:id :name])}))
                        actual-team-fn (fn [response team-key]
                                         (select-keys (team-key response) [:score :player1 :player2]))]
                    (testing "first team match expected"

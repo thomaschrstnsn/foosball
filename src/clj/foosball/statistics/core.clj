@@ -6,7 +6,10 @@
         t2score  (:score team2)
         t1delta  (- t1score t2score)
         t2delta  (- t2score t1score)
-        [t1 t2]  (map (fn [{:keys [player1 player2]}] #{player1 player2}) [team1 team2])
+        [t1 t2]  (map (fn [{:keys [player1 player2]}]
+                        #{(:id player1)
+                          (:id player2)})
+                      [team1 team2])
         [winners
          losers] (if (> t1score t2score)
                    [t1 t2]

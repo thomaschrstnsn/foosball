@@ -43,8 +43,8 @@
     (defroute matchup-path "/matchup" []
       (set-active-menu :location/matchup))
 
-    (defroute report-match-path "/report/match" []
-      (set-active-menu :location/report-match))
+    (defroute report-match-path "/report/match" [query-params]
+      (set-active-menu :location/report-match (select-keys query-params [:t1p1 :t1p2 :t2p1 :t2p2])))
 
     (defroute about-path "/about" []
       (set-active-menu :location/about))

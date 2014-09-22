@@ -1,5 +1,6 @@
 (ns foosball.models.domains.matches
-  (:require [datomic.api :as d :refer [db]]
+  (:require [clojure.set :refer [rename-keys]]
+            [datomic.api :as d :refer [db]]
             [foosball.models.domains.helpers :as h]
             [foosball.util :as util]
             [foosball.entities :as e]
@@ -34,39 +35,36 @@
 
 (defn match-query [by-id?]
   (let [find     '[:find ?m ?mid ?mt
-                   ?t1id ?t1p1 ?t1p2 ?t1score
-                   ?t2id ?t2p1 ?t2p2 ?t2score
+                   ?t1id ?t1score
+                   ?t2id ?t2score
                    ?tx]
         in       (if by-id?
                    '[:in $ ?id]
                    '[:in $])
         where    '[:where
-                   [?m :match/time  ?mt ?tx]
-                   [?m :match/id    ?mid]
-                   [?m :match/team1 ?t1id]
-                   [?m :match/team2 ?t2id]
-
-                   [?t1id :team/player1 ?t1p1id]
-                   [?t1p1id :player/name ?t1p1]
-                   [?t1id :team/player2 ?t1p2id]
-                   [?t1p2id :player/name ?t1p2]
-                   [?t1id :team/score   ?t1score]
-
-                   [?t2id :team/player1 ?t2p1id]
-                   [?t2p1id :player/name ?t2p1]
-                   [?t2id :team/player2 ?t2p2id]
-                   [?t2p2id :player/name ?t2p2]
-                   [?t2id :team/score   ?t2score]]
+                   [?m :match/time    ?mt ?tx]
+                   [?m :match/id      ?mid]
+                   [?m :match/team1   ?t1id]
+                   [?m :match/team2   ?t2id]
+                   [?t1id :team/score ?t1score]
+                   [?t2id :team/score ?t2score]]
         id-query (when by-id? '[[?m :match/id ?id]])]
     (vec (concat find in where id-query))))
 
 (defn map-match-query-results [dbc rs]
-  (map (fn [[mid id mt
-            t1id t1p1 t1p2 t1score
-            t2id t2p1 t2p2 t2score
-            tx]]
-         (let [match (d/entity dbc mid)
-               reporter (d/entity dbc (get-in match [:match/reported-by :db/id] ))]
+  (map (fn [[mid id mt t1id t1score t2id t2score tx]]
+         (let [match    (d/entity dbc mid)
+               reporter (d/entity dbc (get-in match [:match/reported-by :db/id]))
+               team1    (d/entity dbc t1id)
+               team2    (d/entity dbc t2id)
+               [t1p1 t1p2
+                t2p1 t2p2] (for [team      [team1 team2]
+                                 player-kw [:team/player1 :team/player2]]
+                             (-> (get-in team [player-kw :db/id])
+                                 ((partial d/entity dbc))
+                                 (select-keys [:player/id :player/name])
+                                 (rename-keys {:player/id   :id
+                                               :player/name :name})))]
            {:match/id id :matchdate mt :tx tx
             :team1 {:id t1id :player1 t1p1 :player2 t1p2 :score t1score}
             :team2 {:id t2id :player1 t2p1 :player2 t2p2 :score t2score}

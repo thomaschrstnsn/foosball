@@ -1,19 +1,21 @@
 (ns foosball.entities
   (:require [schema.core :as s]))
 
-(def Player {(s/required-key :id)     s/Uuid
-             (s/required-key :name)   s/Str
-             (s/required-key :active) s/Bool
-             (s/required-key :role)   (s/enum :user :admin)})
+(def Player {:id   s/Uuid
+             :name s/Str})
 
-(def Team {(s/required-key :id) s/Int
-           (s/required-key :player1) s/Str
-           (s/required-key :player2) s/Str
-           (s/required-key :score) s/Int})
+(def User (merge Player
+                 {:active s/Bool
+                  :role   (s/enum :user :admin)}))
 
-(def Match {(s/required-key :match/id) s/Uuid
-            (s/required-key :matchdate) s/Inst
+(def Team {:id      s/Int
+           :player1 Player
+           :player2 Player
+           :score   s/Int})
+
+(def Match {:match/id            s/Uuid
+            :matchdate           s/Inst
             (s/optional-key :tx) s/Int
-            (s/required-key :team1) Team
-            (s/required-key :team2) Team
-            (s/required-key :reported-by) s/Str})
+            :team1               Team
+            :team2               Team
+            :reported-by         s/Str})

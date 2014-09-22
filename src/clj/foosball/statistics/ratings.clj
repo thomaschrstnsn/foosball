@@ -107,9 +107,9 @@
         seperate-maps (map (fn [{:keys [match/id]} accum] {id accum}) won-matches accum-sets)]
     (apply merge seperate-maps)))
 
-(defn ratings-with-log [players matches]
+(defn ratings-with-log [player-ids matches]
   (let [won-matches    (map determine-winner matches)
-        all-players    (set/union (players-from-matches won-matches) (set players))
+        all-players    (set/union (players-from-matches won-matches) (set player-ids))
         active-players (calc-accum-active-players-by-match-id won-matches)
         initial        (->> all-players
                             (map (fn [p] {p initial-rating}))
@@ -125,9 +125,9 @@
       :ratings
       (select-keys players)))
 
-(defn calculate-reduced-log-for-player [player matches]
-  (let [all-logs    (-> (ratings-with-log [player] matches) :logs)
-        player-logs (filter (comp (partial = player) :player) all-logs)]
+(defn calculate-reduced-log-for-player [playerid matches]
+  (let [all-logs    (-> (ratings-with-log [playerid] matches) :logs)
+        player-logs (filter (comp (partial = playerid) :id :player) all-logs)]
     (->> player-logs
          (partition-by :log-type)
          (mapcat (fn [[{:keys [log-type]} :as logs]]
@@ -200,18 +200,16 @@
      :neg-rating-diff foe-rating-diff}))
 
 (defn calculate-matchup [matches selected-players]
-  (let [current-ratings   (calculate-ratings (map :name selected-players) matches)
-        player-names      (map :name selected-players)
-        possible-matchups (possible-matchups player-names)]
+  (let [current-ratings   (calculate-ratings (map :id selected-players) matches)
+        possible-matchups (possible-matchups (mapv :id selected-players))]
     (map (partial matchup-with-rating current-ratings) possible-matchups)))
-
 
 (s/defn leaderboard :- [{(s/required-key :position)    s/Int
                          (s/required-key :player/name) s/Str
                          (s/required-key :form)        [(s/enum :won :lost)]
                          (s/required-key :rating)      s/Num}]
   [matches :- [e/Match]
-   players :- [e/Player]
+   players :- [e/User]
    size    :- s/Int]
   (let [stats             (player/calculate-player-stats matches)
         log-and-ratings   (ratings-with-log players matches)

@@ -1,6 +1,7 @@
 (ns foosball.locations.matchup
   (:require-macros [cljs.core.async.macros :refer [go-loop go]])
   (:require [om.core :as om :include-macros true]
+            [om-tools.core :refer-macros [defcomponentk]]
             [clojure.string :as str]
             [cljs.core.async :refer [chan <! put!]]
             [sablono.core :as html :refer-macros [html]]
@@ -8,6 +9,7 @@
             [foosball.table :as table]
             [foosball.format :as f]
             [foosball.location :as loc]
+            [foosball.routes :as routes]
             [foosball.console :refer-macros [debug debug-js info log trace error]])
   (:import goog.array))
 
@@ -45,17 +47,11 @@
     [:th ""]]])
 
 (defn- render-match-report-button [players team1 team2]
-  (let [;get-player-id-fn (fn [p] (->> p (get-player-by-name players) :id))
-        ;[t1p1 t1p2]      (map get-player-id-fn team1)
-        ;[t2p1 t2p2]      (map get-player-id-fn team2)
-        ]
-    [:a.btn.btn-default {;:href
-                         #_ (str "/report/match/with-players"
-                                    "?t1p1=" t1p1
-                                    "&t1p2=" t1p2
-                                    "&t2p1=" t2p1
-                                    "&t2p2=" t2p2)
-                         :on-click (fn [e] (error "not implemented yet!"))}
+  (debug team1)
+  (let [get-player-id-fn (fn [p] (->> p (get-player-by-name players) :id))
+        [t1p1 t1p2]      (map get-player-id-fn team1)
+        [t2p1 t2p2]      (map get-player-id-fn team2)]
+    [:a.btn.btn-default {:href (routes/report-match-path (util/identity-map t1p1 t1p2 t2p1 t2p2))}
      "Report result"]))
 
 (defn- render-matchup [players {:keys [pos-players neg-players expected-diff pos-rating-diff neg-rating-diff]}]
@@ -69,74 +65,71 @@
    [:td (f/format-team-links players neg-players)]
    [:td (render-match-report-button players pos-players neg-players)]])
 
-(defn player-selection-comp [{:keys [players matchup-selected-playerids] :as app}
-                             owner
-                             {:keys [selection-change-ch] :as opts}]
-  (reify
-    om/IRenderState
-    (render-state [_ state]
-      (if-let [active-players  (filter :active players)]
-        (html
-         [:div.form-horizontal
-          [:div.control-group
-           [:label.control-label.col-lg-2 {:for "playerids"} "Select atleast four players"]
-           [:div.col-lg-2
-            (let [number-of-players-to-show (min 16 (count active-players))]
-              [:select.form-control {:multiple "multiple"
-                                     :size number-of-players-to-show
-                                     :on-change (fn [e]
-                                                  (let [selection (-> e .-target .-selectedOptions
-                                                                      goog.array/toArray (.map (fn [o] (.-value o)))
-                                                                      js->clj)]
-                                                    (put! selection-change-ch selection)))}
-               (->> active-players
-                    (map (fn [{:keys [id name]}]
-                           [:option (merge {:value id})
-                            name])))])]]
-          (let [enough-players? (<= 4 (count matchup-selected-playerids))]
-            [:div.control-group.col-lg-3
-             [:button.btn.btn-primary.btn-lg.btn-block
-              (merge
-               (when-not enough-players? {:disabled "disabled"})
-               {:on-click (fn [e]
-                            (update-matchups app @matchup-selected-playerids)
-                            false)})
-              "Show possible matchups"]])])))))
-
-(defn matchup-component [{:keys [players matchups matchup-selected-playerids] :as app} owner]
-  (reify
-    om/IInitState
-    (init-state [_]
-      {:selection-change-ch (chan)})
-
-    om/IWillMount
-    (will-mount [_]
-      (let [selection-change-ch (om/get-state owner :selection-change-ch)]
-        (go-loop []
-          (let [[v c] (alts! [selection-change-ch])]
-            (condp = c
-              selection-change-ch (om/update! app :matchup-selected-playerids v)
-              nil)
-            (recur)))))
-
-    om/IRenderState
-    (render-state [_ {:keys [selection-change-ch]}]
+(defcomponentk player-selection-comp
+  [[:data players matchup-selected-playerids :as app]
+   owner
+   [:opts selection-change-ch :as opts]]
+  (render-state [_ state]
+    (if-let [active-players  (filter :active players)]
       (html
-       [:div
-        [:h1 "Design the perfect matchup"]
-        [:p.lead
-         "Pick the players available for a match (atleast four)." [:br]
-         "Then see the possible combinations of teams and their expected win/lose ratios."]
-        (om/build player-selection-comp app {:opts {:selection-change-ch selection-change-ch}})
-        (when matchups
-          (let [active-players (filter :active players)]
-            [:table.table.table-hover
-             [:caption [:h1 "Matchups"]]
-             (headers-matchup)
-             [:tbody
-              (->> matchups
-                   (sort-by :expected-sortable)
-                   (map (partial render-matchup active-players)))]]))]))))
+       [:div.form-horizontal
+        [:div.control-group
+         [:label.control-label.col-lg-2 {:for "playerids"} "Select atleast four players"]
+         [:div.col-lg-2
+          (let [number-of-players-to-show (min 16 (count active-players))]
+            [:select.form-control {:multiple "multiple"
+                                   :size number-of-players-to-show
+                                   :on-change (fn [e]
+                                                (let [selection (-> e .-target .-selectedOptions
+                                                                    goog.array/toArray (.map (fn [o] (.-value o)))
+                                                                    js->clj)]
+                                                  (put! selection-change-ch selection)))}
+             (->> active-players
+                  (map (fn [{:keys [id name]}]
+                         [:option (merge {:value id})
+                          name])))])]]
+        (let [enough-players? (<= 4 (count matchup-selected-playerids))]
+          [:div.control-group.col-lg-3
+           [:button.btn.btn-primary.btn-lg.btn-block
+            (merge
+             (when-not enough-players? {:disabled "disabled"})
+             {:on-click (fn [e]
+                          (update-matchups app @matchup-selected-playerids)
+                          false)})
+            "Show possible matchups"]])]))))
+
+(defcomponentk matchup-component
+  [[:data players matchups matchup-selected-playerids :as app]
+   owner]
+  (init-state [_]
+    {:selection-change-ch (chan)})
+
+  (will-mount [_]
+    (let [selection-change-ch (om/get-state owner :selection-change-ch)]
+      (go-loop []
+        (let [[v c] (alts! [selection-change-ch])]
+          (condp = c
+            selection-change-ch (om/update! app :matchup-selected-playerids v)
+            nil)
+          (recur)))))
+
+  (render-state [_ {:keys [selection-change-ch]}]
+    (html
+     [:div
+      [:h1 "Design the perfect matchup"]
+      [:p.lead
+       "Pick the players available for a match (atleast four)." [:br]
+       "Then see the possible combinations of teams and their expected win/lose ratios."]
+      (om/build player-selection-comp app {:opts {:selection-change-ch selection-change-ch}})
+      (when matchups
+        (let [active-players (filter :active players)]
+          [:table.table.table-hover
+           [:caption [:h1 "Matchups"]]
+           (headers-matchup)
+           [:tbody
+            (->> matchups
+                 (sort-by :expected-sortable)
+                 (map (partial render-matchup active-players)))]]))])))
 
 (defn render [app]
   (om/build matchup-component app))

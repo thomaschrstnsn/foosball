@@ -13,7 +13,7 @@
               [?ent :player/name ?player]] dbc id)
        ffirst))
 
-(s/defn get-all :- [e/Player]
+(s/defn get-all :- [e/User]
   [dbc]
   (->> (d/q '[:find ?pid ?n ?a ?role :where
               [?pe :player/id ?pid]
