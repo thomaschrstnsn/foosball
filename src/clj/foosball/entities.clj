@@ -18,4 +18,4 @@
             (s/optional-key :tx) s/Int
             :team1               Team
             :team2               Team
-            :reported-by         s/Str})
+            :reported-by         Player})

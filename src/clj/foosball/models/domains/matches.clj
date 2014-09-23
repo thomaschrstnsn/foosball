@@ -51,10 +51,19 @@
         id-query (when by-id? '[[?m :match/id ?id]])]
     (vec (concat find in where id-query))))
 
+(defn db-entity-to-player
+  [ent]
+  (-> ent
+      (select-keys [:player/id :player/name])
+      (rename-keys {:player/id   :id
+                    :player/name :name})))
+
 (defn map-match-query-results [dbc rs]
   (map (fn [[mid id mt t1id t1score t2id t2score tx]]
          (let [match    (d/entity dbc mid)
-               reporter (d/entity dbc (get-in match [:match/reported-by :db/id]))
+               reporter (->> (get-in match [:match/reported-by :db/id])
+                             (d/entity dbc)
+                             db-entity-to-player)
                team1    (d/entity dbc t1id)
                team2    (d/entity dbc t2id)
                [t1p1 t1p2
@@ -62,13 +71,11 @@
                                  player-kw [:team/player1 :team/player2]]
                              (-> (get-in team [player-kw :db/id])
                                  ((partial d/entity dbc))
-                                 (select-keys [:player/id :player/name])
-                                 (rename-keys {:player/id   :id
-                                               :player/name :name})))]
+                                 db-entity-to-player))]
            {:match/id id :matchdate mt :tx tx
             :team1 {:id t1id :player1 t1p1 :player2 t1p2 :score t1score}
             :team2 {:id t2id :player1 t2p1 :player2 t2p2 :score t2score}
-            :reported-by (:player/name reporter)}))
+            :reported-by reporter}))
        rs))
 
 (defn chronologically-order-matches [ms]

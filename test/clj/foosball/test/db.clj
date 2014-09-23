@@ -47,29 +47,30 @@
                 (is (= new-name (:name (d/get-player db id)))))))))))
 
   (testing "Creating matches"
-    (let [db            (h/memory-db)
-          [p1 p2 p3 p4] (map (partial h/create-dummy-player db) ["p1" "p2" "p3" "p3"])
-          match-date    (java.util.Date.)
-          team1score    10
-          team2score    5
-          reporter      (h/create-dummy-player db "reporter")
-          match-id      (h/make-uuid)
-          create-match  (fn [& {:keys [id]}]
-                          (d/create-match! db {:matchdate match-date
-                                               :id id
-                                               :team1 {:player1 (:id p1) :player2 (:id p2) :score team1score}
-                                               :team2 {:player1 (:id p3) :player2 (:id p4) :score team2score}
-                                               :reported-by (:id reporter)}))]
+    (let [db              (h/memory-db)
+          [p1 p2 p3 p4]   (map (partial h/create-dummy-player db) ["p1" "p2" "p3" "p3"])
+          player-from-exp (fn [e] (select-keys e [:id :name]))
+          match-date      (java.util.Date.)
+          team1score      10
+          team2score      5
+          reporter        (h/create-dummy-player db "reporter")
+          match-id        (h/make-uuid)
+          create-match    (fn [& {:keys [id]}]
+                            (d/create-match! db {:matchdate match-date
+                                                 :id id
+                                                 :team1 {:player1 (:id p1) :player2 (:id p2) :score team1score}
+                                                 :team2 {:player1 (:id p3) :player2 (:id p4) :score team2score}
+                                                 :reported-by (:id reporter)}))]
       (testing "We can create a match with our four players,"
         (is (not= nil (create-match :id match-id)))
         (let [expected-match {:matchdate match-date
-                              :team1 {:player1 (select-keys p1 [:id :name])
-                                      :player2 (select-keys p2 [:id :name])
+                              :team1 {:player1 (player-from-exp p1)
+                                      :player2 (player-from-exp p2)
                                       :score team1score}
-                              :team2 {:player1 (select-keys p3 [:id :name])
-                                      :player2 (select-keys p4 [:id :name])
+                              :team2 {:player1 (player-from-exp p3)
+                                      :player2 (player-from-exp p4 )
                                       :score team2score}
-                              :reported-by (:name reporter)}]
+                              :reported-by (player-from-exp reporter)}]
           (testing "then we can get it out again using get-matches"
             (let [result (d/get-matches db)]
               (is (h/diff-with-first-is-nil? expected-match

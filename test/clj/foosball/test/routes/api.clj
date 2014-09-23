@@ -28,6 +28,8 @@
       (is (valid-mime-request? "text/html"))
       (is (valid-mime-request? "application/json")))))
 
+(defn player-from-exp [e] (select-keys e [:id :name]))
+
 (deftest api-route-tests
   (testing "GET '/api/players':"
     (let [app     (h/app-with-memory-db)
@@ -196,20 +198,21 @@
               response (-> request handler :body edn/read-string)]
           (testing "first teams match expected"
             (let [expected-team1s (vec (map (fn [{:keys [team1]}] {:score (:score team1)
-                                                                  :player1 (select-keys p1 [:id :name])
-                                                                  :player2 (select-keys p2 [:id :name])})
+                                                                  :player1 (player-from-exp p1)
+                                                                  :player2 (player-from-exp p2)})
                                             matches))]
               (is (h/seq-diff-with-first-is-nil? expected-team1s (map :team1 response)))))
           (testing "second teams match expected"
             (let [expected-team2s (vec (map (fn [{:keys [team2]}] {:score   (:score team2)
-                                                                  :player1 (select-keys p3 [:id :name])
-                                                                  :player2 (select-keys p4 [:id :name])})
+                                                                  :player1 (player-from-exp p3)
+                                                                  :player2 (player-from-exp p4)})
                                             matches))]
               (is (h/seq-diff-with-first-is-nil? expected-team2s (map :team2 response)))))
           (testing "match data match expected"
-            (let [expected-matches (vec (map  (fn [{:keys [id matchdate]}] {:match/id id
-                                                                           :reported-by (:name reporter)
-                                                                           :matchdate matchdate})
+            (let [expected-matches (vec (map  (fn [{:keys [id matchdate]}]
+                                                {:match/id id
+                                                 :reported-by (player-from-exp reporter)
+                                                 :matchdate matchdate})
                                               matches))]
               (is (h/seq-diff-with-first-is-nil? expected-matches
                                                  (map (fn [m] (select-keys m [:match/id
@@ -268,8 +271,8 @@
                  (let [expected-team-fn (fn [expected-match team-key [p1 p2]]
                                           (let [team (team-key expected-match)]
                                             {:score (:score team)
-                                             :player1 (select-keys p1 [:id :name])
-                                             :player2 (select-keys p2 [:id :name])}))
+                                             :player1 (player-from-exp p1)
+                                             :player2 (player-from-exp p2)}))
                        actual-team-fn (fn [response team-key]
                                         (select-keys (team-key response) [:score :player1 :player2]))]
                    (testing "first team match expected"
@@ -281,7 +284,7 @@
                    (testing "match data match expected"
                      (let [expected-match-fn  (fn [{:keys [id matchdate]}]
                                                 {:match/id match-id
-                                                 :reported-by (:name reporter)
+                                                 :reported-by (player-from-exp reporter)
                                                  :matchdate matchdate})
                            actual-match-fn   (fn [response]
                                                (select-keys response
