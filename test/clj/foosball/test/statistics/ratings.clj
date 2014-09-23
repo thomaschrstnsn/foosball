@@ -27,20 +27,21 @@
                            :id (h/make-uuid)}))
 
         _          (doall (map (fn [m] (d/create-match! db m)) matches))
-        player-ids (set (mapv :id [p1 p2 p3 p4]))
-        db-players (filter (fn [{:keys [id]}] (contains? player-ids id))
-                           (d/get-players db))
+        get-db-players-fn (fn [players] (let [player-ids (set (map :id players))]
+                                         (filter (fn [{:keys [id]}] (contains? player-ids id))
+                                                 (d/get-players db))))
+        players          #{p1 p2 p3 p4}
+        players+reporter #{p1 p2 p3 p4 reporter}
+        db-players       (get-db-players-fn players)
+        db-players+reporter (get-db-players-fn players+reporter)
         db-matches (d/get-matches db)]
     (testing "calculate ratings"
-      (comment
-        (let [ratings-result (sut/calculate-ratings (mapv :id db-players) db-matches)]
-          (is (> 1601 (apply max (vals ratings-result))))
-          (is (< 1398 (apply min (vals ratings-result))))
-          (is (= (set (map :id db-players))
-                 (set (keys ratings-result))))
-          (is (= 2 (-> ratings-result vals set count))))))
+      (let [ratings-result (sut/calculate-ratings  db-players db-matches)]
+        (is (> 1601 (apply max (vals ratings-result))))
+        (is (< 1398 (apply min (vals ratings-result))))
+        (is (= (set (map :id db-players))
+               (set (keys ratings-result))))
+        (is (= 2 (-> ratings-result vals set count)))))
     (testing "calculate matchup"
-      (let [;matchup-result (sut/calculate-matchup db-matches db-players)
-            ]
-;        (is (= nil (first db-matches)))
-        ))))
+      (is (not (= nil (sut/calculate-matchup db-matches db-players))))
+      (is (not (= nil (sut/calculate-matchup db-matches db-players+reporter)))))))
