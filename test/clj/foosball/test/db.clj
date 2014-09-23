@@ -18,7 +18,7 @@
           (is (not= nil (d/create-player! db id name openid)))
 
           (testing "we can readout the player data"
-            (is (= name (d/get-player db id)))
+            (is (= name (:name (d/get-player db id))))
             (is (= #{openid} (d/get-player-openids db id))))
 
           (testing "we can see the player in the list of all players"
@@ -44,7 +44,7 @@
             (let [new-name "jeffrey"]
               (is (not= nil (d/rename-player! db id new-name)))
               (testing "then his name changed"
-                (is (= new-name (d/get-player db id))))))))))
+                (is (= new-name (:name (d/get-player db id)))))))))))
 
   (testing "Creating matches"
     (let [db            (h/memory-db)

@@ -42,6 +42,10 @@
         (is (= (set (map :id db-players))
                (set (keys ratings-result))))
         (is (= 2 (-> ratings-result vals set count)))))
-    (testing "calculate matchup"
-      (is (not (= nil (sut/calculate-matchup db-matches db-players))))
-      (is (not (= nil (sut/calculate-matchup db-matches db-players+reporter)))))))
+    (testing "calculate matchup, "
+      (testing "with 4 players"
+        (let [result (sut/calculate-matchup db-matches db-players)]
+          (is (= 3 (count result)))))
+      (testing "with 5 players"
+        (let [result (sut/calculate-matchup db-matches db-players+reporter)]
+          (is (= 15 (count result))))))))

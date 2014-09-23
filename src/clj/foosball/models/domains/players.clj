@@ -5,22 +5,33 @@
             [foosball.util :as util]
             [foosball.entities :as e]))
 
-(s/defn get-by-id :- (s/maybe s/Str)
+(defn player-query [by-id?]
+  (let [find     '[:find ?pid ?n ?a ?role]
+        in       (if by-id?
+                   '[:in $ ?id]
+                   '[:in $])
+        where    '[:where
+                   [?pe :player/id ?pid]
+                   [?pe :player/name ?n]
+                   [?pe :player/active ?a]
+                   [?pe :user/role ?role]]
+        id-query (when by-id? '[[?pe :player/id ?id]])]
+    (vec (concat find in where id-query))))
+
+(defn db-result-to-User [[id name active role]]
+  (util/identity-map id name active role))
+
+(s/defn get-by-id :- (s/maybe e/User)
   [dbc
    id :- s/Uuid]
-  (->> (d/q '[:find ?player :in $ ?id :where
-              [?ent :player/id ?id]
-              [?ent :player/name ?player]] dbc id)
-       ffirst))
+  (->> (d/q (player-query true) dbc id)
+       (map db-result-to-User)
+       first))
 
 (s/defn get-all :- [e/User]
   [dbc]
-  (->> (d/q '[:find ?pid ?n ?a ?role :where
-              [?pe :player/id ?pid]
-              [?pe :player/name ?n]
-              [?pe :player/active ?a]
-              [?pe :user/role ?role]] dbc)
-       (map (fn [[id name active role]] (util/identity-map id name active role)))
+  (->> (d/q (player-query false) dbc)
+       (map db-result-to-User)
        (sort-by :name)))
 
 (s/defn create!

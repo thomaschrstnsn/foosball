@@ -95,7 +95,7 @@
         openid             (:identity current-auth)
         current-playername (:playername current-auth)
         id                 (util/uuid-from-string id)
-        player             (d/get-player db id)
+        player             (:name (d/get-player db id))
         players-openids    (d/get-player-openids db id)]
     (if (and (not (auth/user?))
              openid
@@ -127,7 +127,9 @@
         (response/status (response/response "cannot create player") 405)))))
 
 (defn created-page [{:keys [config-options db]} id]
-  (let [player (d/get-player db (util/uuid-from-string id))]
+  (let [player (->> (util/uuid-from-string id)
+                    (d/get-player db)
+                    :name)]
     (layout/common config-options
      :title "Player Created"
      :content (html5

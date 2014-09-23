@@ -42,13 +42,16 @@
   :available-media-types media-types
   :handle-ok (fn [_] (let [players (d/get-players db)
                           matches (d/get-matches db)]
-                      (ratings/leaderboard matches players size))))
+                      (ratings/leaderboard matches players size)))
+  :handle-exception (fn [{:keys [exception] :as ctx}]
+                      (t/error exception)))
 
 (defresource player-log [db playerid]
   :available-media-types media-types
   :handle-ok (fn [_]
                (let [matches             (d/get-matches db)
-                     log                 (ratings/calculate-reduced-log-for-player playerid matches)
+                     player              (d/get-player db playerid)
+                     log                 (ratings/calculate-reduced-log-for-player player matches)
                      activity-log-keys   [:log-type :matchdate :team-mate :opponents
                                           :expected :win? :delta :new-rating]
                      inactivity-log-keys [:log-type :inactivity :delta :new-rating]]

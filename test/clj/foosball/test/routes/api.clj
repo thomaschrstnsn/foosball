@@ -57,6 +57,7 @@
                      :body
                      (json/read-str :key-fn keyword)
                      first))))))))
+
   (testing "GET '/api/ratings/leaderboard':"
     (let [app     (h/app-with-memory-db)
           handler (:ring-handler app)
@@ -83,7 +84,7 @@
               _ (create-match p1 p3 p2 p4)
               response (-> request handler :body edn/read-string)]
           (is (= 4 (count response)))
-          (is (= (map :name [p1 p2 p3 p4]) (->> response (map :player/name))))
+          (is (= (map :id [p1 p2 p3 p4]) (->> response (map :player/id))))
           (is (apply > (map :rating response)))
           (is (= [1 2 3 4] (vec (map :position response))))
 
@@ -373,39 +374,39 @@
         (is (= 400 (-> (build-request-with-players p1 p2 p3) handler :status))))
 
       (testing "with no query, 400"
-        (is (= 400 (-> base-request handler :status)))))))
+        (is (= 400 (-> base-request handler :status))))))
 
-(testing "GET '/api/auth':"
-  (let [app  (h/app-with-memory-db)
-        handler (:ring-handler app)
-        request (mockr/request :get "/api/auth")]
-    (test-route-for-supported-media-types handler request)
+  (testing "GET '/api/auth':"
+    (let [app  (h/app-with-memory-db)
+          handler (:ring-handler app)
+          request (mockr/request :get "/api/auth")]
+      (test-route-for-supported-media-types handler request)
 
-    (with-redefs [foosball.auth/current-auth (constantly nil)]
-      (testing "with no auth"
-        (let [response (-> request handler :body edn/read-string)]
-          (is (= {:logged-in? false
-                  :provider   foosball.auth/provider}
-                 response)))))
-
-    (let [firstname "James"
-          lastname "Brown"]
-      (with-redefs [foosball.auth/current-auth (constantly (util/identity-map firstname lastname))]
-        (with-redefs [foosball.auth/has-role? (fn [r?] (= :foosball.auth/user r?))]
+      (with-redefs [foosball.auth/current-auth (constantly nil)]
+        (testing "with no auth"
           (let [response (-> request handler :body edn/read-string)]
-            (testing "with auth as user"
-              (is (= {:logged-in? true
-                      :user?      true
-                      :admin?     false
-                      :username   (str firstname " " lastname)}
-                     response))
-              (is (nil? (:login-form response))))))
+            (is (= {:logged-in? false
+                    :provider   foosball.auth/provider}
+                   response)))))
 
-        (with-redefs [foosball.auth/has-role? (constantly true)]
-          (let [response (-> request handler :body edn/read-string)]
-            (testing "with auth as admin"
-              (is (= {:logged-in? true
-                      :user?      true
-                      :admin?     true
-                      :username   (str firstname " " lastname)}
-                     response)))))))))
+      (let [firstname "James"
+            lastname "Brown"]
+        (with-redefs [foosball.auth/current-auth (constantly (util/identity-map firstname lastname))]
+          (with-redefs [foosball.auth/has-role? (fn [r?] (= :foosball.auth/user r?))]
+            (let [response (-> request handler :body edn/read-string)]
+              (testing "with auth as user"
+                (is (= {:logged-in? true
+                        :user?      true
+                        :admin?     false
+                        :username   (str firstname " " lastname)}
+                       response))
+                (is (nil? (:login-form response))))))
+
+          (with-redefs [foosball.auth/has-role? (constantly true)]
+            (let [response (-> request handler :body edn/read-string)]
+              (testing "with auth as admin"
+                (is (= {:logged-in? true
+                        :user?      true
+                        :admin?     true
+                        :username   (str firstname " " lastname)}
+                       response))))))))))

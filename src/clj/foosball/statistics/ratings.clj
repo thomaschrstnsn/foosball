@@ -201,12 +201,12 @@
      :neg-rating-diff foe-rating-diff}))
 
 (defn calculate-matchup [matches selected-players]
-  (let [current-ratings   (calculate-ratings (map :id selected-players) matches)
+  (let [current-ratings   (calculate-ratings selected-players matches)
         possible-matchups (possible-matchups (mapv :id selected-players))]
     (map (partial matchup-with-rating current-ratings) possible-matchups)))
 
 (s/defn leaderboard :- [{(s/required-key :position)    s/Int
-                         (s/required-key :player/name) s/Str
+                         (s/required-key :player/id)   s/Uuid
                          (s/required-key :form)        [(s/enum :won :lost)]
                          (s/required-key :rating)      s/Num}]
   [matches :- [e/Match]
@@ -228,7 +228,7 @@
          (reverse)
          (take size)
          (map (fn [index player] {:position (inc index)
-                                 :player/name (:player player)
+                                 :player/id (:player player)
                                  :form (map {true :won false :lost} (:form player))
                                  :rating (:rating player)})
               (range)))))
