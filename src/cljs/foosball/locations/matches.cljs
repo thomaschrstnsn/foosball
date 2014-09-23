@@ -15,7 +15,7 @@
 
 (defn render [{:keys [matches players]}]
   (when players
-    (let [players-from-team (fn [{:keys [player1 player2]}] [player1 player2])
+    (let [players-from-team (fn [{:keys [player1 player2]}] (mapv :id [player1 player2]))
           date-column {:heading "Date played"
                        :fn      :matchdate
                        :printer d/->str
@@ -43,7 +43,9 @@
                      :sort-fn identity
                      :printer f/style-score}
                     {:heading "Reported by"
-                     :fn      :reported-by
+                     :key     :reported-by
+                     :fn      (comp :id :reported-by)
+                     :printer (partial f/format-player-link players)
                      :align   :left}]]
       (om/build table/table
                 {:rows          matches

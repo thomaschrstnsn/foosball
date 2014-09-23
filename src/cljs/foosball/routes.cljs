@@ -11,7 +11,9 @@
 ;; defonce'd to not interfere with figwheel reloading
 (defonce history
   (let [history   (History.)
-        listen-fn (fn [e] (secretary/dispatch! (.-token e)))]
+        listen-fn (fn [e] (let [location (.-token e)]
+                           (when (string? location)
+                             (secretary/dispatch! location))))]
     (goog.events/listen history EventType/NAVIGATE listen-fn)
     (doto history (.setEnabled true))
     (debug "history listener has been setup")))
@@ -52,7 +54,9 @@
     (defroute "*" []
       (navigate-to (home-path)))
 
-    (secretary/dispatch! (.substring window.location.hash 1))
+    (let [hash (.substring window.location.hash 1)]
+      (when (string? hash)
+        (secretary/dispatch! hash)))
 
     ;; hierarchy
     (let [home-location  {:id    :location/home

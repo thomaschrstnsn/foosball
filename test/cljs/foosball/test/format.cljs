@@ -42,4 +42,4 @@
                  {:id my-player-id :name "My player"}]]
     (with-redefs [routes/player-log-path (constantly "fixed-link")]
       (is (= [:a {:href "fixed-link"} "My player"]
-             (format/format-player-link players "My player"))))))
+             (format/format-player-link players my-player-id))))))

@@ -15,9 +15,9 @@
 (defn format-rating [r]
   (format "%.1f" (double r)))
 
-(defn format-player-link [players playername]
+(defn format-player-link [players player-id]
   (let [player (->> players
-                   (filter (fn [{:keys [name]}] (= name playername)))
+                   (filter (fn [{:keys [id]}] (= id player-id)))
                    first)]
     [:a {:href (routes/player-log-path {:player-id (:id player)})} (:name player)]))
 

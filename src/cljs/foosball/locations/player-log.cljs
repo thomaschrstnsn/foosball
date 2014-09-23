@@ -29,6 +29,8 @@
                         (filter (fn [{:keys [id]}] (= id player-log-player)))
                         first))]
       (list
+       [:h1 "Player Log"]
+       [:p.lead "Pick a player to see the played matches of this player."]
        [:div.form-group.col-lg-3
         [:select.form-control {:value (if player
                                         (str (:id player))

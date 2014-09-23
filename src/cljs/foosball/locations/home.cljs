@@ -43,7 +43,8 @@
                      :fn      :position
                      :printer (fn [p] (str p "."))}
                     {:heading "Player"
-                     :fn      :player/name
+                     :key     :player
+                     :fn      :player/id
                      :printer (partial f/format-player-link players)
                      :align   :left}
                     {:heading "Form"

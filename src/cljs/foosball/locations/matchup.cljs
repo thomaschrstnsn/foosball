@@ -1,5 +1,6 @@
 (ns foosball.locations.matchup
-  (:require-macros [cljs.core.async.macros :refer [go-loop go]])
+  (:require-macros [cljs.core.async.macros :refer [go-loop go]]
+                   [foosball.macros :refer [identity-map]])
   (:require [om.core :as om :include-macros true]
             [om-tools.core :refer-macros [defcomponentk]]
             [clojure.string :as str]
@@ -47,11 +48,9 @@
     [:th ""]]])
 
 (defn- render-match-report-button [players team1 team2]
-  (debug team1)
-  (let [get-player-id-fn (fn [p] (->> p (get-player-by-name players) :id))
-        [t1p1 t1p2]      (map get-player-id-fn team1)
-        [t2p1 t2p2]      (map get-player-id-fn team2)]
-    [:a.btn.btn-default {:href (routes/report-match-path (util/identity-map t1p1 t1p2 t2p1 t2p2))}
+  (let [[t1p1 t1p2] (seq team1)
+        [t2p1 t2p2] (seq team2)]
+    [:a.btn.btn-default {:href (routes/report-match-path {:query-params (identity-map t1p1 t1p2 t2p1 t2p2)})}
      "Report result"]))
 
 (defn- render-matchup [players {:keys [pos-players neg-players expected-diff pos-rating-diff neg-rating-diff]}]
