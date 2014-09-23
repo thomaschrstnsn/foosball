@@ -63,8 +63,12 @@
       (testing "We can create a match with our four players,"
         (is (not= nil (create-match :id match-id)))
         (let [expected-match {:matchdate match-date
-                              :team1 {:player1 (:name p1) :player2 (:name p2) :score team1score}
-                              :team2 {:player1 (:name p3) :player2 (:name p4) :score team2score}
+                              :team1 {:player1 (select-keys p1 [:id :name])
+                                      :player2 (select-keys p2 [:id :name])
+                                      :score team1score}
+                              :team2 {:player1 (select-keys p3 [:id :name])
+                                      :player2 (select-keys p4 [:id :name])
+                                      :score team2score}
                               :reported-by (:name reporter)}]
           (testing "then we can get it out again using get-matches"
             (let [result (d/get-matches db)]
