@@ -107,9 +107,9 @@
         seperate-maps (map (fn [{:keys [match/id]} accum] {id accum}) won-matches accum-sets)]
     (apply merge seperate-maps)))
 
-(defn ratings-with-log [player-ids matches]
+(defn ratings-with-log [players matches]
   (let [won-matches    (map determine-winner matches)
-        all-players    (set/union (players-from-matches won-matches) (set player-ids))
+        all-players    (set/union (players-from-matches won-matches) (->> players (map :id) set))
         active-players (calc-accum-active-players-by-match-id won-matches)
         initial        (->> all-players
                             (map (fn [p] {p initial-rating}))
@@ -123,11 +123,12 @@
 (defn calculate-ratings [players matches]
   (-> (ratings-with-log players matches)
       :ratings
-      (select-keys players)))
+      (select-keys (map :id players))))
 
-(defn calculate-reduced-log-for-player [playerid matches]
-  (let [all-logs    (-> (ratings-with-log [playerid] matches) :logs)
-        player-logs (filter (comp (partial = playerid) :id :player) all-logs)]
+(defn calculate-reduced-log-for-player [player matches]
+  (let [all-logs    (-> (ratings-with-log [player] matches) :logs)
+        player-id   (:id player)
+        player-logs (filter (comp (partial = player-id) :player) all-logs)]
     (->> player-logs
          (partition-by :log-type)
          (mapcat (fn [[{:keys [log-type]} :as logs]]
