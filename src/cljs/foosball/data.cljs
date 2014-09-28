@@ -14,6 +14,10 @@
   (let [key (if (seq? key) key [key])]
     (get-in @app key)))
 
+(defn throw-err [e]
+  (when (instance? js/Error e) (throw e))
+  e)
+
 (defn go-get-data!
   "Asynchronously gets data from a server (using HTTP GET) and stores this inside given app.
   Takes a map of options which can be used to customize behaviour:
@@ -27,30 +31,29 @@
   :error-handler (default: rethrows) on errors this is called"
   [{:keys [server-url app key
            satisfied-with-existing-app-data? server-data-transform on-data-complete
-           set-to-nil-until-complete]
+           set-to-nil-until-complete error-handler]
     :or {satisfied-with-existing-app-data? false
          server-data-transform identity
          on-data-complete (constantly false)
-         error-handler false
+         error-handler (constantly false)
          set-to-nil-until-complete false}
     :as options}]
   (assert (and server-url app key))
-  (when set-to-nil-until-complete
-    (om/update! app key nil))
-  (let [current-value (when satisfied-with-existing-app-data? (client-data options))]
-    (if-not (nil? current-value)
-      (on-data-complete current-value)
-      (go (let [response  (<! (get-data server-url))
-                new-value (-> response :body server-data-transform)]
-            (om/update! app key new-value)
-            (on-data-complete new-value))))))
+  (try
+    (do
+      (when set-to-nil-until-complete
+        (om/update! app key nil))
+      (let [current-value (when satisfied-with-existing-app-data? (client-data options))]
+        (if-not (nil? current-value)
+          (on-data-complete current-value)
+          (go (let [response  (throw-err (<! (get-data server-url)))
+                    new-value (-> response :body server-data-transform)]
+                (om/update! app key new-value)
+                (on-data-complete new-value))))))
+    (catch js/Error e (error-handler e))))
 
 (defn add-uuid-key [ds]
   (mapv (fn [d] (merge d {:key (uuid/make-random-uuid)})) ds))
 
 (defn post! [url data]
   (http/post url {:edn-params data}))
-
-(defn throw-err [e]
-  (when (instance? js/Error e) (throw e))
-  e)
