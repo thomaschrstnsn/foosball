@@ -25,10 +25,7 @@
 (defn handle [app v]
   (if (-> @app :auth :logged-in?)
     (do
-      (data/go-get-data! {:server-url "/api/players"
-                             :app app
-                             :key :players
-                             :satisfied-with-existing-app-data? true})
+      (data/ensure-player-data app)
       (om/update! app :matchups nil)
       (om/update! app :matchup-selected-playerids nil)
       (loc/set-location app (:id v)))

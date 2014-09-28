@@ -57,3 +57,13 @@
 
 (defn post! [url data]
   (http/post url {:edn-params data}))
+
+;; ---------
+
+(defn ensure-player-data [app & [on-complete]]
+  (let [on-complete (or on-complete (constantly false))]
+    (go-get-data! {:server-url "/api/players"
+                   :app app
+                   :key :players
+                   :satisfied-with-existing-app-data? true
+                   :on-data-complete on-complete})))

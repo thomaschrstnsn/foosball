@@ -6,10 +6,7 @@
             [foosball.location :as loc]))
 
 (defn handle [app v]
-  (data/go-get-data! {:server-url "/api/players"
-                      :app app
-                      :key :players
-                      :satisfied-with-existing-app-data? true})
+  (data/ensure-player-data app)
   (data/go-get-data! {:server-url "/api/ratings/player-stats"
                       :app app
                       :key :player-statistics

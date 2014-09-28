@@ -10,10 +10,7 @@
 
 (defn handle [app {:keys [args] :as v}]
   (let [player-id (first args)]
-    (data/go-get-data! {:server-url "/api/players"
-                        :app  app
-                        :key :players
-                        :satisfied-with-existing-app-data? true})
+    (data/ensure-player-data app)
     (om/update! app :player-log-player ())
     (om/update! app :players nil)
     (om/update! app :player-log nil)

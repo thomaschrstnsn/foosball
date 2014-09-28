@@ -9,10 +9,7 @@
             [foosball.console :refer-macros [debug debug-js info log trace error]]))
 
 (defn handle [app v]
-  (data/go-get-data! {:server-url "/api/players"
-                      :app app
-                      :key :players
-                      :satisfied-with-existing-app-data? true})
+  (data/ensure-player-data app)
   (data/go-get-data! {:server-url "/api/ratings/leaderboard/5"
                       :app app
                       :key :leaderboard

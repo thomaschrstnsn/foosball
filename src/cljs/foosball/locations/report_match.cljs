@@ -26,29 +26,25 @@
                            (not (-> @app :auth :logged-in?)))]
     (if-not unauthorized?
       (do
-        (data/go-get-data!
-         {:server-url "/api/players"
-          :app app
-          :key :players
-          :satisfied-with-existing-app-data? true
-          :on-data-complete (fn [data]
-                              (let [empty-team          {:player1 nil :player2 nil :score nil :valid-score? true}
-                                    {:keys [t1p1 t1p2
-                                            t2p1 t2p2]} (first args)
-                                    player-from-data (fn [p] (let [player-id (uuid/make-uuid-from p)]
-                                                              (->> data
-                                                                   (filter (fn [{:keys [id]}] (= id player-id)))
-                                                                   first)))
-                                    team-from-players   (fn [p1 p2]
-                                                          (when (and p1 p2)
-                                                            {:player1 (player-from-data p1)
-                                                             :player2 (player-from-data p2)}))
-                                    team1               (merge empty-team (team-from-players t1p1 t1p2))
-                                    team2               (merge empty-team (team-from-players t2p1 t2p2))]
-                                (om/transact! app [:match-report] (fn [rm] (merge rm
-                                                                                 (identity-map team1 team2)
-                                                                                 {:matchdate (tc/now)})))))})
-
+        (data/ensure-player-data
+         app
+         (fn [data]
+           (let [empty-team          {:player1 nil :player2 nil :score nil :valid-score? true}
+                 {:keys [t1p1 t1p2
+                         t2p1 t2p2]} (first args)
+                 player-from-data (fn [p] (let [player-id (uuid/make-uuid-from p)]
+                                           (->> data
+                                                (filter (fn [{:keys [id]}] (= id player-id)))
+                                                first)))
+                 team-from-players   (fn [p1 p2]
+                                       (when (and p1 p2)
+                                         {:player1 (player-from-data p1)
+                                          :player2 (player-from-data p2)}))
+                 team1               (merge empty-team (team-from-players t1p1 t1p2))
+                 team2               (merge empty-team (team-from-players t2p1 t2p2))]
+             (om/transact! app [:match-report] (fn [rm] (merge rm
+                                                              (identity-map team1 team2)
+                                                              {:matchdate (tc/now)}))))))
         (loc/set-location app id))
       (.back js/history))))
 
