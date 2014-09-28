@@ -12,7 +12,6 @@
   (let [player-id (first args)]
     (data/ensure-player-data app)
     (om/update! app :player-log-player ())
-    (om/update! app :players nil)
     (om/update! app :player-log nil)
     (when player-id
       (do
