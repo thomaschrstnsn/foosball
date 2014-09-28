@@ -1,5 +1,6 @@
 (ns foosball.locations.report-match
-  (:require-macros [cljs.core.async.macros :refer [go-loop go]])
+  (:require-macros [cljs.core.async.macros :refer [go-loop go]]
+                   [foosball.macros :refer [identity-map]])
   (:require [clojure.string :as str]
             [cljs.core.async :refer [chan <! put!]]
             [cljs-time.coerce :as dc]
@@ -20,19 +21,35 @@
             [om-tools.core :refer-macros [defcomponentk]]
             [sablono.core :as html :refer-macros [html]]))
 
-(defn handle [app v]
+(defn handle [app {:keys [id args]}]
   (let [unauthorized? (and (:auth @app)
                            (not (-> @app :auth :logged-in?)))]
     (if-not unauthorized?
       (do
-        (when-not (@app :players)
-          (data/go-update-data! "/api/players" app :players))
-        (let [empty-team {:player1 nil :player2 nil :score nil :valid-score? true}]
-          (om/transact! app [:match-report] (fn [rm] (merge rm
-                                                           {:team1 empty-team
-                                                            :team2 empty-team
-                                                            :matchdate (tc/now)}))))
-        (loc/set-location app (:id v)))
+        (data/go-get-data!
+         {:server-url "/api/players"
+          :app app
+          :key :players
+          :satisfied-with-existing-app-data? true
+          :on-data-complete (fn [data]
+                              (let [empty-team          {:player1 nil :player2 nil :score nil :valid-score? true}
+                                    {:keys [t1p1 t1p2
+                                            t2p1 t2p2]} (first args)
+                                    player-from-data (fn [p] (let [player-id (uuid/make-uuid-from p)]
+                                                              (->> data
+                                                                   (filter (fn [{:keys [id]}] (= id player-id)))
+                                                                   first)))
+                                    team-from-players   (fn [p1 p2]
+                                                          (when (and p1 p2)
+                                                            {:player1 (player-from-data p1)
+                                                             :player2 (player-from-data p2)}))
+                                    team1               (merge empty-team (team-from-players t1p1 t1p2))
+                                    team2               (merge empty-team (team-from-players t2p1 t2p2))]
+                                (om/transact! app [:match-report] (fn [rm] (merge rm
+                                                                                 (identity-map team1 team2)
+                                                                                 {:matchdate (tc/now)})))))})
+
+        (loc/set-location app id))
       (.back js/history))))
 
 (defn selected-players [team other-team]

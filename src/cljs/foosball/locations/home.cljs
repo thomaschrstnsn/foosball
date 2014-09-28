@@ -9,10 +9,15 @@
             [foosball.console :refer-macros [debug debug-js info log trace error]]))
 
 (defn handle [app v]
-  (om/update! app :leaderboard nil)
-  (when-not (@app :players)
-    (data/go-update-data! "/api/players" app :players))
-  (data/go-update-data! "/api/ratings/leaderboard/5" app :leaderboard data/add-uuid-key)
+  (data/go-get-data! {:server-url "/api/players"
+                      :app app
+                      :key :players
+                      :satisfied-with-existing-app-data? true})
+  (data/go-get-data! {:server-url "/api/ratings/leaderboard/5"
+                      :app app
+                      :key :leaderboard
+                      :server-data-transform data/add-uuid-key
+                      :set-to-nil-until-complete true})
   (loc/set-location app (:id v)))
 
 (defn- nav-button [url label]

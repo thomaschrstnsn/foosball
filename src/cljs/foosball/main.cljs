@@ -15,7 +15,9 @@
   (reify
     om/IInitState
     (init-state [_]
-      (data/go-update-data! "/api/auth" app :auth)
+      (data/go-get-data! {:server-url "/api/auth"
+                          :app app
+                          :key :auth})
       {})
 
     om/IWillMount

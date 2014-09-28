@@ -1,4 +1,5 @@
 (ns foosball.routes
+  (:require-macros [foosball.macros :refer [identity-map]])
   (:require [secretary.core :as secretary :include-macros true :refer [defroute]]
             [cljs.core.async :refer [put! chan]]
             [goog.events :as events]
@@ -11,9 +12,7 @@
 ;; defonce'd to not interfere with figwheel reloading
 (defonce history
   (let [history   (History.)
-        listen-fn (fn [e] (let [location (.-token e)]
-                           (when (string? location)
-                             (secretary/dispatch! location))))]
+        listen-fn (fn [e] (secretary/dispatch! (.-token e)))]
     (goog.events/listen history EventType/NAVIGATE listen-fn)
     (doto history (.setEnabled true))
     (debug "history listener has been setup")))
@@ -46,7 +45,8 @@
       (set-active-menu :location/matchup))
 
     (defroute report-match-path "/report/match" [query-params]
-      (set-active-menu :location/report-match (select-keys query-params [:t1p1 :t1p2 :t2p1 :t2p2])))
+      (let [{:strs [t1p1 t1p2 t2p1 t2p2]} query-params]
+        (set-active-menu :location/report-match (identity-map t1p1 t1p2 t2p1 t2p2))))
 
     (defroute about-path "/about" []
       (set-active-menu :location/about))
@@ -54,9 +54,7 @@
     (defroute "*" []
       (navigate-to (home-path)))
 
-    (let [hash (.substring window.location.hash 1)]
-      (when (string? hash)
-        (secretary/dispatch! hash)))
+    (secretary/dispatch! (.substring window.location.hash 1))
 
     ;; hierarchy
     (let [home-location  {:id    :location/home

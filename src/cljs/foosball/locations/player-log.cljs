@@ -10,16 +10,19 @@
 
 (defn handle [app {:keys [args] :as v}]
   (let [player-id (first args)]
-    (when-not (@app :players)
-      (data/go-update-data! "/api/players" app :players))
+    (data/go-get-data! {:server-url "/api/players"
+                        :app  app
+                        :key :players
+                        :satisfied-with-existing-app-data? true})
     (om/update! app :player-log-player ())
     (om/update! app :players nil)
     (om/update! app :player-log nil)
     (when player-id
       (do
         (om/update! app :player-log-player (uuid/make-uuid-from player-id))
-        (data/go-update-data! (str "/api/ratings/log/" player-id) app :player-log)))
-    (data/go-update-data! "/api/players" app :players)
+        (data/go-get-data! {:server-url (str "/api/ratings/log/" player-id)
+                           :app app
+                           :key :player-log})))
     (loc/set-location app (:id v))))
 
 (defn render [{:keys [player-log player-log-player players]}]

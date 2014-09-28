@@ -7,10 +7,15 @@
             [foosball.location :as loc]))
 
 (defn handle [app v]
-  (om/update! app :matches nil)
-  (when-not (@app :players)
-    (data/go-update-data! "/api/players" app :players))
-  (data/go-update-data! "/api/matches" app :matches data/add-uuid-key)
+  (data/go-get-data! {:server-url "/api/players"
+                         :app app
+                         :key :players
+                         :satisfied-with-existing-app-data? true})
+  (data/go-get-data! {:server-url "/api/matches"
+                         :app app
+                         :key :matches
+                         :server-data-transform data/add-uuid-key
+                         :set-to-nil-until-complete true})
   (loc/set-location app (:id v)))
 
 (defn render [{:keys [matches players]}]

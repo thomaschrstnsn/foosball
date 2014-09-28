@@ -7,7 +7,9 @@
 
 (defn handle [app v]
   (om/update! app :software-dependencies nil)
-  (data/go-update-data! "/api/about/software" app :software-dependencies)
+  (data/go-get-data! {:server-url "/api/about/software"
+                      :app  app
+                      :key  :software-dependencies})
   (loc/set-location app (:id v)))
 
 (defn render [{:keys [software-dependencies version]}]

@@ -17,14 +17,18 @@
 (defn update-matchups [app playerids]
   (let [query-params (map-indexed (fn [idx playerid] (str "playerid" idx "=" playerid)) playerids)
         query        (str/join "&" query-params)]
-    (data/go-update-data! (str "/api/matchup?" query) app :matchups)))
+    (data/go-get-data! {:server-url (str "/api/matchup?" query)
+                        :app app
+                        :key :matchups})))
 
 ;; TODO: this should use same logic as report-match, where only going back after :auth received
 (defn handle [app v]
   (if (-> @app :auth :logged-in?)
     (do
-      (when-not (@app :players)
-        (data/go-update-data! "/api/players" app :players))
+      (data/go-get-data! {:server-url "/api/players"
+                             :app app
+                             :key :players
+                             :satisfied-with-existing-app-data? true})
       (om/update! app :matchups nil)
       (om/update! app :matchup-selected-playerids nil)
       (loc/set-location app (:id v)))
