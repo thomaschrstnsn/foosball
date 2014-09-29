@@ -15,14 +15,12 @@
 (defn format-rating [r]
   (format "%.1f" (double r)))
 
-(defn format-player-link [players player-id]
-  (let [player (->> players
-                   (filter (fn [{:keys [id]}] (= id player-id)))
-                   first)]
-    [:a {:href (routes/player-log-path {:player-id (:id player)})} (:name player)]))
+(defn format-player-link
+  ([player-lookup player-id] (format-player-link (get player-lookup player-id)))
+  ([player] [:a {:href (routes/player-log-path {:player-id (:id player)})} (:name player)]))
 
-(defn format-team-links [players team]
-  [:span (->> (map (partial format-player-link players) team)
+(defn format-team-links [player-lookup team]
+  [:span (->> (map (partial format-player-link player-lookup) team)
               (interpose ", "))])
 
 (defn style-value

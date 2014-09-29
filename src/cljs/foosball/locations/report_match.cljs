@@ -28,14 +28,12 @@
       (do
         (data/ensure-player-data
          app
-         (fn [data]
+         (fn [{:keys [players player-lookup]}]
            (let [empty-team          {:player1 nil :player2 nil :score nil :valid-score? true}
                  {:keys [t1p1 t1p2
                          t2p1 t2p2]} (first args)
                  player-from-data (fn [p] (let [player-id (uuid/make-uuid-from p)]
-                                           (->> data
-                                                (filter (fn [{:keys [id]}] (= id player-id)))
-                                                first)))
+                                           (get player-lookup player-id)))
                  team-from-players   (fn [p1 p2]
                                        (when (and p1 p2)
                                          {:player1 (player-from-data p1)

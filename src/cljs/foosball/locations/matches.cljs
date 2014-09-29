@@ -15,8 +15,8 @@
                          :set-to-nil-until-complete true})
   (loc/set-location app (:id v)))
 
-(defn render [{:keys [matches players]}]
-  (when players
+(defn render [{:keys [matches player-lookup]}]
+  (when player-lookup
     (let [players-from-team (fn [{:keys [player1 player2]}] (mapv :id [player1 player2]))
           date-column {:heading "Date played"
                        :fn      :matchdate
@@ -28,17 +28,17 @@
                      :key     :team1-players
                      :fn      (comp players-from-team :team1)
                      :align   :left
-                     :printer (partial f/format-team-links players)}
+                     :printer (partial f/format-team-links player-lookup)}
                     {:heading "Score"
                      :key     :team1-score
                      :fn      (comp :score :team1)
                      :sort-fn identity
                      :printer f/style-score}
-                    {:heading "Team 1"
+                    {:heading "Team 2"
                      :key     :team2-players
                      :fn      (comp players-from-team :team2)
                      :align   :left
-                     :printer (partial f/format-team-links players)}
+                     :printer (partial f/format-team-links player-lookup)}
                     {:heading "Score"
                      :key     :team2-score
                      :fn      (comp :score :team2)
@@ -47,7 +47,7 @@
                     {:heading "Reported by"
                      :key     :reported-by
                      :fn      (comp :id :reported-by)
-                     :printer (partial f/format-player-link players)
+                     :printer (partial f/format-player-link player-lookup)
                      :align   :left}]]
       (om/build table/table
                 {:rows          matches

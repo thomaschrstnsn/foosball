@@ -37,9 +37,9 @@
     (is (= [:div {:class "text-success"} "49.9%"] (format/style-match-percentage false 49.9)))))
 
 (deftest format-player-link
-  (let [my-player-id (uuid/make-random-uuid)
-        players [{:id (uuid/make-random-uuid) :name "Other player"}
-                 {:id my-player-id :name "My player"}]]
-    (with-redefs [routes/player-log-path (constantly "fixed-link")]
-      (is (= [:a {:href "fixed-link"} "My player"]
-             (format/format-player-link players my-player-id))))))
+  (with-redefs [routes/player-log-path (constantly "fixed-link")]
+    (is (= [:a {:href "fixed-link"} "My player"]
+           (format/format-player-link {:id (uuid/make-random-uuid) :name "My player"})))
+    (let [id (uuid/make-random-uuid)]
+      (is (= (format/format-player-link {:id id :name "My player"})
+             (format/format-player-link {id {:id id :name "My player"}} id))))))

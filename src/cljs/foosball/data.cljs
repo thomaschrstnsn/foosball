@@ -1,5 +1,6 @@
 (ns foosball.data
-  (:require-macros [cljs.core.async.macros :refer [go-loop go]])
+  (:require-macros [cljs.core.async.macros :refer [go-loop go]]
+                   [foosball.macros :refer [identity-map]])
   (:require [om.core :as om :include-macros true]
             [cljs-uuid-utils :as uuid]
             [cljs.core.async :refer [chan <!]]
@@ -66,4 +67,7 @@
                    :app app
                    :key :players
                    :satisfied-with-existing-app-data? true
-                   :on-data-complete on-complete})))
+                   :on-data-complete (fn [players]
+                                       (let [player-lookup (zipmap (map :id players) players)]
+                                         (om/update! app :player-lookup player-lookup)
+                                         (on-complete (identity-map players player-lookup))))})))

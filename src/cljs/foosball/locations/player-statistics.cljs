@@ -13,8 +13,8 @@
                       :server-data-transform data/add-uuid-key})
   (loc/set-location app (:id v)))
 
-(defn render [{:keys [player-statistics players]}]
-  (when players
+(defn render [{:keys [player-statistics player-lookup]}]
+  (when player-lookup
     (let [position-col {:heading "Position"
                         :fn      :position
                         :printer (fn [p] (str p "."))
@@ -22,7 +22,7 @@
           columns [position-col
                    {:heading "Player"
                     :fn      :player
-                    :printer (partial f/format-player-link players)
+                    :printer (partial f/format-player-link player-lookup)
                     :sort-fn identity
                     :align   :left}
                    {:heading "Wins"

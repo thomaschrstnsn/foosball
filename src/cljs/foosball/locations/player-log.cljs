@@ -21,12 +21,10 @@
                            :key :player-log})))
     (loc/set-location app (:id v))))
 
-(defn render [{:keys [player-log player-log-player players]}]
-  (when players
+(defn render [{:keys [player-log player-log-player player-lookup players]}]
+  (when player-lookup
     (let [player (when (and player-log-player player-log)
-                   (->> players
-                        (filter (fn [{:keys [id]}] (= id player-log-player)))
-                        first))]
+                   (get player-lookup player-log-player))]
       (list
        [:h1 "Player Log"]
        [:p.lead "Pick a player to see the played matches of this player."]
@@ -45,10 +43,10 @@
                               :printer (fn [d] (when d (d/->str d)))}
                              {:heading "Team mate"
                               :fn      :team-mate
-                              :printer (fn [tm] (when tm (f/format-player-link players tm)))}
+                              :printer (fn [tm] (when tm (f/format-player-link player-lookup tm)))}
                              {:heading "Opponents"
                               :fn      :opponents
-                              :printer (fn [ops] (when ops (f/format-team-links players ops)))}
+                              :printer (fn [ops] (when ops (f/format-team-links player-lookup ops)))}
                              {:heading "Expected"
                               :fn      :expected
                               :printer (fn [v] (when v (f/style-match-percentage true (* 100 v))))}

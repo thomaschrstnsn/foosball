@@ -21,8 +21,8 @@
   [:div.col-lg-6
       [:a.btn.btn-info.btn-lg.btn-block {:href url} label]])
 
-(defn render [{:keys [leaderboard players auth]}]
-  (when players
+(defn render [{:keys [leaderboard player-lookup auth]}]
+  (when player-lookup
     (list
      [:div.jumbotron
       [:h1 "Foosball"]
@@ -47,7 +47,7 @@
                     {:heading "Player"
                      :key     :player
                      :fn      :player/id
-                     :printer (partial f/format-player-link players)
+                     :printer (partial f/format-player-link player-lookup)
                      :align   :left}
                     {:heading "Form"
                      :fn      :form

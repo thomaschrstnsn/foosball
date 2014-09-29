@@ -14,15 +14,15 @@
                       :set-to-nil-until-complete true})
   (loc/set-location app (:id v)))
 
-(defn render [{:keys [team-statistics players]}]
-  (when players
+(defn render [{:keys [team-statistics player-lookup]}]
+  (when player-lookup
     (let [wins-col {:heading "Wins"
                     :fn      :wins
                     :sort-fn identity}
           columns  [{:heading "Team"
                      :fn      :team
                      :align   :left
-                     :printer (partial f/format-team-links players)}
+                     :printer (partial f/format-team-links player-lookup)}
                     wins-col
                     {:heading "Losses"
                      :fn      :losses

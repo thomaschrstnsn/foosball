@@ -48,22 +48,22 @@
     [:th "Team 2"]
     [:th ""]]])
 
-(defn- render-match-report-button [players team1 team2]
+(defn- render-match-report-button [team1 team2]
   (let [[t1p1 t1p2] (seq team1)
         [t2p1 t2p2] (seq team2)]
     [:a.btn.btn-default {:href (routes/report-match-path {:query-params (identity-map t1p1 t1p2 t2p1 t2p2)})}
      "Report result"]))
 
-(defn- render-matchup [players {:keys [pos-players neg-players expected-diff pos-rating-diff neg-rating-diff]}]
+(defn- render-matchup [player-lookup {:keys [pos-players neg-players expected-diff pos-rating-diff neg-rating-diff]}]
   [:tr
-   [:td [:div.text-right  (f/format-team-links players pos-players)]]
+   [:td [:div.text-right  (f/format-team-links player-lookup pos-players)]]
    [:td [:div.text-center (f/style-rating pos-rating-diff)]]
    [:td [:div.text-center (when (pos? expected-diff) [:span.glyphicon.glyphicon-arrow-left])]]
    [:td [:div.text-center (format-matchup-percentage (* 100 expected-diff))]]
    [:td [:div.text-center (when (neg? expected-diff) [:span.glyphicon.glyphicon-arrow-right])]]
    [:td [:div.text-center (f/style-rating neg-rating-diff)]]
-   [:td (f/format-team-links players neg-players)]
-   [:td (render-match-report-button players pos-players neg-players)]])
+   [:td (f/format-team-links player-lookup neg-players)]
+   [:td (render-match-report-button pos-players neg-players)]])
 
 (defcomponentk player-selection-comp
   [[:data players matchup-selected-playerids :as app]
@@ -99,7 +99,7 @@
             "Show possible matchups"]])]))))
 
 (defcomponentk matchup-component
-  [[:data players matchups matchup-selected-playerids :as app]
+  [[:data players player-lookup matchups matchup-selected-playerids :as app]
    owner]
   (init-state [_]
     {:selection-change-ch (chan)})
@@ -129,7 +129,7 @@
            [:tbody
             (->> matchups
                  (sort-by :expected-sortable)
-                 (map (partial render-matchup active-players)))]]))])))
+                 (map (partial render-matchup player-lookup)))]]))])))
 
 (defn render [app]
   (om/build matchup-component app))
