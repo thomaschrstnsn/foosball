@@ -3,12 +3,9 @@
   (:use [taoensso.timbre :only [trace debug info warn error fatal spy]])
   (:require [foosball.util              :as util]
             [foosball.routes.api        :as api]
-            [foosball.routes.home       :as home]
-            [foosball.routes.report     :as report]
-            [foosball.routes.stats      :as stats]
             [foosball.routes.admin      :as admin]
-            [foosball.routes.matchup    :as matchup]
             [foosball.routes.user       :as user]
+            [foosball.routes.home       :as home]
             [foosball.auth              :as auth]
             [noir.util.middleware       :as middleware]
             [compojure.route            :as route]
@@ -27,9 +24,6 @@
     (let [route-fns    [admin/routes
                         api/routes
                         home/routes
-                        matchup/routes
-                        report/routes
-                        stats/routes
                         user/routes]
           app-routes   (-> (mapv (fn [route-fn] (route-fn {:db database
                                                          :config-options config-options
