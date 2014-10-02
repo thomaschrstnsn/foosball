@@ -27,6 +27,9 @@
    ['om/om
     "Om"
     "https://github.com/swannodette/om"]
+   ['prismatic/om-tools
+    "om-tools"
+    "https://github.com/Prismatic/om-tools"]
    ['org.clojure/core.async
     "core.async"
     "https://github.com/clojure/core.async"]
