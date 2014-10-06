@@ -314,7 +314,39 @@
                  (testing "DELETE"
                    (is (= 204 (:status del-response))))
                  (testing "GET after DELETE"
-                   (is (= 404 (:status get-after-del))))))))))))
+                   (is (= 404 (:status get-after-del))))))
+             (testing "validation of POST: "
+               (let [build-match-with-scores
+                     (fn [s1 s2]
+                       (-> (new-match-fn)
+                           (update-in [:team1 :score] (constantly s1))
+                           (update-in [:team2 :score] (constantly s2))))
+
+                     create-post-request
+                     (fn [{:keys [id] :as match}]
+                       (-> (build-request :post id)
+                           (mockr/header :content-type "application/edn")
+                           (update-in [:body]
+                                      (fn [_] (prn-str match)))))
+
+                     status-of-reporting-match-with-scores
+                     (fn [s1 s2]
+                       (-> (build-match-with-scores s1 s2)
+                           create-post-request
+                           handler
+                           :status))]
+                 (testing "with invalid scores, it should fail with 'bad request'."
+                   (are [s1 s2] (= 400 (status-of-reporting-match-with-scores s1 s2))
+                        nil nil
+                        10  nil
+                        nil 10
+                        11  10
+                        12  10
+                        0   0
+                        -1  0
+                        -1  10
+                        9   10
+                        -1  -1))))))))))
 
   (testing "GET '/api/matchup':"
     (let [app (h/app-with-memory-db)

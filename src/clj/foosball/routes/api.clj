@@ -7,6 +7,7 @@
             [foosball.statistics.ratings :as ratings]
             [foosball.statistics.team-player :as team-player]
             [foosball.util :as util]
+            [foosball.validation.match :as validation]
             [foosball.software :as sw]
             [foosball.auth :as auth]
             [clojure.data.json :as json]
@@ -132,13 +133,13 @@
 
 ;; For PUT and POST parse the body as json and store in the context
 ;; under the given key.
-(defn parse-body [key context]
+(defn parse-body [key validation context]
   (when (#{:put :post} (get-in context [:request :request-method]))
     (try
       (if-let [body (body-as-string context)]
         (let [mime-type (get-in context [:request :headers "content-type"])
               data (parse-data mime-type body)]
-          [false {key data}])
+          [(not (validation data)) {key data}])
         {:message "No body"})
       (catch Exception e
         (.printStackTrace e)
@@ -152,6 +153,11 @@
            content-types)
      [false {:message "Unsupported Content-Type"}])
     true))
+
+(defn valid-match-report? [report]
+  (->> (validation/validate-report report)
+       vals
+       (every? identity)))
 
 (defresource match-report-resource [db id]
   :allowed-methods [:get :post :delete]
@@ -167,7 +173,7 @@
   :handle-exception (fn [{:keys [exception] :as ctx}]
                       (t/error exception :data (::data ctx)))
   :delete! (fn [ctx] (d/delete-match! db (::id ctx)))
-  :malformed? (partial parse-body ::data)
+  :malformed? (partial parse-body ::data valid-match-report?)
   :post! (fn [ctx]
            (let [data        (::data ctx)
                  data-id     (:id data)
