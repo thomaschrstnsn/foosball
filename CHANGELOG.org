@@ -82,3 +82,6 @@
 *** DONE show numeric ordering on player ratings (ie. 1, 2, 3)
 *** DONE upgrade to [[https://github.com/cemerick/friend/blob/master/CHANGES.md][friend 0.2.0]]
 *** DONE Performance improvements on player, team ratings and front page
+** Version 1.4.0 [2/2]
+*** DONE Foosball is now a SPA (single page app) on top of a liberator api
+*** DONE create edn api using liberator
