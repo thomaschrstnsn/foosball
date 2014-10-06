@@ -65,12 +65,20 @@
   :hooks [configleaf.hooks]
 
   :cljsbuild {:builds [{:id "dev"
-                        :source-paths ["src/cljs"]
+                        :source-paths ["src/cljs" "dev/cljs"]
                         :compiler {:pretty-print false
                                    :output-to "resources/public/js/dev/foosball.js"
                                    :output-dir "resources/public/js/dev"
                                    :optimizations :none
                                    :source-map true}}
+                       {:id "production"
+                        :source-paths ["src/cljs"]
+                        :compiler {:pretty-print false
+                                   :output-to "resources/public/js/foosball.js"
+                                   :optimizations :advanced
+                                   :preamble ["react/react.min.js"]
+                                   :externs ["extern/jquery-1.9.js"
+                                             "react/externs/react.js"]}}
                        {:id "testable" :source-paths ["src/cljs" "test/cljs"]
                         :notify-command ["run-cljs-phantom.sh"]
                         :compiler {:output-to     "target/cljs/testable.js"
