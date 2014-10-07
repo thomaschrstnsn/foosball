@@ -34,7 +34,7 @@
   (alter-var-root #'system (constantly (system/system
                                         system/dev-system-components
                                         :handler-wrapper dev-wrapper
-                                        :cljs-optimized? false
+                                        :root-page "dev.html"
                                         :repl-port 12345))))
 
 (defn socket-logger []

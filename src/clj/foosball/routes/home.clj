@@ -2,8 +2,8 @@
   (:require [compojure.core :as compojure :refer [GET]]
             [ring.util.response :as resp]))
 
-(defn front-page [deps]
-  (resp/resource-response "public/dev.html"))
+(defn front-page [{:keys [config-options]}]
+  (resp/resource-response (str "public/" (get config-options :root-page))))
 
 (defn routes [deps]
   (compojure/routes

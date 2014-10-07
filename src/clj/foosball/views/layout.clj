@@ -38,19 +38,9 @@
                                  :text (str "Logout")
                                  :title playername))])]]))
 
-(defn footer [{:keys [cljs-repl-script-fn cljs-optimized?]} auto-refresh?]
+(defn footer [{:keys [cljs-repl-script-fn cljs-optimized?]}]
   (list
-   (let [cljs-path (if cljs-optimized? "/js/" "/js/dev-old/")
-         scripts   (filter identity ["/js/extern/jquery.min.js"
-                                     "/js/extern/bootstrap.min.js"
-                                     (when-not cljs-optimized? (str cljs-path "goog/base.js"))
-                                     (str cljs-path "foosball-old.js")])]
-     (apply include-js scripts))
-   (when-not cljs-optimized?
-     [:script {:type "text/javascript"} "goog.require(\"foosball.browser\");"])
-   [:script {:type "text/javascript"} "foosball.browser.register_document_ready();"]
-   (when auto-refresh?
-     [:script {:type "text/javascript"} "foosball.browser.page_autorefresh(90)"])
+   (apply include-js ["/js/extern/jquery.min.js" "/js/extern/bootstrap.min.js"])
    (cljs-repl-script-fn)))
 
 (defn base [config-options page-title & content]
@@ -63,5 +53,5 @@
     (include-css "/css/bootstrap.min.css")]
    [:body content]))
 
-(defn common [config-options & {:keys [title content auto-refresh?] :or {auto-refresh? false}}]
-  (base config-options title (header) [:div.container content] (footer config-options auto-refresh?)))
+(defn common [config-options & {:keys [title content]}]
+  (base config-options title (header) [:div.container content] (footer config-options)))

@@ -17,7 +17,7 @@
 
 (def default-config-options
   {:db-uri              "datomic:free://localhost:4334/foosball"
-   :cljs-optimized?     true
+   :root-page           "production.html"
    :repl-port           4321
    :web-port            8080
    :handler-wrapper     identity

@@ -18,7 +18,6 @@
 
 (defrecord App [ring-handler database config-options]
   component/Lifecycle
-
   (start [this]
     (info "Starting Foosball App")
     (let [route-fns    [admin/routes
