@@ -159,6 +159,9 @@
        vals
        (every? identity)))
 
+(defn admin? [auth]
+  (-> auth :roles set (contains? auth/admin)))
+
 (defresource match-report-resource [db id]
   :allowed-methods [:get :post :delete]
   :available-media-types media-types
@@ -185,7 +188,10 @@
              :ok))
   :authorized? (fn [_] (if-let [auth (auth/current-auth)]
                         {::auth auth}))
-  :allowed?   (fn [ctx] (-> ctx ::auth :playerid)))
+  :allowed?   (fn [ctx]
+                (if (#{:delete} (get-in ctx [:request :request-method]))
+                  (-> ctx ::auth admin?)
+                  (-> ctx ::auth :playerid))))
 
 (defn routes [{:keys [db project]}]
   (let [player-route (GET "/api/players" [] (players db))]

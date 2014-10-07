@@ -1,6 +1,6 @@
 (ns foosball.test.routes.api
   (:require [foosball.models.domains :as d]
-            [foosball.auth :refer [current-auth]]
+            [foosball.auth :refer [current-auth] :as auth]
             [foosball.test.helpers :as h]
             [foosball.test.response-helpers :as rh]
             [foosball.util :as util]
@@ -246,16 +246,37 @@
               (are [method]
                 (= 401 (:status (-> (build-request method match-id) handler)))
                 :get :delete)))
-          (testing "with valid auth, without allowed GET/DELETE is 403"
-            (stubbing [current-auth {:logged-in? true}]
+          (testing "with valid auth, without playerid allowed GET/DELETE is 403"
+            (stubbing [current-auth {:bogus-auth :yeah}]
                       (let [expected-match (new-match-fn)
                             _              (d/create-match! db expected-match)
                             match-id       (:id expected-match)]
                         (are [method]
                           (= 403 (:status (-> (build-request method match-id) handler)))
                           :get :delete))))
+          (testing "with valid auth, with playerid without admin: GET is 200, DELETE is 403"
+            (stubbing [current-auth {:playerid :yeah}]
+                      (let [expected-match (new-match-fn)
+                            _              (d/create-match! db expected-match)
+                            match-id       (:id expected-match)]
+                        (are [method status]
+                          (= status (:status (-> (build-request method match-id) handler)))
+                          :get    200
+                          :delete 403))))
+          (testing "with valid auth, with playerid and admin: GET is 200, DELETE is 204"
+            (stubbing [current-auth {:playerid :yeah
+                                     :roles    [auth/admin]}]
+                      (let [expected-match (new-match-fn)
+                            _              (d/create-match! db expected-match)
+                            match-id       (:id expected-match)]
+                        (are [method status]
+                          (= status (:status (-> (build-request method match-id) handler)))
+                          :get    200
+                          :delete 204))))
           (stubbing
-           [current-auth {:logged-in? true :playerid (:id reporter)}]
+           [current-auth {:logged-in? true
+                          :playerid   (:id reporter)
+                          :roles      [auth/admin]}]
            (testing "with valid-auth"
              (testing "getting db-created match"
                (let [expected-match (new-match-fn)
