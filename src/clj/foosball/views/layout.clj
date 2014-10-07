@@ -50,7 +50,7 @@
               (str "Foosball - " page-title)
               "Foosball")]
     [:link {:rel "icon" :type "image/x-icon" :href "/favicon.ico"}]
-    (include-css "/css/bootstrap.min.css")]
+    (include-css "/css/extern/bootstrap.min.css")]
    [:body content]))
 
 (defn common [config-options & {:keys [title content]}]
