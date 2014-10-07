@@ -3,7 +3,6 @@
   (:use [taoensso.timbre :only [trace debug info warn error fatal spy]])
   (:require [foosball.util              :as util]
             [foosball.routes.api        :as api]
-            [foosball.routes.admin      :as admin]
             [foosball.routes.user       :as user]
             [foosball.routes.home       :as home]
             [foosball.auth              :as auth]
@@ -20,8 +19,7 @@
   component/Lifecycle
   (start [this]
     (info "Starting Foosball App")
-    (let [route-fns    [admin/routes
-                        api/routes
+    (let [route-fns    [api/routes
                         home/routes
                         user/routes]
           app-routes   (-> (mapv (fn [route-fn] (route-fn {:db database
