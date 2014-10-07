@@ -9,6 +9,7 @@
             [foosball.locations.matchup :as matchup]
             [foosball.locations.report-match :as report-match]
             [foosball.locations.about :as about]
+            [foosball.locations.admin :as admin]
             [foosball.spinners :refer [loading]]))
 
 (defmulti request-new-location (fn [app req] (-> @app :current-location)))
@@ -30,7 +31,9 @@
              :location/matchup           {:handle matchup/handle
                                           :render matchup/render}
              :location/report-match      {:handle report-match/handle
-                                          :render report-match/render}})
+                                          :render report-match/render}
+             :location/admin             {:handle admin/handle
+                                          :render admin/render}})
 
 (defmethod request-new-location :default [app new]
   (handle-new-location app new))

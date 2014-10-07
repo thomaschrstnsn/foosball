@@ -44,6 +44,9 @@
     (defroute matchup-path "/matchup" []
       (set-active-menu :location/matchup))
 
+    (defroute admin-path "/admin" []
+      (set-active-menu :location/admin))
+
     (defroute report-match-path "/report/match" [query-params]
       (let [{:strs [t1p1 t1p2 t2p1 t2p2]} query-params]
         (set-active-menu :location/report-match (identity-map t1p1 t1p2 t2p1 t2p2))))
@@ -82,6 +85,10 @@
                           {:id    :location/matches
                            :text  "Played Matches"
                            :route (matches-path)}
+                          {:id    :location/admin
+                           :text  "Admin"
+                           :route (admin-path)
+                           :admin-required? true}
                           {:id    :location/about
                            :text  "About"
                            :route (about-path)}]]

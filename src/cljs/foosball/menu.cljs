@@ -1,7 +1,8 @@
 (ns foosball.menu
   (:require [om.core :as om :include-macros true]
             [sablono.core :as html :refer-macros [html]]
-            [foosball.auth :as auth]))
+            [foosball.auth :as auth]
+            [foosball.console :refer-macros [debug debug-js info log trace error]]))
 
 (defn classify-item [{:keys [id text route items seperator]}]
   (cond
@@ -31,10 +32,11 @@
       (html (render-menu-item item)))))
 
 (defn auth-allowed-menu-locations [auth menu-locations]
-  (filterv (fn [{:keys [login-required?]}]
-             (if login-required?
-               (:logged-in? auth)
-               true))
+  (filterv (fn [{:keys [login-required? admin-required?]}]
+             (cond
+              admin-required? (:admin? auth)
+              login-required? (:logged-in? auth)
+              :else true))
            menu-locations))
 
 (defn menu-bar [app owner {:keys [menu-locations home-location]}]

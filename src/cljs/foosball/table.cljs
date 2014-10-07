@@ -17,7 +17,11 @@
             :or {printer str}} column
             align              (or align default-align)
             value              ((comp printer fn) row)]
-       [:td (when (= :right align) {:class "text-right"})
+       [:td
+        (condp = align
+          :right {:class "text-right"}
+          :center {:class "text-center"}
+          nil)
         (if default-container
           [default-container value]
           value)]))))

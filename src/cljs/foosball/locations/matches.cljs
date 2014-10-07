@@ -9,10 +9,10 @@
 (defn handle [app v]
   (data/ensure-player-data app)
   (data/go-get-data! {:server-url "/api/matches"
-                         :app app
-                         :key :matches
-                         :server-data-transform data/add-uuid-key
-                         :set-to-nil-until-complete true})
+                      :app app
+                      :key :matches
+                      :server-data-transform data/add-uuid-key
+                      :set-to-nil-until-complete true})
   (loc/set-location app (:id v)))
 
 (defn render [{:keys [matches player-lookup]}]

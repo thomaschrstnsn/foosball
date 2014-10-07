@@ -7,6 +7,9 @@
             [cljs-http.client :as http]
             [foosball.console :refer-macros [debug debug-js info log trace error]]))
 
+(defn delete! [url]
+  (http/delete url))
+
 (defn get-data [url]
   (http/get url))
 
