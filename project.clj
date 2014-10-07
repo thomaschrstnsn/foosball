@@ -115,6 +115,8 @@
                   "cljsbuild" "once,"
                   "test,"
                   "build-war"]
+            "ring-prod-like" ["with-profile" "production"
+                              "ring" "server-headless"]
             "auto-cljs" ["do"
                          "cljsbuild" "clean" "testable,"
                          "cljsbuild" "auto" "testable"]}
