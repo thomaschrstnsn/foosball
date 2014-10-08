@@ -6,7 +6,7 @@ function notify {
 
 function phantom_test_runner {
     CLJSTEST="clojurescript.test"
-    time phantomjs extern/test/runner-none.js target/cljs/test target/cljs/testable.js extern/test/bind-shim.js resources/public/js/extern/react-0.11.1.js
+    time phantomjs extern/test/runner-none.js target/cljs/test target/cljs/testable.js extern/test/bind-shim.js resources/public/extern/js/react-0.11.1.js
     if [[ $? -eq 0 ]];
     then
         notify $CLJSTEST "success"

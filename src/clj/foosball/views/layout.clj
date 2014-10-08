@@ -40,7 +40,7 @@
 
 (defn footer [{:keys [cljs-repl-script-fn cljs-optimized?]}]
   (list
-   (apply include-js ["/js/extern/jquery.min.js" "/js/extern/bootstrap.min.js"])
+   (apply include-js ["/extern/js/jquery.min.js" "/extern/js/bootstrap.min.js"])
    (cljs-repl-script-fn)))
 
 (defn base [config-options page-title & content]
@@ -50,7 +50,7 @@
               (str "Foosball - " page-title)
               "Foosball")]
     [:link {:rel "icon" :type "image/x-icon" :href "/favicon.ico"}]
-    (include-css "/css/extern/bootstrap.min.css")]
+    (include-css "/extern/css/bootstrap.min.css")]
    [:body content]))
 
 (defn common [config-options & {:keys [title content]}]

@@ -70,11 +70,12 @@
         sort-elem]))))
 
 (defcomponentk header-row-component [[:data columns default-container] owner]
-  (render-state [_ {:keys [sort-chan]}]
+  (render-state [_ {:keys [sort-chan sort]}]
     (html [:tr
            (om/build-all header-cell-component
                          columns
-                         {:state {:sort-chan sort-chan}
+                         {:state {:sort-chan sort-chan
+                                  :sort sort}
                           :fn    (fn [column]
                                    (identity-map column default-container))})])))
 
@@ -149,7 +150,8 @@
              [:thead (om/build header-row-component columns
                                {:react-key "headerrow"
                                 :fn        (fn [columns] (identity-map columns default-container row-class-fn))
-                                :state     {:sort-chan sort-chan}})]
+                                :state     {:sort-chan sort-chan
+                                            :sort sort}})]
              [:tbody
               (map (fn [{:keys [key] :as row}]
                      (let [key (when key (str key))]
