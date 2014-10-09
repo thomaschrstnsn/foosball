@@ -3,7 +3,8 @@
             [foosball.data :as data]
             [foosball.table :as table]
             [foosball.format :as f]
-            [foosball.location :as loc]))
+            [foosball.location :as loc]
+            [foosball.spinners :refer [spinner]]))
 
 (defn handle  [app v]
   (data/ensure-player-data app)
@@ -15,7 +16,8 @@
   (loc/set-location app (:id v)))
 
 (defn render [{:keys [team-statistics player-lookup]}]
-  (when player-lookup
+  (if-not (and player-lookup team-statistics)
+    (spinner)
     (let [wins-col {:heading "Wins"
                     :fn      :wins
                     :sort-fn identity}

@@ -11,6 +11,7 @@
             [foosball.format :as f]
             [foosball.location :as loc]
             [foosball.routes :as routes]
+            [foosball.spinners :refer [spinner]]
             [foosball.console :refer-macros [debug debug-js info log trace error]])
   (:import goog.array))
 
@@ -19,17 +20,21 @@
         query        (str/join "&" query-params)]
     (data/go-get-data! {:server-url (str "/api/matchup?" query)
                         :app app
-                        :key :matchups})))
+                        :key :matchups
+                        :set-to-nil-until-complete true})
+    (om/update! app :matchups-requested true)))
 
-;; TODO: this should use same logic as report-match, where only going back after :auth received
 (defn handle [app v]
-  (if (-> @app :auth :logged-in?)
-    (do
-      (data/ensure-player-data app)
-      (om/update! app :matchups nil)
-      (om/update! app :matchup-selected-playerids nil)
-      (loc/set-location app (:id v)))
-    (.back js/history)))
+  (let [unauthorized? (and (:auth @app)
+                           (not (-> @app :auth :logged-in?)))]
+    (if-not unauthorized?
+      (do
+        (data/ensure-player-data app)
+        (om/update! app :matchups nil)
+        (om/update! app :matchup-selected-playerids nil)
+        (om/update! app :matchups-requested false)
+        (loc/set-location app (:id v)))
+      (.back js/history))))
 
 (defn- format-matchup-percentage [p]
   (f/style-value p
@@ -54,7 +59,8 @@
     [:a.btn.btn-default {:href (routes/report-match-path {:query-params (identity-map t1p1 t1p2 t2p1 t2p2)})}
      "Report result"]))
 
-(defn- render-matchup [player-lookup {:keys [pos-players neg-players expected-diff pos-rating-diff neg-rating-diff]}]
+(defn- render-matchup
+  [player-lookup {:keys [pos-players neg-players expected-diff pos-rating-diff neg-rating-diff]}]
   [:tr
    [:td [:div.text-right  (f/format-team-links player-lookup pos-players)]]
    [:td [:div.text-center (f/style-rating pos-rating-diff)]]
@@ -99,7 +105,8 @@
             "Show possible matchups"]])]))))
 
 (defcomponentk matchup-component
-  [[:data players player-lookup matchups matchup-selected-playerids :as app]
+  [[:data players player-lookup matchups-requested
+    {matchups nil} {matchup-selected-playerids nil} :as app]
    owner]
   (init-state [_]
     {:selection-change-ch (chan)})
@@ -121,8 +128,9 @@
        "Pick the players available for a match (atleast four)." [:br]
        "Then see the possible combinations of teams and their expected win/lose ratios."]
       (om/build player-selection-comp app {:opts {:selection-change-ch selection-change-ch}})
-      (when matchups
-        (let [active-players (filter :active players)]
+      (when matchups-requested
+        (if-not (and player-lookup matchups)
+          (spinner)
           [:table.table.table-hover
            [:caption [:h1 "Matchups"]]
            (headers-matchup)
@@ -131,5 +139,7 @@
                  (sort-by :expected-sortable)
                  (map (partial render-matchup player-lookup)))]]))])))
 
-(defn render [app]
-  (om/build matchup-component app))
+(defn render [{:keys [players player-lookup] :as app}]
+  (if-not (and players player-lookup)
+    (spinner)
+    (om/build matchup-component app)))

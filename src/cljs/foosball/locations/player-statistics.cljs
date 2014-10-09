@@ -3,7 +3,8 @@
             [foosball.data :as data]
             [foosball.table :as table]
             [foosball.format :as f]
-            [foosball.location :as loc]))
+            [foosball.location :as loc]
+            [foosball.spinners :refer [spinner]]))
 
 (defn handle [app v]
   (data/ensure-player-data app)
@@ -14,7 +15,8 @@
   (loc/set-location app (:id v)))
 
 (defn render [{:keys [player-statistics player-lookup]}]
-  (when player-lookup
+  (if-not (and player-lookup player-statistics)
+    (spinner)
     (let [position-col {:heading "Position"
                         :fn      :position
                         :printer (fn [p] (str p "."))
