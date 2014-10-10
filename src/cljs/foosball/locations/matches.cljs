@@ -56,6 +56,7 @@
                  :columns       columns
                  :caption       [:h1 "Played Matches"]
                  :default-align :right
-                 :class         ["table-hover" "table-bordered"]}
+                 :class         ["table-hover" "table-bordered"]
+                 :page-size     35}
                 {:state {:sort {:column date-column
                                 :dir    :desc}}}))))
