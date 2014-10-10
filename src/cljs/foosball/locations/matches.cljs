@@ -4,7 +4,8 @@
             [foosball.date :as d]
             [foosball.table :as table]
             [foosball.format :as f]
-            [foosball.location :as loc]))
+            [foosball.location :as loc]
+            [foosball.spinners :refer [spinner]]))
 
 (defn handle [app v]
   (data/ensure-player-data app)
@@ -16,7 +17,8 @@
   (loc/set-location app (:id v)))
 
 (defn render [{:keys [matches player-lookup]}]
-  (when player-lookup
+  (if-not (and matches player-lookup)
+    (spinner)
     (let [players-from-team (fn [{:keys [player1 player2]}] (mapv :id [player1 player2]))
           date-column {:heading "Date played"
                        :fn      :matchdate
