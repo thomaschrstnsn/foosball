@@ -113,6 +113,10 @@
   :handle-ok (fn [_]
                (sw/software-dependencies project)))
 
+(defresource about-version [project]
+  :available-media-types media-types
+  :handle-ok (fn [_] (select-keys project [:version])))
+
 ;; convert the body to a reader. Useful for testing in the repl
 ;; where setting the body to a string is much simpler.
 (defn body-as-string [ctx]
@@ -210,4 +214,5 @@
      (GET "/api/matchup" [& players]
           (matchup db (map util/uuid-from-string (vals players))))
      (GET "/api/auth" [] (auth-status))
+     (GET "/api/about/version"  [] (about-version project))
      (GET "/api/about/software" [] (about-software project)))))

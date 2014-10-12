@@ -43,3 +43,13 @@
     (let [id (uuid/make-random-uuid)]
       (is (= (format/format-player-link {:id id :name "My player"})
              (format/format-player-link {id {:id id :name "My player"}} id))))))
+
+(deftest version-helpers
+  (are [expected input] (= expected (format/decimal-version input))
+       "1.4.0"     "1.4.0-SNAPSHOT"
+       "1.4.0"     "1.4.0"
+       "1.2.3.4.5" "1.2.3.4.5-BREAKIT_DOWN")
+  (are [expected input] (= expected (format/changelog-anchor-for-version input))
+       "#version-140"   "1.4.0-SNAPSHOT"
+       "#version-140"   "1.4.0"
+       "#version-12345" "1.2.3.4.5-BREAKSTUFF"))

@@ -1,7 +1,8 @@
 (ns foosball.format
   (:require [goog.string :as gstring]
             [goog.string.format]
-            [foosball.routes :as routes]))
+            [foosball.routes :as routes]
+            [clojure.string :as str]))
 
 (defn format
   "Formats a string using goog.string.format."
@@ -54,3 +55,15 @@
 
 (defn style-form [won lost form]
   (map #(style-value % :printer {won "W" lost "L"} :class? nil :checker (partial = won) :container-tag :span) form))
+
+(defn decimal-version
+  "Example: returns '1.4.0' with input '1.4.0-SNAPSHOT'"
+  [version]
+  (-> version (str/split #"-") first))
+
+(defn changelog-anchor-for-version
+  "Example: returns '#version-140' with input '1.4.0-SNAPSHOT'"
+  [version]
+  (let [decimal-version (decimal-version version)
+        undotted        (-> decimal-version (str/split #"\.") (str/join))]
+    (str "#version-" undotted)))

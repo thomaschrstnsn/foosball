@@ -432,6 +432,20 @@
       (testing "with no query, 400"
         (is (= 400 (-> base-request handler :status))))))
 
+  (testing "GET '/api/about/software':"
+    (let [app (h/app-with-memory-db)
+          handler (:ring-handler app)
+          request (mockr/request :get "/api/about/software")]
+      (test-route-for-supported-media-types handler request)
+      (is (not (empty? (-> request handler :body))))))
+
+  (testing "GET '/api/about/version':"
+    (let [app (h/app-with-memory-db)
+          handler (:ring-handler app)
+          request (mockr/request :get "/api/about/version")]
+      (test-route-for-supported-media-types handler request)
+      (is (not= "" (-> request handler :body)))))
+
   (testing "GET '/api/auth':"
     (let [app  (h/app-with-memory-db)
           handler (:ring-handler app)
