@@ -1,7 +1,6 @@
 (ns foosball.servlet-lifecycle
   (:require [com.stuartsierra.component :as component]
             [foosball.system :as system]
-            [noir.util.middleware :as middleware]
             [taoensso.timbre :refer [info]]))
 
 (def ^:private system nil)
