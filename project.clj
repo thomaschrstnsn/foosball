@@ -8,7 +8,7 @@
   :test-paths  ["test/clj"]
 
   :dependencies [[org.clojure/clojure "1.6.0"]
-                 [com.datomic/datomic-free "0.9.4724" :exclusions [com.amazonaws/aws-java-sdk]]
+                 [com.datomic/datomic-free "0.9.4899"]
                  [ring/ring-core "1.3.1"]
                  [org.clojure/data.json "0.2.5"]
                  [liberator "0.12.2"]
