@@ -1,7 +1,13 @@
 #! /bin/sh
 
 function notify {
-    terminal-notifier -title "$1" -message "$2"
+    terminal_notifier_exec="terminal-notifier"
+    path_to_terminal_notifier=$(which $terminal_notifier_exec)
+    if [ -x "$path_to_terminal_notifier" ] ; then
+        $terminal_notifier_exec -title "$1" -message "$2"
+    else
+        echo $1 " - " $2
+    fi
 }
 
 function phantom_test_runner {
