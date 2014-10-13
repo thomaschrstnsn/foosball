@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 
 function notify {
     terminal_notifier_exec="terminal-notifier"
