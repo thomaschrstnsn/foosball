@@ -31,7 +31,7 @@ I can recommend the wrapper [cldwalker/datomic-free](https://github.com/cldwalke
 
 1. To run server-side, see the [gyag template README](https://github.com/thomaschrstnsn/gyag-template)
 
-2. Continuous server-side test runner: `lein test-refresh` (occupies a terminal tab)
+2. Continuous server-side test runner: `lein clj-autotest` (occupies a terminal tab)
 
 ## Client-side (browser)
 
@@ -41,18 +41,18 @@ The browser code has three profiles, `dev`, `production` and `testable`.
 
 ### `dev`-profile
 
-1. Continuous running/live updating client-side: `lein figwheel dev` (occupies a terminal tab)
+1. Continuous running/live updating client-side: `lein cljs-figwheel` (occupies a terminal tab)
 2. Point your browser to [http://localhost:8080/](http://localhost:8080/)
 
 ### `production`-profile
 
-1. Continuous rebuild of client-side with production profile: `lein cljsbuild auto production`
+1. Continuous rebuild of client-side with production profile: `lein cljs-production`
 2. Point your browser to [http://localhost:8080/production.html](http://localhost:8080/production.html)
 
 ### `testable`-profile
 
 1. Continuous client-side tests in headless `phantom-js` (required local install): 
-`lein auto-cljs` (occupies a terminal tab)
+`lein cljs-autotest` (occupies a terminal tab)
 
 ## License
 

@@ -58,7 +58,7 @@
   :plugins [[lein-ring "0.8.3"]
             [lein-cljsbuild "1.0.3"]
             [configleaf "0.4.6"]
-            [lein-release "1.0.4"]
+            [com.jakemccrary/lein-test-refresh "0.5.4"]
             [com.cemerick/clojurescript.test "0.3.1"]
             [lein-figwheel "0.1.4-SNAPSHOT"]]
 
@@ -80,7 +80,7 @@
                                    :externs ["extern/jquery-1.9.js"
                                              "react/externs/react.js"]}}
                        {:id "testable" :source-paths ["src/cljs" "test/cljs"]
-                        :notify-command ["run-cljs-phantom.sh"]
+                        :notify-command ["./run-cljs-phantom.sh"]
                         :compiler {:output-to     "target/cljs/testable.js"
                                    :source-map    "target/cljs/testable.js.map"
                                    :output-dir    "target/cljs/test"
@@ -89,10 +89,6 @@
               :test-commands {"unit" ["run-cljs-phantom.sh"]}}
 
   :configleaf {:verbose false}
-
-  :lein-release {:deploy-via :shell
-                 :build-via  :lein-ring-uberwar
-                 :shell ["echo" "built: " :build-artifact]}
 
   :figwheel {:http-server-root "public"
              :server-port 3449
@@ -108,17 +104,45 @@
 
   :aliases {"deps-tree-prod" ["with-profile" "production" "deps" ":tree"]
             "deps-tree-dev" ["with-profile" "dev" "deps" ":tree"]
+
+            ;; we cannot rely on :hooks [leiningen.cljsbuild]
+            "clean-all" ["do" "cljsbuild" "clean," "clean"]
+
             "build-jar" ["with-profile" "production" "ring" "uberjar"]
             "build-war" ["with-profile" "production" "ring" "uberwar"]
-            "clean-all" ["do" "cljsbuild" "clean," "clean"] ;; we cannot rely on :hooks [leiningen.cljsbuild]
-            "ci" ["with-profile" "dev" "do"
-                  "cljsbuild" "once,"
-                  "test,"
-                  "build-war"]
-            "ring-prod-like" ["with-profile" "production"
-                              "ring" "server-headless"]
-            "auto-cljs" ["do"
-                         "cljsbuild" "clean" "testable,"
-                         "cljsbuild" "auto" "testable"]}
 
-  :min-lein-version "2.0.0")
+            "ci"        ["with-profile" "dev" "do"
+                         "cljsbuild" "once,"
+                         "test,"
+                         "build-war"]
+
+            "prod-build" ["do"
+                          "clean-all,"
+                          "cljsbuild" "once" "production,"
+                          "build-war"]
+
+            ;; dev
+            "cljs-autotest"   ["do"
+                               "cljsbuild" "clean" "testable,"
+                               "cljsbuild" "auto" "testable"]
+            "cljs-figwheel"   ["do"
+                               "cljsbuild" "clean" "dev,"
+                               "figwheel" "dev"]
+            "cljs-production" ["do"
+                               "cljsbuild" "clean" "production,"
+                               "cljsbuild" "auto" "production"]
+            "clj-autotest"    ["test-refresh"]
+
+            ;; ring
+            "ring-prod-like" ["with-profile" "production"
+                              "ring" "server-headless"]}
+
+  :release-tasks [["vcs" "assert-committed"]
+                  ["change" "version" "leiningen.release/bump-version" "release"]
+                  ["vcs" "commit"]
+                  ["vcs" "tag"]
+                  ["prod-build"]
+                  ["change" "version" "leiningen.release/bump-version"]
+                  ["vcs" "commit"]]
+
+  :min-lein-version "2.4.0")
