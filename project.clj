@@ -78,7 +78,10 @@
                                    :optimizations :advanced
                                    :preamble ["react/react.min.js"]
                                    :externs ["extern/jquery-1.9.js"
-                                             "react/externs/react.js"]}}
+                                             "react/externs/react.js"
+                                             "resources/public/extern/js/bootstrap-datepicker.js"]
+                                   :closure-warnings {:externs-validation :off
+                                                      :non-standard-jsdoc :off}}}
                        {:id "testable" :source-paths ["src/cljs" "test/cljs"]
                         :notify-command ["./run-cljs-phantom.sh"]
                         :compiler {:output-to     "target/cljs/testable.js"
