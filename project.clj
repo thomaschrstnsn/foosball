@@ -1,4 +1,4 @@
-(defproject foosball "1.4.1"
+(defproject foosball "1.4.2-SNAPSHOT"
   :jvm-opts ["-Xmx1g" "-server" "-XX:MaxPermSize=128M"]
 
   :url "https://foosball.chrstnsn.dk/"
