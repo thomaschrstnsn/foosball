@@ -67,3 +67,6 @@
 - create edn api using liberator
 - Bootstrap upgraded to 3.2.0
 - *MANY* internal upgrades and refactorings
+** Version 1.4.1
+- Fix issue with datepicker on report-match page
+- Deployments are uberjars going forward, no more uberwar
