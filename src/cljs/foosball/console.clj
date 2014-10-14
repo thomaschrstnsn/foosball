@@ -22,7 +22,7 @@
 
 (defmacro warn [& args]
   (let [av (vec args)]
-    `(.applay js/console.warn js/console (stringify ~av))))
+    `(.apply js/console.warn js/console (stringify ~av))))
 
 (defmacro error [& args]
   (let [av (vec args)]
