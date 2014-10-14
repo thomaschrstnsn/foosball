@@ -109,17 +109,16 @@
             "clean-all" ["do" "cljsbuild" "clean," "clean"]
 
             "build-jar" ["with-profile" "production" "ring" "uberjar"]
-            "build-war" ["with-profile" "production" "ring" "uberwar"]
 
             "ci"        ["with-profile" "dev" "do"
                          "cljsbuild" "once,"
                          "test,"
-                         "build-war"]
+                         "build-jar"]
 
             "prod-build" ["do"
                           "clean-all,"
                           "cljsbuild" "once" "production,"
-                          "build-war"]
+                          "build-jar"]
 
             ;; dev
             "cljs-autotest"   ["do"
