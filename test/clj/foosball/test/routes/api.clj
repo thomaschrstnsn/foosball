@@ -9,6 +9,7 @@
             [clojure.edn :as edn]
             [clojure.data.json :as json]
             [conjure.core :refer [stubbing]]
+            [datomic.api :as datomic]
             [liberator.dev :as libdev]
             [clj-time.core :as time]
             [clj-time.coerce :as time-coerce]
@@ -27,6 +28,33 @@
       (is (valid-mime-request? "application/edn"))
       (is (valid-mime-request? "text/html"))
       (is (valid-mime-request? "application/json")))))
+
+(defn transact-something-in-db! [db]
+  (let [eid  (datomic/tempid :db.part/user)
+        uuid (h/make-uuid)
+        conn (:connection db)]
+    @(datomic/transact conn [{:db/id eid :player/id uuid}])))
+
+(defn test-route-for-etag-with-database-transaction [handler request db]
+  (let [response (handler request)
+        etag     (get-in response [:headers "ETag"] :not-found)]
+    (testing "Reponse contains etag header:"
+      (is (= false (contains? #{nil "" :not-found} etag))))
+    (testing "Request with if-none-match correct returns 304 (Not Modified):"
+      (let [cond-request  (mockr/header request "if-none-match" etag)
+            cond-response (-> cond-request handler)]
+        (is (= 304 (:status cond-response)))))
+    (testing "Request with if-none-match, after database transaction, returns 200:"
+      (let [_ (transact-something-in-db! db)
+            cond-request  (mockr/header request "if-none-match" etag)
+            cond-response (-> cond-request handler)]
+        (is (= 200 (:status cond-response)))))))
+
+(defn test-route-to-not-include-etag [handler request]
+  (let [response (handler request)
+        etag     (get-in response [:headers "ETag"] :not-found)]
+    (testing "Reponse must not contain etag header:"
+      (is (= :not-found etag)))))
 
 (defn player-from-exp [e] (select-keys e [:id :name]))
 
@@ -49,6 +77,7 @@
                   :name name
                   :id id} (-> request handler :body edn/read-string first)))
           (test-route-for-supported-media-types handler request)
+          (test-route-for-etag-with-database-transaction handler request db)
           (testing "JSON output is parsable into something similar"
             (is  (= {:role "user"
                      :name name
@@ -69,6 +98,7 @@
         (is (empty? (-> request handler :body edn/read-string))))
 
       (test-route-for-supported-media-types handler request)
+      (test-route-for-etag-with-database-transaction handler request (:database app))
 
       (testing "with players and matches in the database"
         (let [db (:database app)
@@ -110,6 +140,10 @@
           make-request (fn [id] (mockr/request :get (str "/api/ratings/log/" id)))]
       (testing "with an empty database, any uuid returns empty"
         (is (= '() (-> (make-request (h/make-uuid)) handler :body edn/read-string))))
+
+      (test-route-for-etag-with-database-transaction handler
+                                                     (make-request (h/make-uuid))
+                                                     (:database app))
 
       (testing "with players and matches in the database,"
         (let [db (:database app)
@@ -176,6 +210,7 @@
         (is (empty? (-> request handler :body edn/read-string))))
 
       (test-route-for-supported-media-types handler request)
+      (test-route-for-etag-with-database-transaction handler request (:database app))
 
       (testing "with players and matches in the database"
         (let [db (:database app)
@@ -285,6 +320,9 @@
                      request        (build-request :get match-id)
                      response       (-> request handler)
                      response-body  (-> response :body edn/read-string)]
+                 (test-route-for-etag-with-database-transaction handler
+                                                                request
+                                                                (:database app))
                  (is (= 200 (:status response)))
                  (let [{:keys [team1 team2 matchdate]} response-body]
                    (is (= true (every? identity [team1 team2 matchdate]))))
@@ -399,6 +437,10 @@
                                                                             players
                                                                             (range)))]
                                          (mockr/query-string base-request query-params)))]
+      (test-route-for-etag-with-database-transaction handler
+                                                     (build-request-with-players p1 p2 p3 p4)
+                                                     (:database app))
+
       (testing "with 4 distinct players, OK"
         (is (= 200 (-> (build-request-with-players p1 p2 p3 p4) handler :status))))
 
@@ -437,6 +479,7 @@
           handler (:ring-handler app)
           request (mockr/request :get "/api/about/software")]
       (test-route-for-supported-media-types handler request)
+      (test-route-to-not-include-etag handler request)
       (is (not (empty? (-> request handler :body))))))
 
   (testing "GET '/api/about/version':"
@@ -444,6 +487,7 @@
           handler (:ring-handler app)
           request (mockr/request :get "/api/about/version")]
       (test-route-for-supported-media-types handler request)
+      (test-route-to-not-include-etag handler request)
       (is (not= "" (-> request handler :body)))))
 
   (testing "GET '/api/auth':"
@@ -451,6 +495,7 @@
           handler (:ring-handler app)
           request (mockr/request :get "/api/auth")]
       (test-route-for-supported-media-types handler request)
+      (test-route-to-not-include-etag handler request)
 
       (with-redefs [foosball.auth/current-auth (constantly nil)]
         (testing "with no auth"

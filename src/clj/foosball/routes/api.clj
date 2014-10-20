@@ -2,6 +2,7 @@
   (:require [liberator.core :refer [resource defresource]]
             [cemerick.friend :as friend]
             [compojure.core :as compojure :refer [ANY GET POST PUT]]
+            [datomic.api :as datomic]
             [foosball.auth :as auth]
             [foosball.models.domains :as d]
             [foosball.statistics.ratings :as ratings]
@@ -31,16 +32,22 @@
 (def media-types [edn-type "text/html" json-type])
 (def body-media-types [edn-type])
 
+(defn etag-for-db [db]
+  (-> db :connection datomic/db  datomic/basis-t datomic/t->tx))
+
 (defresource players [db]
   :available-media-types media-types
+  :etag (fn [_] (etag-for-db db))
   :handle-ok (fn [_] (d/get-players db)))
 
 (defresource matches [db]
   :available-media-types media-types
+  :etag (fn [_] (etag-for-db db))
   :handle-ok (fn [_] (d/get-matches db)))
 
 (defresource leaderboard [db size]
   :available-media-types media-types
+  :etag (fn [_] (etag-for-db db))
   :handle-ok (fn [_] (let [players (d/get-players db)
                           matches (d/get-matches db)]
                       (ratings/leaderboard matches players size)))
@@ -49,6 +56,7 @@
 
 (defresource player-log [db playerid]
   :available-media-types media-types
+  :etag (fn [_] (etag-for-db db))
   :handle-ok (fn [_]
                (let [matches             (d/get-matches db)
                      player              (d/get-player db playerid)
@@ -65,6 +73,7 @@
 
 (defresource matchup [db playerids]
   :available-media-types media-types
+  :etag (fn [_] (etag-for-db db))
   :malformed? (fn [_] (let [players         (d/get-players db)
                            request-players (set playerids)
                            valid-playerids (->> (map :id players)
@@ -81,6 +90,7 @@
 
 (defresource player-stats [db]
   :available-media-types media-types
+  :etag (fn [_] (etag-for-db db))
   :handle-ok (fn [_]
                (let [players (d/get-players db)
                      matches (d/get-matches db)]
@@ -88,6 +98,7 @@
 
 (defresource team-stats [db]
   :available-media-types media-types
+  :etag (fn [_] (etag-for-db db))
   :handle-ok (fn [_]
                (let [matches (d/get-matches db)]
                  (team-player/calculate-team-stats matches))))
@@ -169,6 +180,7 @@
 (defresource match-report-resource [db id]
   :allowed-methods [:get :post :delete]
   :available-media-types media-types
+  :etag (fn [_] (etag-for-db db))
   :known-content-type? (partial check-content-type body-media-types)
   :exists? (fn [_]
              (let [uuid (util/uuid-from-string id)
