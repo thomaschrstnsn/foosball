@@ -60,7 +60,8 @@
             [configleaf "0.4.6"]
             [com.jakemccrary/lein-test-refresh "0.5.4"]
             [com.cemerick/clojurescript.test "0.3.1"]
-            [lein-figwheel "0.1.4-SNAPSHOT"]]
+            [lein-figwheel "0.1.4-SNAPSHOT"]
+            [com.gfredericks/corncob-cigar "0.1.1"]]
 
   :hooks [configleaf.hooks]
 
@@ -142,7 +143,7 @@
   :release-tasks [["vcs" "assert-committed"]
                   ["change" "version" "leiningen.release/bump-version" "release"]
                   ["vcs" "commit"]
-                  ["vcs" "tag"]
+                  ["vcs-tag-no-sign"]
                   ["prod-build"]
                   ["change" "version" "leiningen.release/bump-version"]
                   ["vcs" "commit"]]
