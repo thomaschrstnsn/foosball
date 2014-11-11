@@ -39,9 +39,8 @@
    uuid :- s/Uuid
    name :- s/Str
    openid :- s/Str]
-  (let [_ (when (h/entity-id-from-attr-value (d/db conn) :player/id uuid)
-            (throw (Exception. ":player/id is not unique")))
-        eid (d/tempid :db.part/user)]
+  (h/ensure-id-is-unique (d/db conn) :player/id uuid)
+  (let [eid (d/tempid :db.part/user)]
     @(d/transact conn
                  [{:db/id eid :player/id uuid}
                   {:db/id eid :player/name name}
