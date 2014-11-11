@@ -18,6 +18,8 @@
         [t1p1 t1p2 t1score]          (map (apply-fn-to-map team1) team-fns)
         [t2p1 t2p2 t2score]          (map (apply-fn-to-map team2) team-fns)
         reporter-entity              (player-entity-from-id reported-by)
+        existing-match-entity        (when id (h/entity-id-from-attr-value dbc :match/id id))
+        _                            (when existing-match-entity (throw (Exception. ":match/id is not unique")))
         id                           (or id (util/create-uuid))
         transaction                  [{:db/id team1-id :team/player1 t1p1}
                                       {:db/id team1-id :team/player2 t1p2}

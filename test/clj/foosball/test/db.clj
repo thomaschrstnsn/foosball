@@ -17,7 +17,10 @@
               id     (h/make-uuid)]
           (is (not= nil (d/create-player! db id name openid)))
 
-          (testing "we can readout the player data"
+          (testing "we cannot add another with same id"
+            (is (thrown? Exception (d/create-player! db id name openid))))
+
+          (testing "we can read out the player data"
             (is (= name (:name (d/get-player db id))))
             (is (= #{openid} (d/get-player-openids db id))))
 
@@ -45,7 +48,14 @@
               (is (not= nil (d/rename-player! db id new-name)))
               (testing "then his name changed"
                 (is (= new-name (:name (d/get-player db id)))))))))))
-
+  (testing "Creating leagues"
+    (let [db (h/memory-db)
+          id (h/make-uuid)
+          create-league (fn [] (d/create-league! db id "a league name" "a league description"))]
+      (testing "we can create a league,"
+        (is (not= nil (create-league)))
+        (testing "and then we cannot create another with the same id"
+          (is (thrown? Exception (create-league)))))))
   (testing "Creating matches"
     (let [db              (h/memory-db)
           [p1 p2 p3 p4]   (map (partial h/create-dummy-player db) ["p1" "p2" "p3" "p3"])
@@ -74,6 +84,8 @@
                                       :score team2score}
                               :reported-by (player-from-exp reporter)
                               :league/id (:id league)}]
+          (testing "then we cannot create it again with same id"
+            (is (thrown? Exception (create-match :id match-id))))
           (testing "then we can get it out again using get-matches"
             (let [result (d/get-matches db)]
               (is (h/diff-with-first-is-nil? expected-match
