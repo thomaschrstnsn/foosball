@@ -88,12 +88,50 @@
     :db/ident :match/time
     :db/valueType :db.type/instant
     :db/cardinality :db.cardinality/one
-    :db/doc "When did the match take place?"
+    :db/doc "Date when match was played"
     :db.install/_attribute :db.part/db}
 
    {:db/id (d/tempid :db.part/db)
     :db/ident :match/reported-by
     :db/valueType :db.type/ref
     :db/cardinality :db.cardinality/one
-    :db/doc "Which user/player reported the match?"
+    :db/doc "The user who reported the match result"
+    :db.install/_attribute :db.part/db}
+
+   {:db/id (d/tempid :db.part/db)
+    :db/ident :match/league
+    :db/valueType :db.type/ref
+    :db/cardinality :db.cardinality/one
+    :db/doc "The league to which the match belongs"
+    :db.install/_attribute :db.part/db}
+
+   ;; leagues
+   {:db/id (d/tempid :db.part/db)
+    :db/ident :league/id
+    :db/valueType :db.type/uuid
+    :db/cardinality :db.cardinality/one
+    :db/unique :db.unique/identity
+    :db/doc "A league's id"
+    :db.install/_attribute :db.part/db}
+
+   {:db/id (d/tempid :db.part/db)
+    :db/ident :league/name
+    :db/valueType :db.type/string
+    :db/cardinality :db.cardinality/one
+    :db/doc "A league's name"
+    :db.install/_attribute :db.part/db}
+
+   {:db/id (d/tempid :db.part/db)
+    :db/ident :league/description
+    :db/valueType :db.type/string
+    :db/cardinality :db.cardinality/one
+    :db/doc "A longer text describing the league"
+    :db.install/_attribute :db.part/db}
+
+   {:db/id (d/tempid :db.part/db)
+    :db/ident :league/admins
+    :db/valueType :db.type/ref
+    :db/cardinality :db.cardinality/many
+    :db/unique :db.unique/identity
+    :db/doc "A league's admins"
     :db.install/_attribute :db.part/db}])

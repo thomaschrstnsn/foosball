@@ -57,11 +57,51 @@
   @(d/transact conn [[:db/retract :player/name :db/unique :db.unique/identity]
                      [:db/add :db.part/db :db.alter/attribute :player/name]]))
 
+(defn add-league! [conn name description]
+  (let [tempid    (d/tempid :db.part/user)
+        _         (info "Adding league: " (util/identity-map name description))
+        res       @(d/transact conn [{:db/id tempid :league/id (util/create-uuid)}
+                                     {:db/id tempid :league/name name}
+                                     {:db/id tempid :league/description description}])
+        league-id (d/resolve-tempid (:db-after res) (:tempids res) tempid)
+        _         (info "league entity-id" league-id)]
+    league-id))
+
+(defn add-vfl-league!
+  "Adds VFL league (idempotent)"
+  [conn]
+  (let [dbc         (db conn)
+        league-name "VFL"
+        vfl-leagues (d/q '[:find ?lid :in $ ?name :where [?lid :league/name ?name]] dbc league-name)]
+    (condp = (count vfl-leagues)
+      0 (add-league! conn league-name "Videncentret For Landbrug")
+      1 (ffirst vfl-leagues)
+      (throw (Exception. "More than one VFL league found")))))
+
+(defn set-vfl-league-for-all-matches!
+  "Adds the VFL league and sets it for all matches without leagues"
+  [conn]
+  (let [league-entity-id        (add-vfl-league! conn)
+        dbc                     (db conn)
+        matches-with-leagues    (->> (d/q '[:find ?mid :where [?mid :match/league _]] dbc)
+                                     (map first)
+                                     set)
+        all-matches             (->> (d/q '[:find ?mid :where [?mid :match/id _]] dbc)
+                                     (map first)
+                                     set)
+        matches-without-leagues (difference all-matches matches-with-leagues)
+        __                      (info "vfl league entity-id" league-entity-id)
+        _                       (info "adding vfl as league for" (count matches-without-leagues) "matches")
+        transaction             (mapv (fn [id] {:db/id id :match/league league-entity-id})
+                                      matches-without-leagues)]
+    @(d/transact conn transaction)))
+
 (def migrations "seq of idempotent migration functions"
   [#'ensure-players-users-have-roles
    #'ensure-players-have-ids
    #'ensure-matches-have-ids
-   #'remove-uniqueness-constraint-on-player-name])
+   #'remove-uniqueness-constraint-on-player-name
+   #'set-vfl-league-for-all-matches!])
 
 (defn migrate-schema-and-data [conn]
   (doseq [migration-var migrations]
