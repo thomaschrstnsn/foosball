@@ -5,6 +5,7 @@
             [foosball.models.domains.matches :as matches]
             [foosball.models.domains.openids :as openids]
             [foosball.models.domains.players :as players]
+            [foosball.models.domains.leagues :as leagues]
             [foosball.models.migration :as migration]
             [foosball.models.schema :refer [eav-schema]]
             [taoensso.timbre :refer [info]]))
@@ -78,4 +79,8 @@
   (add-openid-to-player! [this playerid openid]
     (openids/add-openid-to-player! connection playerid openid))
   (get-player-with-given-openid [this openid]
-    (openids/get-player-with-given-openid (db connection) openid)))
+    (openids/get-player-with-given-openid (db connection) openid))
+
+  ==>/Leagues
+  (create-league! [this id name description]
+    (leagues/create! connection id name description)))

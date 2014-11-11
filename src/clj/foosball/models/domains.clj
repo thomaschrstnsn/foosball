@@ -22,3 +22,6 @@
   (get-player-openids [this id])
   (add-openid-to-player! [this playerid openid])
   (get-player-with-given-openid [this openid]))
+
+(defprotocol Leagues
+  (create-league! [this id name description]))

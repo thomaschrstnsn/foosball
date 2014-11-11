@@ -14,6 +14,7 @@
             [clojure.data.json :as json]
             [clojure.edn :as edn]
             [clojure.java.io :as io]
+            [schema.core :as s]
             [taoensso.timbre :as t]))
 
 (extend java.util.UUID
@@ -170,9 +171,18 @@
     true))
 
 (defn valid-match-report? [report]
-  (->> (validation/validate-report report)
-       vals
-       (every? identity)))
+  (let [detailed-validation (->> (validation/validate-report report)
+                                 vals
+                                 (every? identity))
+        schema-validation   (s/check {:id s/Uuid
+                                      :league-id s/Uuid
+                                      :team1 s/Any
+                                      :team2 s/Any
+                                      :matchdate s/Inst
+                                      :reported-by s/Uuid}
+                                     report)
+        _ (when schema-validation (t/error :schema-validation-match-report schema-validation))]
+    (and detailed-validation (nil? schema-validation))))
 
 (defn admin? [auth]
   (-> auth :roles set (contains? auth/admin)))

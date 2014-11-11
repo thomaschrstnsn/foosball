@@ -18,4 +18,5 @@
             (s/optional-key :tx) s/Int
             :team1               Team
             :team2               Team
-            :reported-by         Player})
+            :reported-by         Player
+            :league/id           s/Uuid})

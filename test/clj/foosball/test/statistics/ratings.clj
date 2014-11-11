@@ -12,6 +12,7 @@
   (let [db         (h/memory-db)
         [p1 p2 p3 p4
          reporter] (map (partial h/create-dummy-player db) ["p1" "p2" "p3" "p4" "rep"])
+        league     (h/create-dummy-league db "a league")
         matches    (vec (for [index (range 8)
                               :let [team1score 10
                                     team2score index
@@ -24,7 +25,8 @@
                            :team1 {:player1 (:id t1p1) :player2 (:id t1p2) :score team1score}
                            :team2 {:player1 (:id t2p1) :player2 (:id t2p2) :score team2score}
                            :reported-by (:id reporter)
-                           :id (h/make-uuid)}))
+                           :id (h/make-uuid)
+                           :league-id (:id league)}))
 
         _          (doall (map (fn [m] (d/create-match! db m)) matches))
         get-db-players-fn (fn [players] (let [player-ids (set (map :id players))]

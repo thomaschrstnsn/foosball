@@ -6,10 +6,11 @@
             [foosball.entities :as e]
             [schema.core :as s]))
 
-(defn create! [conn {:keys [matchdate team1 team2 reported-by id]}]
+(defn create! [conn {:keys [matchdate team1 team2 reported-by id league-id]}]
   (let [[match-id team1-id team2-id] (repeatedly #(d/tempid :db.part/user))
         dbc                          (db conn)
         player-entity-from-id        (partial h/entity-id-from-attr-value dbc :player/id)
+        league-entity                (h/entity-id-from-attr-value dbc :league/id league-id)
         team-fns                     [(comp player-entity-from-id :player1)
                                       (comp player-entity-from-id :player2)
                                       :score]
@@ -30,13 +31,15 @@
                                       {:db/id match-id :match/team2 team2-id}
                                       {:db/id match-id :match/time matchdate}
                                       {:db/id match-id :match/reported-by reporter-entity}
-                                      {:db/id match-id :match/id id}]]
+                                      {:db/id match-id :match/id id}
+                                      {:db/id match-id :match/league league-entity}]]
     @(d/transact conn transaction)))
 
 (defn match-query [by-id?]
   (let [find     '[:find ?m ?mid ?mt
                    ?t1id ?t1score
                    ?t2id ?t2score
+                   ?lid
                    ?tx]
         in       (if by-id?
                    '[:in $ ?id]
@@ -46,6 +49,8 @@
                    [?m :match/id      ?mid]
                    [?m :match/team1   ?t1id]
                    [?m :match/team2   ?t2id]
+                   [?m :match/league  ?lent]
+                   [?lent :league/id  ?lid]
                    [?t1id :team/score ?t1score]
                    [?t2id :team/score ?t2score]]
         id-query (when by-id? '[[?m :match/id ?id]])]
@@ -59,7 +64,7 @@
                     :player/name :name})))
 
 (defn map-match-query-results [dbc rs]
-  (map (fn [[mid id mt t1id t1score t2id t2score tx]]
+  (map (fn [[mid id mt t1id t1score t2id t2score leagueid tx]]
          (let [match    (d/entity dbc mid)
                reporter (->> (get-in match [:match/reported-by :db/id])
                              (d/entity dbc)
@@ -75,7 +80,8 @@
            {:match/id id :matchdate mt :tx tx
             :team1 {:id t1id :player1 t1p1 :player2 t1p2 :score t1score}
             :team2 {:id t2id :player1 t2p1 :player2 t2p2 :score t2score}
-            :reported-by reporter}))
+            :reported-by reporter
+            :league/id leagueid}))
        rs))
 
 (defn chronologically-order-matches [ms]

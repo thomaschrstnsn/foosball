@@ -69,3 +69,10 @@
         openid (str "openid-" seed)]
     (d/create-player! db id name openid )
     (util/identity-map id name openid)))
+
+(defn create-dummy-league [db seed]
+  (let [id (make-uuid)
+        name (str "league-" seed)
+        description (str "league-description-" seed)]
+    (d/create-league! db id name description)
+    (util/identity-map id name description)))

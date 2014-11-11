@@ -55,12 +55,14 @@
           team2score      5
           reporter        (h/create-dummy-player db "reporter")
           match-id        (h/make-uuid)
+          league          (h/create-dummy-league db "anykindaleague")
           create-match    (fn [& {:keys [id]}]
                             (d/create-match! db {:matchdate match-date
                                                  :id id
                                                  :team1 {:player1 (:id p1) :player2 (:id p2) :score team1score}
                                                  :team2 {:player1 (:id p3) :player2 (:id p4) :score team2score}
-                                                 :reported-by (:id reporter)}))]
+                                                 :reported-by (:id reporter)
+                                                 :league-id (:id league)}))]
       (testing "We can create a match with our four players,"
         (is (not= nil (create-match :id match-id)))
         (let [expected-match {:matchdate match-date
@@ -70,7 +72,8 @@
                               :team2 {:player1 (player-from-exp p3)
                                       :player2 (player-from-exp p4 )
                                       :score team2score}
-                              :reported-by (player-from-exp reporter)}]
+                              :reported-by (player-from-exp reporter)
+                              :league/id (:id league)}]
           (testing "then we can get it out again using get-matches"
             (let [result (d/get-matches db)]
               (is (h/diff-with-first-is-nil? expected-match

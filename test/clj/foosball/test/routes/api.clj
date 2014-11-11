@@ -104,13 +104,15 @@
         (let [db (:database app)
               [p1 p2 p3 p4 reporter] (map (partial h/create-dummy-player db) ["p1" "p2" "p3" "p4" "rep"])
               match-date (java.util.Date.)
+              league (h/create-dummy-league db "someleague")
               team1score 10
               team2score 7
               create-match (fn [t1p1 t1p2 t2p1 t2p2]
                              (d/create-match! db {:matchdate match-date
                                                   :team1 {:player1 (:id t1p1) :player2 (:id t1p2) :score team1score}
                                                   :team2 {:player1 (:id t2p1) :player2 (:id t2p2) :score team2score}
-                                                  :reported-by (:id reporter)}))
+                                                  :reported-by (:id reporter)
+                                                  :league-id (:id league)}))
               ;; should give: p1 > p2 > p3 > p4
               _ (doall (map (fn [i] (create-match p1 p2 p3 p4)) (range 15)))
               _ (create-match p1 p3 p2 p4)
@@ -153,6 +155,8 @@
               yesterday (time/local-date 2014 4 24)
               day-before-last (time/local-date 2014 4 23)
 
+              league (h/create-dummy-league db "aleague")
+
               team1score 10
               team2score 7
               number-of-matches 15
@@ -160,7 +164,8 @@
                              (d/create-match! db {:matchdate (time-coerce/to-date match-date)
                                                   :team1 {:player1 (:id t1p1) :player2 (:id t1p2) :score team1score}
                                                   :team2 {:player1 (:id t2p1) :player2 (:id t2p2) :score team2score}
-                                                  :reported-by (:id reporter)}))
+                                                  :reported-by (:id reporter)
+                                                  :league-id (:id league)}))
               _ (create-match day-before-last p1 p2 p3 p6)
               _ (doall (map (fn [i] (create-match yesterday p1 p2 p3 p4)) (range number-of-matches)))
               _ (create-match today p2 p3 p4 p5)
@@ -215,6 +220,7 @@
       (testing "with players and matches in the database"
         (let [db (:database app)
               [p1 p2 p3 p4 reporter] (map (partial h/create-dummy-player db) ["p1" "p2" "p3" "p4" "rep"])
+              league  (h/create-dummy-league db "league")
               matches (vec (for [index (range 8)
                                  :let [team1score 10
                                        team2score index
@@ -227,7 +233,8 @@
                               :team1 {:player1 (:id t1p1) :player2 (:id t1p2) :score team1score}
                               :team2 {:player1 (:id t2p1) :player2 (:id t2p2) :score team2score}
                               :reported-by (:id reporter)
-                              :id (h/make-uuid)}))
+                              :id (h/make-uuid)
+                              :league-id (:id league)}))
 
               _ (doall (map (fn [m] (d/create-match! db m)) matches))
               response (-> request handler :body edn/read-string)]
@@ -261,6 +268,7 @@
       (testing "with players and matches in the database"
         (let [db (:database app)
               [p1 p2 p3 p4 reporter] (map (partial h/create-dummy-player db) ["p1" "p2" "p3" "p4" "rep"])
+              league (h/create-dummy-league db "someleague")
               new-match-fn (fn []
                              (let [team1score 10
                                    team2score 4
@@ -273,7 +281,8 @@
                                 :team1 {:player1 (:id t1p1) :player2 (:id t1p2) :score team1score}
                                 :team2 {:player1 (:id t2p1) :player2 (:id t2p2) :score team2score}
                                 :reported-by (:id reporter)
-                                :id (h/make-uuid)}))]
+                                :id (h/make-uuid)
+                                :league-id (:id league)}))]
           (testing "without valid auth GET/DELETE is 401"
             (let [expected-match (new-match-fn)
                   _              (d/create-match! db expected-match)
@@ -350,30 +359,46 @@
                                                             [:match/id :reported-by :matchdate]))]
                        (is (= (expected-match-fn expected-match)
                               (actual-match-fn response-body))))))))
-             (testing "POST/GET/DELETE/GET a match with edn: "
-               (let [expected-match (new-match-fn)
-                     match-id       (:id expected-match)
-                     post-request   (-> (build-request :post match-id)
+             (let [build-post-req (fn [match]
+                                    (-> (build-request :post (:id match))
                                         (mockr/header :content-type "application/edn")
                                         (update-in [:body]
-                                                   (fn [_] (prn-str expected-match))))
-                     get-request    (build-request :get match-id)
+                                                   (fn [_] (prn-str match)))))]
+               (testing "POST with incomplete request gives status 400"
+                 (let [post-request-fn      (fn [mangle-fn]
+                                              (let [mangled-match (-> (new-match-fn) mangle-fn)
+                                                    match-id (:id mangled-match)]
+                                                (build-post-req mangled-match)))
+                       mangle               (fn [filtered-keys m]
+                                              (util/filter-keys m filtered-keys))
+                       handler              (-> handler (liberator.dev/wrap-trace :header))
+                       post-mangled-request (fn [filtered-keys]
+                                              (-> (post-request-fn (partial mangle filtered-keys))
+                                                  handler))]
+                   (are [excluded-key] (= 400 (-> (post-mangled-request [excluded-key]) :status))
+                        :league-id :matchdate :team1 :team2 :reported-by)))
+               (testing "POST/GET/DELETE/GET a match with edn: "
+                 (let [expected-match (new-match-fn)
+                       match-id       (:id expected-match)
+                       post-request   (build-post-req expected-match)
+                       get-request    (build-request :get match-id)
 
-                     handler        (-> handler (liberator.dev/wrap-trace :header))
-                     post-response  (-> post-request handler)
-                     get-response   (-> get-request handler)
-                     actual-match   (-> get-response :body edn/read-string)
-                     del-response   (-> (build-request :delete match-id) handler)
-                     get-after-del  (-> get-request handler)]
-                 (testing "POST succeed"
-                   (is (= 201 (:status post-response))))
-                 (testing "GET after POST"
-                   (is (= 200 (:status get-response)))
-                   (is (= match-id (:match/id actual-match))))
-                 (testing "DELETE"
-                   (is (= 204 (:status del-response))))
-                 (testing "GET after DELETE"
-                   (is (= 404 (:status get-after-del))))))
+                       handler        (-> handler (liberator.dev/wrap-trace :header))
+                       post-response  (-> post-request handler)
+                       get-response   (-> get-request handler)
+                       actual-match   (-> get-response :body edn/read-string)
+                       del-response   (-> (build-request :delete match-id) handler)
+                       get-after-del  (-> get-request handler)]
+
+                   (testing "POST succeed"
+                     (is (= 201 (:status post-response))))
+                   (testing "GET after POST"
+                     (is (= 200 (:status get-response)))
+                     (is (= match-id (:match/id actual-match))))
+                   (testing "DELETE"
+                     (is (= 204 (:status del-response))))
+                   (testing "GET after DELETE"
+                     (is (= 404 (:status get-after-del)))))))
              (testing "validation of POST: "
                (let [build-match-with-scores
                      (fn [s1 s2]
@@ -414,6 +439,7 @@
 
           db (:database app)
           [p1 p2 p3 p4 reporter] (map (partial h/create-dummy-player db) ["p1" "p2" "p3" "p4" "rep"])
+          league (h/create-dummy-league db "somekindaleague")
           matches (vec (for [index (range 8)
                              :let [team1score 10
                                    team2score index
@@ -426,7 +452,8 @@
                           :team1 {:player1 (:id t1p1) :player2 (:id t1p2) :score team1score}
                           :team2 {:player1 (:id t2p1) :player2 (:id t2p2) :score team2score}
                           :reported-by (:id reporter)
-                          :id (h/make-uuid)}))
+                          :id (h/make-uuid)
+                          :league-id (:id league)}))
 
           _ (doall (map (fn [m] (d/create-match! db m)) matches))
 

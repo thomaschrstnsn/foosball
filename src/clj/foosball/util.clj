@@ -1,5 +1,6 @@
 (ns foosball.util
   (:require [clojure.edn :as edn]
+            [clojure.set :as set]
             [datomic.api :as d]
             [hiccup.element :refer [link-to]]
             [clj-time.format :as tf]
@@ -7,6 +8,11 @@
 
 (defn create-uuid []
   (d/squuid))
+
+(defn filter-keys [m exclude-keys]
+  (let [selected-keys (-> m keys set
+                          (set/difference (set exclude-keys)))]
+    (select-keys m selected-keys)))
 
 (defn uuid-from-string [s]
   (when s (java.util.UUID/fromString s)))
